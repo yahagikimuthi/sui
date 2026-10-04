@@ -1,0 +1,8 @@
+/build/
+/.clangd
+/.clang-format
+/.compile_commands.json
+core.*
+./git/
+/src/main.cpp
+/.vscode/
