@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.30)
 
-project(
-    sui
-    LANGUAGE C CXX
-)
+project(sui CXX)
 
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
