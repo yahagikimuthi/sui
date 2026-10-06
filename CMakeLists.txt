@@ -7,11 +7,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF) # GNU拡張を無効化（標準準拠）
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+find_package(Vulkan REQUIRED)
+find_package(glfw3 REQUIRED)
+find_program(GLSLC_EXECUTABLE glslc)
+
 add_library(sui_lib INTERFACE)
 add_library(sui::sui_lib ALIAS sui_lib)
 
 target_include_directories(sui_lib INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+target_link_libraries(sui_lib INTERFACE
+    Vulkan::Vulkan
+    glfw
 )
 
 if(PROJECT_IS_TOP_LEVEL)
