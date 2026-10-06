@@ -1,25 +1,16 @@
 {
     "name": "sui container",
     "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
-    "containerEnv": {
-        "DISPLAY": ":0",
-        "WAYLAND_DISPLAY": "wayland-0",
-        "XDG_RUNTIME_DIR": "/mnt/wslg/runtime-dir",
-        "PULSE_SERVER": "unix:/mnt/wslg/PulseServer",
-        "LD_LIBRARY_PATH": "/usr/lib/wsl/lib",
-        "MESA_LOADER_DRIVER_OVERRIDE": "d3d12",
-        "GALLIUM_DRIVER": "d3d12",
-        "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/dzn_icd.json"
-    },
     "postCreateCommand": "bash .devcontainer/setup.sh",
     "runArgs": [
-        "--device=/dev/dxg",
+        "-e",
+        "DISPLAY=${env:DISPLAY}",
         "-v",
-        "/tmp/.X11-unix:/tmp/.X11-unix",
-        "-v",
-        "/mnt/wslg:/mnt/wslg",
-        "-v",
-        "/usr/lib/wsl:/usr/lib/wsl",
-        "--ipc=host"
-    ]
+        "/tmp/.X11-unix:/tmp/.X11-unix:rw",
+        "--device=/dev/dri:/dev/dri"
+    ],
+    "containerEnv": {
+        "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/intel_icd.json"
+    },
+    "remoteUser": "root"
 }
