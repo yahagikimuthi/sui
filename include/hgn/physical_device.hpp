@@ -48,4 +48,17 @@ class physical_device_properties_view final {
     const physical_device_properties& prop_;
 };
 
+using queue_family_properties = VkQueueFamilyProperties;
+
+[[nodiscard]] inline auto get_physical_device_queue_family_properties(
+    const physical_device& device
+) noexcept -> std::vector<queue_family_properties> {
+    auto count = u32{};
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &count, nullptr);
+
+    auto queue_families = std::vector<queue_family_properties>(count);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &count, queue_families.data());
+
+    return queue_families;
+}
 }  // namespace hgn
