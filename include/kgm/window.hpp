@@ -5,9 +5,9 @@
 #include <string>
 #include <string_view>
 
-#include "hgn/types.hpp"
+#include "kgm/types.hpp"
 
-namespace hgn {
+namespace kgm {
 enum class window_hint_t : u8 {
     client_api,
     noe_api,
@@ -42,4 +42,4 @@ auto inline create_window(const u32 width, const u32 height, std::string_view ti
     if (ptr == nullptr) return std::nullopt;
     return *ptr;
 }
-}  // namespace hgn
+}  // namespace kgm
