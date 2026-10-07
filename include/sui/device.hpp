@@ -48,6 +48,10 @@ class device final {
 
     ~device() noexcept { destroy(); }
 
+    [[nodiscard]] auto get_device_queue(physical_device& physical) const noexcept -> hgn::queue {
+        return hgn::get_device_queue(native_, physical.find_queue_families().value());
+    }
+
   private:
     explicit device(hgn::device native) noexcept : native_{native} {}
 
