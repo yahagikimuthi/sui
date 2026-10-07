@@ -1,11 +1,13 @@
 #pragma once
 
 #include <cassert>
+#include <expected>
 #include <hgn/device.hpp>
 #include <hgn/types.hpp>
 #include <optional>
 #include <ranges>
 
+#include "sui/error.hpp"
 #include "sui/types.hpp"
 
 namespace sui {
@@ -30,6 +32,14 @@ class physical_device final {
         }
 
         return indices;
+    }
+
+    [[nodiscard]] auto try_make_device(const hgn::device_create_info& info) noexcept
+        -> std::expected<hgn::device, error> {
+        auto device = hgn::try_make_device(native_, info);
+        if (not device) return make_error(runtime_error, "Failed to create device.");
+
+        return *device;
     }
 
   private:
