@@ -13,13 +13,15 @@ namespace kgm {
 
 [[nodiscard]] inline auto get_required_instance_extensions() -> std::vector<const char*> {
     auto         count          = u32{};
+    auto         extensions     = std::vector<const char*>{};
     const char** extensions_ptr = glfwGetRequiredInstanceExtensions(&count);
 
     if (extensions_ptr == nullptr or count == 0) {
-        return {};
+        return extensions;
     }
 
     // ポインタ範囲指定コンストラクタで vector にまとめて返す
-    return {extensions_ptr, extensions_ptr + count};  // NOLINT
+    extensions = std::vector<const char*>(extensions_ptr, extensions_ptr + count);
+    return extensions;  // NOLINT
 }
 }  // namespace kgm
