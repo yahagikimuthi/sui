@@ -11,4 +11,13 @@ struct is_string_literal final
 
 template <typename T>
 inline constexpr auto is_string_literal_v = is_string_literal<T>::value;
+
+template <typename T>
+class view {
+  public:
+    explicit view(T& value) : value_{value} {}
+
+  private:
+    T& value_;
+};
 }  // namespace hgn::detail
