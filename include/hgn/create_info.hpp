@@ -13,9 +13,8 @@ class instance_create_info_setter final {
     explicit instance_create_info_setter(instance_create_info& info, const bool should_setup = true)
         : info_{info} {
         if (not should_setup) return;
+        info_       = {};
         info_.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        info_.pNext = nullptr;
-        info_.flags = 0;
     }
 
     auto app_info(const application_info& app) noexcept -> instance_create_info_setter& {
