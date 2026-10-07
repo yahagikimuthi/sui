@@ -33,4 +33,8 @@ using layer_properties = VkLayerProperties;
 
     return properties;
 }
+
+inline void destroy_instance(instance& ins) noexcept {
+    vkDestroyInstance(ins, nullptr);
+}
 }  // namespace hgn
