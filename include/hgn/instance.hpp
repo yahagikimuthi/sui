@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan.h>
 #include <expected>
-#include <optional>
 #include <vector>
 
 #include "hgn/create_info.hpp"
@@ -11,11 +10,11 @@
 namespace hgn {
 using instance = VkInstance;
 
-[[nodiscard]] inline auto try_make_instance(instance_create_info& info) noexcept
-    -> std::optional<instance> {
-    auto*      ins    = instance{null_handle};
-    const auto result = vkCreateInstance(&info, nullptr, &ins);
-    if (result != VK_SUCCESS) return std::nullopt;
+[[nodiscard]] inline auto try_make_instance(const instance_create_info& info) noexcept
+    -> std::expected<instance, result> {
+    auto*      ins = instance{null_handle};
+    const auto res = vkCreateInstance(&info, nullptr, &ins);
+    if (res != VK_SUCCESS) return std::unexpected{static_cast<result>(res)};
     return ins;
 }
 
