@@ -8,12 +8,7 @@
 #include "hgn/instance.hpp"
 #include "hgn/result.hpp"
 #include "hgn/types.hpp"
-/*
 
-Device (VkDevice)
-
-GraphicsQueue (VkQueue) ※破棄処理は不要（VkDevice の従属ハンドル）
- */
 namespace hgn {
 using physical_device = VkPhysicalDevice;
 
@@ -139,6 +134,10 @@ using device = VkDevice;
     if (res != VK_SUCCESS) return std::unexpected{static_cast<result>(res)};
 
     return dev;
+}
+
+inline void destroy_device(device dev) noexcept {
+    vkDestroyDevice(dev, nullptr);
 }
 
 using queue = VkQueue;
