@@ -133,4 +133,12 @@ using device = VkDevice;
 
     return dev;
 }
+
+using queue = VkQueue;
+
+[[nodiscard]] inline auto get_device_queue(const device& dev, const u32 graphic_family) noexcept {
+    auto* out = queue{null_handle};
+    vkGetDeviceQueue(dev, graphic_family, 0, &out);
+    return out;
+}
 }  // namespace hgn
