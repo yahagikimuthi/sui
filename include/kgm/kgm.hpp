@@ -1,7 +1,6 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <expected>
 #include <vector>
 
 #include "kgm/types.hpp"
