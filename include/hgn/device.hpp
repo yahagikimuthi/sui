@@ -71,12 +71,8 @@ class device_queue_create_info_setter final {
     ) noexcept
         : info_{info} {
         if (not should_setup) return;
-        info_.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        info_.pNext            = nullptr;
-        info_.flags            = 0;
-        info_.queueFamilyIndex = 0;
-        info_.queueCount       = 0;
-        info_.pQueuePriorities = nullptr;
+        info_       = {};
+        info_.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     }
 
     auto queue_family_index(const u32 idx) noexcept -> device_queue_create_info_setter& {
@@ -96,5 +92,33 @@ class device_queue_create_info_setter final {
 
   private:
     device_queue_create_info& info_;
+};
+
+using physical_device_features = VkPhysicalDeviceFeatures;
+using device_create_info       = VkDeviceCreateInfo;
+
+class device_create_info_setter final {
+  public:
+    explicit device_create_info_setter(device_create_info& info, const bool should_setup = true)
+        : info_{info} {
+        if (not should_setup) return;
+        info_       = device_create_info{};
+        info_.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    }
+
+    auto queue_create_infos(const std::span<const device_queue_create_info> infos) noexcept
+        -> device_create_info_setter& {
+        info_.queueCreateInfoCount = static_cast<u32>(infos.size());
+        info_.pQueueCreateInfos    = infos.data();
+        return *this;
+    }
+
+    auto features(physical_device_features& features) noexcept -> device_create_info_setter& {
+        info_.pEnabledFeatures = &features;
+        return *this;
+    }
+
+  private:
+    device_create_info& info_;
 };
 }  // namespace hgn
