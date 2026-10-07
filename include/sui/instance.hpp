@@ -25,13 +25,12 @@ class instance final {
             .engine_version(1, 0, 0)
             .api_version(1, 3, 0);
 
+        static const auto debug_layers = std::vector<const char*>{"VK_LAYER_KHRONOS_validation"};
+
         auto create_info = hgn::instance_create_info{};
         hgn::instance_create_info_setter{create_info}
             .app_info(app_info)
-            .layers(
-                enable_validation_layers ? std::vector<const char*>{"VK_LAYER_KHRONOS_validation"}
-                                         : std::span<const char* const>{}
-            )
+            .layers(enable_validation_layers ? debug_layers : std::span<const char* const>{})
             .extensions(get_required_extensions());
 
         auto native_instance = hgn::try_make_instance(create_info);
