@@ -11,11 +11,11 @@
 #include "hgn/types.hpp"
 
 namespace hgn {
-using physical_device = VkPhysicalDevice;
+using physical_device = VkPhysicalDevice_T;
 
 [[nodiscard]] inline auto try_enumerate_physical_devices(const instance& instance_ref) noexcept
-    -> std::expected<std::vector<physical_device>, result> {
-    auto devices = std::vector<physical_device>{};
+    -> std::expected<std::vector<physical_device*>, result> {
+    auto devices = std::vector<physical_device*>{};
     auto count   = u32{};
 
     const auto res1 = vkEnumeratePhysicalDevices(instance_ref, &count, nullptr);
@@ -31,10 +31,10 @@ using physical_device = VkPhysicalDevice;
 
 using physical_device_properties = VkPhysicalDeviceProperties;
 
-[[nodiscard]] inline auto get_physical_device_properties(const physical_device& device) noexcept
+[[nodiscard]] inline auto get_physical_device_properties(physical_device& device) noexcept
     -> physical_device_properties {
     auto properties = physical_device_properties{};
-    vkGetPhysicalDeviceProperties(device, &properties);
+    vkGetPhysicalDeviceProperties(&device, &properties);
     return properties;
 }
 
@@ -54,13 +54,13 @@ class physical_device_properties_view final {
 using queue_family_properties = VkQueueFamilyProperties;
 
 [[nodiscard]] inline auto get_physical_device_queue_family_properties(
-    const physical_device& device
+    physical_device& device
 ) noexcept -> std::vector<queue_family_properties> {
     auto count = u32{};
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &count, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, nullptr);
 
     auto queue_families = std::vector<queue_family_properties>(count);
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &count, queue_families.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, queue_families.data());
 
     return queue_families;
 }
@@ -141,10 +141,10 @@ class device_create_info_setter final {
 using device = VkDevice;
 
 [[nodiscard]] inline auto try_make_device(
-    const physical_device& physical, const device_create_info& info
+    physical_device& physical, const device_create_info& info
 ) noexcept -> std::expected<device, result> {
     auto*      dev = device{null_handle};
-    const auto res = vkCreateDevice(physical, &info, nullptr, &dev);
+    const auto res = vkCreateDevice(&physical, &info, nullptr, &dev);
     if (res != VK_SUCCESS) return std::unexpected{static_cast<result>(res)};
 
     return dev;

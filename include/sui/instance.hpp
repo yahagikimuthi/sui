@@ -59,7 +59,7 @@ class instance final {
     ~instance() noexcept { destroy(); }
 
     [[nodiscard]] auto try_make_devices() noexcept
-        -> std::expected<std::vector<hgn::physical_device>, error> {
+        -> std::expected<std::vector<hgn::physical_device*>, error> {
         if (native_ == hgn::null_handle) return make_error(logic_error, "Invalid instance.");
         const auto device = hgn::try_enumerate_physical_devices(native_);
         if (not device) return make_error(runtime_error, "Failed to find GPUs with Vulkan support");
