@@ -21,17 +21,21 @@ class instance final {
             .application_name("Hello Triangle")
             .application_version(1, 0, 0)
             .engine_name("No Engine")
-            .engine_name("Engine Version")
             .engine_version(1, 0, 0)
             .api_version(1, 3, 0);
 
-        static const auto debug_layers = std::vector<const char*>{"VK_LAYER_KHRONOS_validation"};
+        static const auto validation_layers =
+            std::vector<const char*>{"VK_LAYER_KHRONOS_validation"};
 
-        auto create_info = hgn::instance_create_info{};
-        hgn::instance_create_info_setter{create_info}
-            .app_info(app_info)
-            .layers(enable_validation_layers ? debug_layers : std::span<const char* const>{})
-            .extensions(get_required_extensions());
+        auto create_info          = hgn::instance_create_info{};
+        auto extensions           = get_required_extensions();
+        auto instance_info        = hgn::instance_create_info{};
+        auto instance_info_setter = hgn::instance_create_info_setter{instance_info};
+        instance_info_setter.app_info(app_info).extensions(extensions);
+
+#ifndef NDEBUG
+        instance_info_setter.layers(validation_layers);
+#endif
 
         auto native_instance = hgn::try_make_instance(create_info);
         if (not native_instance) return make_error(runtime_error, "Failed to create instance.\n");
@@ -42,13 +46,13 @@ class instance final {
     instance(const instance&) noexcept                    = delete;
     auto operator=(const instance&) noexcept -> instance& = delete;
 
-    instance(instance&& other) noexcept : value_{std::exchange(other.value_, hgn::null_handle)} {}
+    instance(instance&& other) noexcept : native_{std::exchange(other.native_, hgn::null_handle)} {}
     auto operator=(instance&& other) noexcept -> instance& {
         if (this == &other) return *this;
 
         destroy();
 
-        value_ = std::exchange(other.value_, hgn::null_handle);
+        native_ = std::exchange(other.native_, hgn::null_handle);
         return *this;
     }
 
@@ -56,36 +60,31 @@ class instance final {
 
     [[nodiscard]] auto try_make_devices() noexcept
         -> std::expected<std::vector<hgn::physical_device>, error> {
-        if (value_ == hgn::null_handle) return make_error(logic_error, "Invalid instance.");
-        const auto device = hgn::try_enumerate_physical_devices(value_);
+        if (native_ == hgn::null_handle) return make_error(logic_error, "Invalid instance.");
+        const auto device = hgn::try_enumerate_physical_devices(native_);
         if (not device) return make_error(runtime_error, "Failed to find GPUs with Vulkan support");
         return *device;
     }
 
+    [[nodiscard]] auto native() noexcept -> hgn::instance& { return native_; }
+
   private:
-    explicit instance(hgn::instance value) noexcept : value_{value} {}
+    explicit instance(hgn::instance value) noexcept : native_{value} {}
 
     [[nodiscard]] static auto get_required_extensions() noexcept -> std::vector<const char*> {
         auto extensions = kgm::get_required_instance_extensions();
 
-        if (enable_validation_layers) {
-            extensions.push_back(hgn::ext_debug_utils_extension_name);
-        }
-
+#ifndef NDEBUG
+        extensions.push_back(hgn::ext_debug_utils_extension_name);
+#endif
         return extensions;
     }
 
     void destroy() noexcept {
-        if (value_ == hgn::null_handle) return;
-        hgn::destroy_instance(value_);
+        if (native_ == hgn::null_handle) return;
+        hgn::destroy_instance(native_);
     }
 
-    hgn::instance value_{hgn::null_handle};
-
-#ifndef NDEBUG
-    static constexpr auto enable_validation_layers = true;
-#else
-    static constexpr auto enable_validation_layers = false;
-#endif
+    hgn::instance native_{hgn::null_handle};
 };
 }  // namespace sui
