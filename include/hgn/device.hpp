@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "hgn/instance.hpp"
+#include "hgn/others.hpp"
 #include "hgn/result.hpp"
 #include "hgn/types.hpp"
 
@@ -63,6 +64,19 @@ using queue_family_properties = VkQueueFamilyProperties;
 
     return queue_families;
 }
+
+class queue_family_properties_view final {
+  public:
+    explicit queue_family_properties_view(const queue_family_properties& properties) noexcept
+        : prop_{properties} {}
+
+    [[nodiscard]] auto queue_flags() const noexcept -> queue_flag_bits {
+        return static_cast<queue_flag_bits>(prop_.queueFlags);
+    }
+
+  private:
+    const queue_family_properties& prop_;
+};
 
 using device_queue_create_info = VkDeviceQueueCreateInfo;
 
