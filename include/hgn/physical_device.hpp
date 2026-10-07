@@ -12,7 +12,7 @@
 namespace hgn {
 using physical_device = VkPhysicalDevice;
 
-[[nodiscard]] inline auto enumerate_physical_devices(const instance& instance_ref) noexcept
+[[nodiscard]] inline auto try_enumerate_physical_devices(const instance& instance_ref) noexcept
     -> std::expected<std::vector<physical_device>, result> {
     auto devices = std::vector<physical_device>{};
     auto count   = u32{};

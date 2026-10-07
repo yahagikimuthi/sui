@@ -20,7 +20,7 @@ using instance = VkInstance;
 
 using layer_properties = VkLayerProperties;
 
-[[nodiscard]] inline auto enumerate_instance_layer_properties() noexcept
+[[nodiscard]] inline auto try_enumerate_instance_layer_properties() noexcept
     -> std::expected<std::vector<layer_properties>, result> {
     auto count = u32{};
     if (auto res = vkEnumerateInstanceLayerProperties(&count, nullptr); res != VK_SUCCESS)
