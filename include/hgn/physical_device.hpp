@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <expected>
+#include <string>
 #include <vector>
 
 #include "hgn/instance.hpp"
@@ -24,4 +25,24 @@ using physical_device = VkPhysicalDevice;
 
     return devices;
 }
+
+using physical_device_properties = VkPhysicalDeviceProperties;
+
+[[nodiscard]] inline auto get_physical_device_properties(const physical_device& device) noexcept
+    -> physical_device_properties {
+    auto properties = physical_device_properties{};
+    vkGetPhysicalDeviceProperties(device, &properties);
+    return properties;
+}
+
+class physical_device_properties_view final {
+  public:
+    explicit physical_device_properties_view(const physical_device_properties& properties) noexcept
+        : prop_{properties} {}
+
+    [[nodiscard]] auto device_name() const noexcept -> std::string { return prop_.deviceName; }
+
+  private:
+    const physical_device_properties& prop_;
+};
 }  // namespace hgn
