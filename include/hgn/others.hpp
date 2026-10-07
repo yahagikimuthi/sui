@@ -9,6 +9,8 @@
 #include "hgn/types.hpp"
 
 namespace hgn {
+inline constexpr auto null_handle = VK_NULL_HANDLE;
+
 using layer_properties = VkLayerProperties;
 
 [[nodiscard]] inline auto enumerate_instance_layer_properties() noexcept
