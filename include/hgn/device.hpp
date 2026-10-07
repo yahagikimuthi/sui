@@ -8,7 +8,12 @@
 #include "hgn/instance.hpp"
 #include "hgn/result.hpp"
 #include "hgn/types.hpp"
+/*
 
+Device (VkDevice)
+
+GraphicsQueue (VkQueue) ※破棄処理は不要（VkDevice の従属ハンドル）
+ */
 namespace hgn {
 using physical_device = VkPhysicalDevice;
 
@@ -19,6 +24,8 @@ using physical_device = VkPhysicalDevice;
 
     const auto res1 = vkEnumeratePhysicalDevices(instance_ref, &count, nullptr);
     if (res1 != VK_SUCCESS) return std::unexpected{static_cast<result>(res1)};
+
+    devices.resize(count);
 
     const auto res2 = vkEnumeratePhysicalDevices(instance_ref, &count, devices.data());
     if (res2 != VK_SUCCESS) return std::unexpected{static_cast<result>(res2)};
