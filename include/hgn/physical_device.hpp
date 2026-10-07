@@ -40,9 +40,12 @@ class physical_device_properties_view final {
     explicit physical_device_properties_view(const physical_device_properties& properties) noexcept
         : prop_{properties} {}
 
-    [[nodiscard]] auto device_name() const noexcept -> std::string { return prop_.deviceName; }
+    [[nodiscard]] auto device_name() const noexcept -> std::string {
+        return prop_.deviceName;  // NOLINT
+    }
 
   private:
     const physical_device_properties& prop_;
 };
+
 }  // namespace hgn
