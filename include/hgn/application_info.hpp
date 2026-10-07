@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vector>
 
 #include "hgn/detail/others.hpp"
 #include "hgn/types.hpp"
@@ -8,32 +9,45 @@
 namespace hgn {
 using application_info = VkApplicationInfo;
 
-[[nodiscard]] constexpr auto make_version(
-    const u32 major, const u32 minor, const u32 patch
-) noexcept -> u32 {
-    return VK_MAKE_VERSION(major, minor, patch);
-}
+class application_info_setter final {
+  public:
+    explicit application_info_setter(application_info& info) noexcept : info_{info} {
+        info_.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    }
 
-inline constexpr auto api_version_1_3 = VK_API_VERSION_1_3;
+    template <typename T>
+        requires detail::is_string_literal_v<T>
+    auto application_name(const T& name) noexcept -> application_info_setter& {
+        info_.pApplicationName = name;
+        return *this;
+    }
 
-template <typename T, typename U>
-    requires detail::is_string_literal_v<T> and detail::is_string_literal_v<U>
-[[nodiscard]] inline auto make_application_info(
-    const T&  app_name,
-    const u32 app_version,
-    const U&  engine_name,
-    const u32 engine_version,
-    const u32 api_version
-) noexcept -> application_info {
-    auto info               = VkApplicationInfo{};
-    info.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    info.pNext              = nullptr;
-    info.pApplicationName   = app_name;
-    info.applicationVersion = app_version;
-    info.pEngineName        = engine_name;
-    info.engineVersion      = engine_version;
-    info.apiVersion         = api_version;
-    return info;
-}
+    auto application_version(const u32 major, const u32 minor, const u32 patch) noexcept
+        -> application_info_setter& {
+        info_.applicationVersion = detail::make_version(major, minor, patch);
+        return *this;
+    }
 
+    template <typename T>
+        requires detail::is_string_literal_v<T>
+    auto engine_name(const T& name) noexcept -> application_info_setter& {
+        info_.pEngineName = name;
+        return *this;
+    }
+
+    auto engine_version(const u32 major, const u32 minor, const u32 patch) noexcept
+        -> application_info_setter& {
+        info_.engineVersion = detail::make_version(major, minor, patch);
+        return *this;
+    }
+
+    auto api_version(const u32 major, const u32 minor, const u32 patch) noexcept
+        -> application_info_setter& {
+        info_.apiVersion = VK_MAKE_API_VERSION(0, major, minor, patch);
+        return *this;
+    }
+
+  private:
+    application_info& info_;
+};
 }  // namespace hgn
