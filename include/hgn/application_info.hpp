@@ -10,7 +10,9 @@ using application_info = VkApplicationInfo;
 
 class application_info_setter final {
   public:
-    explicit application_info_setter(application_info& info) noexcept : info_{info} {
+    explicit application_info_setter(application_info& info, const bool should_init = true) noexcept
+        : info_{info} {
+        if (not should_init) return;
         info_.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     }
 
