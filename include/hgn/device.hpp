@@ -1,7 +1,10 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <cassert>
 #include <expected>
+#include <functional>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -138,27 +141,30 @@ class device_create_info_setter final {
     device_create_info& info_;
 };
 
-using device = VkDevice;
+using device = VkDevice_T;
 
 [[nodiscard]] inline auto try_make_device(
     physical_device& physical, const device_create_info& info
-) noexcept -> std::expected<device, result> {
-    auto*      dev = device{null_handle};
+) noexcept -> std::expected<ref_w<device>, result> {
+    auto*      dev = static_cast<device*>(null_handle);
     const auto res = vkCreateDevice(&physical, &info, nullptr, &dev);
     if (res != VK_SUCCESS) return std::unexpected{static_cast<result>(res)};
 
-    return dev;
+    assert(dev != nullptr);
+    return std::ref(*dev);
 }
 
-inline void destroy_device(device dev) noexcept {
-    vkDestroyDevice(dev, nullptr);
+inline void destroy_device(device& dev) noexcept {
+    vkDestroyDevice(&dev, nullptr);
 }
 
-using queue = VkQueue;
+using queue = VkQueue_T;
 
-[[nodiscard]] inline auto get_device_queue(const device& dev, const u32 graphic_family) noexcept {
-    auto* out = queue{null_handle};
-    vkGetDeviceQueue(dev, graphic_family, 0, &out);
-    return out;
+[[nodiscard]] inline auto get_device_queue(device& dev, const u32 graphic_family) noexcept
+    -> std::optional<queue&> {
+    auto* out = static_cast<queue*>(null_handle);
+    vkGetDeviceQueue(&dev, graphic_family, 0, &out);
+    if (out == nullptr) return std::nullopt;
+    return *out;
 }
 }  // namespace hgn

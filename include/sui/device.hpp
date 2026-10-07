@@ -3,6 +3,7 @@
 #include <expected>
 #include <hgn/device.hpp>
 #include <hgn/types.hpp>
+#include <optional>
 #include <span>
 #include <utility>
 
@@ -30,35 +31,36 @@ class device final {
 
         auto native = physical.try_make_device(info);
         if (not native) return make_error(runtime_error, "Failed to create device.");
-        return device{*native};
+        return device{native->get()};
     }
 
     device(const device&)                             = delete;
     auto operator=(const device&) noexcept -> device& = delete;
 
-    device(device&& other) noexcept : native_{std::exchange(other.native_, nullptr)} {}
+    device(device&& other) noexcept : native_{std::exchange(other.native_, std::nullopt)} {}
     auto operator=(device&& other) noexcept -> device& {
         if (this == &other) return *this;
 
         destroy();
 
-        native_ = std::exchange(other.native_, hgn::null_handle);
+        native_ = std::exchange(other.native_, std::nullopt);
         return *this;
     }
 
     ~device() noexcept { destroy(); }
 
-    [[nodiscard]] auto get_device_queue(physical_device& physical) const noexcept -> hgn::queue {
-        return hgn::get_device_queue(native_, physical.find_queue_families().value());
+    [[nodiscard]] auto try_get_device_queue(physical_device& physical) noexcept
+        -> std::optional<hgn::queue&> {
+        return hgn::get_device_queue(*native_, physical.find_queue_families().value());
     }
 
   private:
-    explicit device(hgn::device native) noexcept : native_{native} {}
+    explicit device(hgn::device& native) noexcept : native_{native} {}
 
     void destroy() noexcept {
-        if (native_ != nullptr) hgn::destroy_device(native_);
+        if (native_) hgn::destroy_device(*native_);
     }
 
-    hgn::device native_{hgn::null_handle};
+    std::optional<hgn::device&> native_{std::nullopt};
 };
 }  // namespace sui

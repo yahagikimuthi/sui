@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <cstdint>
+#include <functional>
 
 namespace hgn {
 using u8  = std::uint8_t;
@@ -21,4 +22,7 @@ inline constexpr auto null_handle = VK_NULL_HANDLE;
 
 static_assert(sizeof(f32) == 4);
 static_assert(sizeof(f64) == 8);
+
+template <typename T>
+using ref_w = std::reference_wrapper<T>;
 }  // namespace hgn

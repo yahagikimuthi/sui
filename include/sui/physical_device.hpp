@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <expected>
+#include <functional>
 #include <hgn/device.hpp>
 #include <hgn/types.hpp>
 #include <optional>
@@ -38,7 +39,7 @@ class physical_device final {
     }
 
     [[nodiscard]] auto try_make_device(const hgn::device_create_info& info) noexcept
-        -> std::expected<hgn::device, error> {
+        -> std::expected<std::reference_wrapper<hgn::device>, error> {
         if (not native_) return make_error(logic_error, "Invalid physical device.");
 
         auto device = hgn::try_make_device(*native_, info);
