@@ -18,8 +18,6 @@ using i64 = std::int64_t;
 using f32 = float;
 using f64 = double;
 
-inline constexpr auto null_handle = VK_NULL_HANDLE;
-
 static_assert(sizeof(f32) == 4);
 static_assert(sizeof(f64) == 8);
 

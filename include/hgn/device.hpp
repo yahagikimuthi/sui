@@ -146,7 +146,7 @@ using device = VkDevice_T;
 [[nodiscard]] inline auto try_make_device(
     physical_device& physical, const device_create_info& info
 ) noexcept -> std::expected<ref_w<device>, result> {
-    auto*      dev = static_cast<device*>(null_handle);
+    auto*      dev = static_cast<device*>(nullptr);
     const auto res = vkCreateDevice(&physical, &info, nullptr, &dev);
     if (res != VK_SUCCESS) return std::unexpected{static_cast<result>(res)};
 
@@ -162,7 +162,7 @@ using queue = VkQueue_T;
 
 [[nodiscard]] inline auto get_device_queue(device& dev, const u32 graphic_family) noexcept
     -> std::optional<queue&> {
-    auto* out = static_cast<queue*>(null_handle);
+    auto* out = static_cast<queue*>(nullptr);
     vkGetDeviceQueue(&dev, graphic_family, 0, &out);
     if (out == nullptr) return std::nullopt;
     return *out;
