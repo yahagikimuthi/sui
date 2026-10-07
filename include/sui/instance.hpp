@@ -2,9 +2,9 @@
 
 #include <expected>
 #include <hgn/application_info.hpp>
+#include <hgn/device.hpp>
 #include <hgn/instance.hpp>
 #include <hgn/others.hpp>
-#include <hgn/physical_device.hpp>
 #include <hgn/types.hpp>
 #include <kgm/kgm.hpp>
 #include <utility>
@@ -55,7 +55,7 @@ class instance final {
 
     ~instance() noexcept { destroy(); }
 
-    [[nodiscard]] auto try_make_device() noexcept
+    [[nodiscard]] auto try_make_devices() noexcept
         -> std::expected<std::vector<hgn::physical_device>, error> {
         if (value_ == hgn::null_handle) return make_error(logic_error, "Invalid instance.");
         const auto device = hgn::try_enumerate_physical_devices(value_);
