@@ -15,6 +15,7 @@ class application_info_setter final {
     ) noexcept
         : info_{info} {
         if (not should_setup) return;
+        info_       = {};
         info_.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     }
 
