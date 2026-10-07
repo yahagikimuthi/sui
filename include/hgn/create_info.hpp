@@ -8,23 +8,35 @@
 namespace hgn {
 using instance_create_info = VkInstanceCreateInfo;
 
-[[nodiscard]] inline auto make_instance_create_info(
-    const application_info&      app,
-    std::span<const char* const> layers,
-    std::span<const char* const> extensions
-) noexcept -> instance_create_info {
-    auto info             = instance_create_info{};
-    info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    info.pNext            = nullptr;
-    info.flags            = 0;
-    info.pApplicationInfo = &app;
+class instance_create_info_setter final {
+  public:
+    explicit instance_create_info_setter(instance_create_info& info, const bool should_init = true)
+        : info_{info} {
+        if (not should_init) return;
+        info_.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        info_.pNext = nullptr;
+        info_.flags = 0;
+    }
 
-    info.enabledExtensionCount   = static_cast<uint32_t>(extensions.size());
-    info.ppEnabledExtensionNames = extensions.data();
+    auto app_info(const application_info& app) noexcept -> instance_create_info_setter& {
+        info_.pApplicationInfo = &app;
+        return *this;
+    }
 
-    info.enabledLayerCount   = static_cast<uint32_t>(layers.size());
-    info.ppEnabledLayerNames = layers.data();
+    auto layers(const std::span<const char* const> vec) noexcept -> instance_create_info_setter& {
+        info_.enabledLayerCount   = static_cast<u32>(vec.size());
+        info_.ppEnabledLayerNames = vec.data();
+        return *this;
+    }
 
-    return info;
-}
+    auto extensions(const std::span<const char* const> vec) noexcept
+        -> instance_create_info_setter& {
+        info_.enabledExtensionCount   = static_cast<u32>(vec.size());
+        info_.ppEnabledExtensionNames = vec.data();
+        return *this;
+    }
+
+  private:
+    instance_create_info& info_;
+};
 }  // namespace hgn
