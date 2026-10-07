@@ -10,9 +10,9 @@ using instance_create_info = VkInstanceCreateInfo;
 
 class instance_create_info_setter final {
   public:
-    explicit instance_create_info_setter(instance_create_info& info, const bool should_init = true)
+    explicit instance_create_info_setter(instance_create_info& info, const bool should_setup = true)
         : info_{info} {
-        if (not should_init) return;
+        if (not should_setup) return;
         info_.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         info_.pNext = nullptr;
         info_.flags = 0;
