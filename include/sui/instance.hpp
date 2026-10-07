@@ -7,6 +7,7 @@
 #include <hgn/others.hpp>
 #include <hgn/types.hpp>
 #include <kgm/kgm.hpp>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -46,13 +47,13 @@ class instance final {
     instance(const instance&) noexcept                    = delete;
     auto operator=(const instance&) noexcept -> instance& = delete;
 
-    instance(instance&& other) noexcept : native_{std::exchange(other.native_, hgn::null_handle)} {}
+    instance(instance&& other) noexcept : native_{std::exchange(other.native_, std::nullopt)} {}
     auto operator=(instance&& other) noexcept -> instance& {
         if (this == &other) return *this;
 
         destroy();
 
-        native_ = std::exchange(other.native_, hgn::null_handle);
+        native_ = std::exchange(other.native_, std::nullopt);
         return *this;
     }
 
@@ -60,16 +61,19 @@ class instance final {
 
     [[nodiscard]] auto try_make_devices() noexcept
         -> std::expected<std::vector<hgn::physical_device*>, error> {
-        if (native_ == hgn::null_handle) return make_error(logic_error, "Invalid instance.");
-        const auto device = hgn::try_enumerate_physical_devices(native_);
+        if (not native_) return make_error(logic_error, "Invalid instance.");
+        const auto device = hgn::try_enumerate_physical_devices(*native_);
         if (not device) return make_error(runtime_error, "Failed to find GPUs with Vulkan support");
         return *device;
     }
 
-    [[nodiscard]] auto native() noexcept -> hgn::instance& { return native_; }
+    [[nodiscard]] auto native() noexcept -> hgn::instance& {
+        assert(native_);
+        return *native_;
+    }
 
   private:
-    explicit instance(hgn::instance value) noexcept : native_{value} {}
+    explicit instance(hgn::instance& native) noexcept : native_{native} {}
 
     [[nodiscard]] static auto get_required_extensions() noexcept -> std::vector<const char*> {
         auto extensions = kgm::get_required_instance_extensions();
@@ -81,10 +85,9 @@ class instance final {
     }
 
     void destroy() noexcept {
-        if (native_ == hgn::null_handle) return;
-        hgn::destroy_instance(native_);
+        if (native_) hgn::destroy_instance(*native_);
     }
 
-    hgn::instance native_{hgn::null_handle};
+    std::optional<hgn::instance&> native_{std::nullopt};
 };
 }  // namespace sui
