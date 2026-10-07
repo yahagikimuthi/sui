@@ -121,4 +121,16 @@ class device_create_info_setter final {
   private:
     device_create_info& info_;
 };
+
+using device = VkDevice;
+
+[[nodiscard]] inline auto try_make_device(
+    const physical_device& physical, const device_create_info& info
+) noexcept -> std::expected<device, result> {
+    auto*      dev = device{null_handle};
+    const auto res = vkCreateDevice(physical, &info, nullptr, &dev);
+    if (res != VK_SUCCESS) return std::unexpected{static_cast<result>(res)};
+
+    return dev;
+}
 }  // namespace hgn
