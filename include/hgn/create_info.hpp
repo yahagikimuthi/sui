@@ -2,35 +2,29 @@
 
 #include <vulkan/vulkan.h>
 #include <span>
-#include <string>
-#include <vector>
 
 #include "hgn/application_info.hpp"
 
 namespace hgn {
-class create_info final {
-  public:
-    explicit create_info(const application_info& app_info) noexcept : app_info_{app_info} {}
+using instance_create_info = VkInstanceCreateInfo;
 
-    auto layers(const std::span<const char*> layer_vec) noexcept -> create_info& {
-        layers_ = std::vector<std::string>(layer_vec.begin(), layer_vec.end());
-        return *this;
-    }
+[[nodiscard]] inline auto make_instance_create_info(
+    const application_info&      app,
+    std::span<const char* const> layers,
+    std::span<const char* const> extensions
+) noexcept -> instance_create_info {
+    auto info             = instance_create_info{};
+    info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    info.pNext            = nullptr;
+    info.flags            = 0;
+    info.pApplicationInfo = &app;
 
-    auto extensions(const std::span<const char*> extention_vec) noexcept -> create_info& {
-        extensions_ = std::vector<std::string>(extention_vec.begin(), extention_vec.end());
-        return *this;
-    }
+    info.enabledExtensionCount   = static_cast<uint32_t>(extensions.size());
+    info.ppEnabledExtensionNames = extensions.data();
 
-    [[nodiscard]] auto app_info() const noexcept -> const application_info& { return app_info_; }
-    [[nodiscard]] auto layers() const noexcept -> std::span<const std::string> { return layers_; }
-    [[nodiscard]] auto extensions() const noexcept -> std::span<const std::string> {
-        return extensions_;
-    }
+    info.enabledLayerCount   = static_cast<uint32_t>(layers.size());
+    info.ppEnabledLayerNames = layers.data();
 
-  private:
-    const application_info&  app_info_;
-    std::vector<std::string> layers_;
-    std::vector<std::string> extensions_;
-};
+    return info;
+}
 }  // namespace hgn
