@@ -10,11 +10,11 @@
 namespace kgm {
 enum class window_hint_t : u8 {
     client_api,
-    noe_api,
+    no_api,
 };
 
-inline constexpr auto client_api = window_hint_t::client_api;
-inline constexpr auto no_api     = window_hint_t::noe_api;
+using window_hint_t::client_api;
+using window_hint_t::no_api;
 
 void inline window_hint(const window_hint_t hint1, const window_hint_t hint2) noexcept {
     glfwWindowHint(static_cast<i32>(hint1), static_cast<i32>(hint2));
