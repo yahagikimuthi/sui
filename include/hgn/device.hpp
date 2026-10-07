@@ -61,4 +61,40 @@ using queue_family_properties = VkQueueFamilyProperties;
 
     return queue_families;
 }
+
+using device_queue_create_info = VkDeviceQueueCreateInfo;
+
+class device_queue_create_info_setter final {
+  public:
+    explicit device_queue_create_info_setter(
+        device_queue_create_info& info, const bool should_setup = true
+    ) noexcept
+        : info_{info} {
+        if (not should_setup) return;
+        info_.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        info_.pNext            = nullptr;
+        info_.flags            = 0;
+        info_.queueFamilyIndex = 0;
+        info_.queueCount       = 0;
+        info_.pQueuePriorities = nullptr;
+    }
+
+    auto queue_family_index(const u32 idx) noexcept -> device_queue_create_info_setter& {
+        info_.queueFamilyIndex = idx;
+        return *this;
+    }
+
+    auto queue_count(const u32 cnt) noexcept -> device_queue_create_info_setter& {
+        info_.queueCount = cnt;
+        return *this;
+    }
+
+    auto queue_priorities(f32& priority) noexcept -> device_queue_create_info_setter& {
+        info_.pQueuePriorities = &priority;
+        return *this;
+    }
+
+  private:
+    device_queue_create_info& info_;
+};
 }  // namespace hgn
