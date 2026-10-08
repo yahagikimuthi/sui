@@ -28,4 +28,8 @@ namespace kgm {
 inline void poll_events() noexcept {
     glfwPollEvents();
 }
+
+inline void terminate() noexcept {
+    glfwTerminate();
+}
 }  // namespace kgm
