@@ -85,12 +85,8 @@ using device_queue_create_info = VkDeviceQueueCreateInfo;
 
 class device_queue_create_info_setter final {
   public:
-    explicit device_queue_create_info_setter(
-        device_queue_create_info& info, const bool should_setup = true
-    ) noexcept
+    explicit device_queue_create_info_setter(device_queue_create_info& info) noexcept
         : info_{info} {
-        if (not should_setup) return;
-        info_       = {};
         info_.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     }
 
@@ -118,10 +114,7 @@ using device_create_info       = VkDeviceCreateInfo;
 
 class device_create_info_setter final {
   public:
-    explicit device_create_info_setter(device_create_info& info, const bool should_setup = true)
-        : info_{info} {
-        if (not should_setup) return;
-        info_       = device_create_info{};
+    explicit device_create_info_setter(device_create_info& info) : info_{info} {
         info_.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     }
 
