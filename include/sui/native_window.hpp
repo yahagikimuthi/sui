@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <expected>
 #include <kgm/kgm.hpp>
 #include <kgm/window.hpp>
@@ -45,6 +46,11 @@ class native_window final {
     [[nodiscard]] auto is_open() const noexcept -> bool {
         if (not window_) return false;
         return not kgm::window_should_close(*window_);
+    }
+
+    [[nodiscard]] auto native() noexcept -> kgm::window& {
+        assert(window_);
+        return *window_;
     }
 
   private:
