@@ -1,9 +1,13 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <cassert>
+#include <expected>
 
 #include "hgn/device.hpp"
+#include "hgn/result.hpp"
 #include "hgn/surface.hpp"
+#include "hgn/types.hpp"
 
 namespace hgn {
 using swapchain_create_info_khr = VkSwapchainCreateInfoKHR;
@@ -91,6 +95,17 @@ class swapchain_create_info_khr_setter final {
 };
 
 using swapchain = VkSwapchainKHR_T;
+
+[[nodiscard]] inline auto try_make_swapchain(device& dev, swapchain_create_info_khr& info) noexcept
+    -> std::expected<ref_w<swapchain>, result> {
+    auto*      chain = static_cast<swapchain*>(nullptr);
+    const auto res   = vkCreateSwapchainKHR(&dev, &info, nullptr, &chain);
+    if (res != VK_SUCCESS) return make_result(res);
+
+    assert(chain != nullptr);
+
+    return std::ref(*chain);
+}
 
 inline void destroy_swapchain_khr(device& dev, swapchain& target) {
     vkDestroySwapchainKHR(&dev, &target, nullptr);
