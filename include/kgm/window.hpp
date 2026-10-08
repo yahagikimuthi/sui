@@ -31,7 +31,7 @@ inline void destroy_window(window& target) noexcept {
     glfwDestroyWindow(&target);
 }
 
-[[nodiscard]] inline auto create_window(
+[[nodiscard]] inline auto try_make_window(
     const u32 width, const u32 height, const std::string_view title
 ) noexcept -> std::optional<window&> {
     auto* ptr = glfwCreateWindow(

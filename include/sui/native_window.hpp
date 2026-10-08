@@ -18,7 +18,7 @@ class native_window final {
         const u32 width, const u32 height, std::string_view title = "No Title"
     ) noexcept -> std::expected<native_window, error> {
         kgm::window_hint(kgm::client_api, kgm::no_api);
-        auto win = kgm::create_window(width, height, title);
+        auto win = kgm::try_make_window(width, height, title);
         if (not win) return make_error(runtime_error, "Failed to create window.\n");
 
         return native_window{*win};
