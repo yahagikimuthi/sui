@@ -14,9 +14,9 @@
 #include "kgm/types.hpp"
 
 namespace kgm {
-enum class window_hint_t : u8 {
-    client_api,
-    no_api,
+enum class window_hint_t : i32 {
+    client_api = GLFW_CLIENT_API,
+    no_api     = GLFW_NO_API,
 };
 
 using window_hint_t::client_api;
@@ -37,7 +37,7 @@ inline void destroy_window(window& target) noexcept {
 }
 
 [[nodiscard]] inline auto try_make_window(
-    const u32 width, const u32 height, const std::string_view title
+    const u32 width, const u32 height, const std::string_view title = "No Title"
 ) noexcept -> std::optional<window&> {
     auto* ptr = glfwCreateWindow(
         static_cast<i32>(width),
