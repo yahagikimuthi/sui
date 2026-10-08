@@ -199,6 +199,22 @@ using surface_format_khr = VkSurfaceFormatKHR;
     vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.data());
     return formats;
 }
+using present_mode_khr = VkPresentModeKHR;
+
+[[nodiscard]] inline auto get_physical_device_surface_present_modes_khr(
+    physical_device& physical, surface_khr& surface
+) noexcept -> std::expected<std::vector<present_mode_khr>, result> {
+    auto       count = u32{};
+    const auto res1 =
+        vkGetPhysicalDeviceSurfacePresentModesKHR(&physical, &surface, &count, nullptr);
+    if (res1 != VK_SUCCESS) return make_result(res1);
+
+    auto       modes = std::vector<present_mode_khr>(count);
+    const auto res2 =
+        vkGetPhysicalDeviceSurfacePresentModesKHR(&physical, &surface, &count, modes.data());
+    if (res2 != VK_SUCCESS) return make_result(res2);
+    return modes;
+}
 
 using swapchain = VkSwapchainKHR_T;
 
