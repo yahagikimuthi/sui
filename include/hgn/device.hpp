@@ -215,11 +215,4 @@ using present_mode_khr = VkPresentModeKHR;
     if (res2 != VK_SUCCESS) return make_result(res2);
     return modes;
 }
-
-using swapchain = VkSwapchainKHR_T;
-
-inline void destroy_swapchain_khr(device& dev, swapchain& target) {
-    vkDestroySwapchainKHR(&dev, &target, nullptr);
-}
-
 }  // namespace hgn
