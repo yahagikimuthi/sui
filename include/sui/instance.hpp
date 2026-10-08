@@ -79,7 +79,7 @@ class instance final {
         auto extensions = kgm::get_required_instance_extensions();
 
 #ifndef NDEBUG
-        extensions.push_back(hgn::ext_debug_utils_extension_name);
+        extensions.emplace_back(hgn::ext_debug_utils_extension_name);
 #endif
         return extensions;
     }
