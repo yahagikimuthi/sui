@@ -11,6 +11,7 @@
 #include "hgn/instance.hpp"
 #include "hgn/others.hpp"
 #include "hgn/result.hpp"
+#include "hgn/surface.hpp"
 #include "hgn/types.hpp"
 
 namespace hgn {
@@ -130,6 +131,12 @@ class device_create_info_setter final {
         return *this;
     }
 
+    auto extensions(std::span<const char* const> vec) noexcept -> device_create_info_setter& {
+        info_.enabledExtensionCount   = static_cast<u32>(vec.size());
+        info_.ppEnabledExtensionNames = vec.data();
+        return *this;
+    }
+
   private:
     device_create_info& info_;
 };
@@ -159,5 +166,13 @@ using queue = VkQueue_T;
     vkGetDeviceQueue(&dev, graphic_family, 0, &out);
     if (out == nullptr) return std::nullopt;
     return *out;
+}
+
+[[nodiscard]] inline auto get_physical_device_surface_support_khr(
+    physical_device& physical, u32 indices, surface_khr& surface
+) noexcept -> bool {
+    auto present_support = VK_FALSE;
+    vkGetPhysicalDeviceSurfaceSupportKHR(&physical, indices, &surface, &present_support);
+    return present_support == VK_TRUE;
 }
 }  // namespace hgn
