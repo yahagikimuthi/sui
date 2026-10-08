@@ -4,6 +4,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #include "kgm/types.hpp"
 
@@ -46,5 +47,11 @@ inline void terminate() noexcept {
 
 [[nodiscard]] inline auto window_should_close(window& win) noexcept -> bool {
     return glfwWindowShouldClose(&win) != 0;
+}
+
+template <typename T>
+    requires std::is_class_v<T>
+inline void set_window_user_pointer(window& win, T&& user) noexcept {
+    glfwSetWindowUserPointer(&win, &user);
 }
 }  // namespace kgm
