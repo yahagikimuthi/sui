@@ -21,6 +21,10 @@ inline void window_hint(const window_hint_t hint1, const window_hint_t hint2) no
     glfwWindowHint(static_cast<i32>(hint1), static_cast<i32>(hint2));
 }
 
+inline void default_window_hints() noexcept {
+    glfwDefaultWindowHints();
+}
+
 using window = GLFWwindow;
 
 inline void destroy_window(window& target) noexcept {
