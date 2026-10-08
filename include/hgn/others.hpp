@@ -46,4 +46,22 @@ inline constexpr auto queue_video_decode_bit_khr = queue_flag_bits::video_decode
 inline constexpr auto queue_video_encode_bit_khr = queue_flag_bits::video_encode_khr;
 inline constexpr auto queue_optical_flow_bit_nv  = queue_flag_bits::optical_flow_nv;
 inline constexpr auto queue_flag_bits_max_enum   = queue_flag_bits::max;
+
+enum class format : u8 { b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB };
+
+inline constexpr auto format_b8g8r8a8_srgb = format::b8g8r8a8_srgb;
+
+enum class color_space_khr : u8 { srgb_nonlinear = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };
+
+inline constexpr auto color_space_srgb_nonlinear_khr = color_space_khr::srgb_nonlinear;
+
+enum class present_mode_khr_t : u8 {
+    fifo    = VK_PRESENT_MODE_FIFO_KHR,
+    mailbox = VK_PRESENT_MODE_MAILBOX_KHR
+};
+
+inline constexpr auto present_mode_fifo_khr    = present_mode_khr_t::fifo;
+inline constexpr auto present_mode_mailbox_khr = present_mode_khr_t::mailbox;
+
+using extent2d = VkExtent2D;
 }  // namespace hgn
