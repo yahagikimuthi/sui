@@ -11,7 +11,7 @@ namespace kgm {
     return (error_code == GLFW_TRUE);
 }
 
-[[nodiscard]] inline auto get_required_instance_extensions() -> std::vector<const char*> {
+[[nodiscard]] inline auto get_required_instance_extensions() noexcept -> std::vector<const char*> {
     auto         count          = u32{};
     auto         extensions     = std::vector<const char*>{};
     const char** extensions_ptr = glfwGetRequiredInstanceExtensions(&count);
