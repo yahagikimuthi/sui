@@ -168,7 +168,7 @@ using queue = VkQueue_T;
     return *out;
 }
 
-[[nodiscard]] inline auto get_physical_device_surface_support_khr(
+[[nodiscard]] inline auto is_physical_device_surface_support_khr(
     physical_device& physical, u32 indices, surface_khr& surface
 ) noexcept -> bool {
     auto present_support = VK_FALSE;
@@ -178,12 +178,25 @@ using queue = VkQueue_T;
 
 using surface_capabilities_khr = VkSurfaceCapabilitiesKHR;
 
-[[nodiscard]] inline auto get_physical_device_surface_capabilities_khr(
+[[nodiscard]] inline auto try_get_physical_device_surface_capabilities_khr(
     physical_device& physical, surface_khr& surface
 ) noexcept -> std::expected<surface_capabilities_khr, result> {
-    auto capabilities = surface_capabilities_khr{};
+    auto capabilities = surface_capabilities_khr{};  // NOLINT
     auto res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&physical, &surface, &capabilities);
     if (res != VK_SUCCESS) return make_result(res);
     return capabilities;
+}
+
+using surface_format_khr = VkSurfaceFormatKHR;
+
+[[nodiscard]] inline auto get_physical_device_surface_formats_khr(
+    physical_device& physical, surface_khr& surface
+) noexcept -> std::vector<surface_format_khr> {
+    auto count = u32{};
+    vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, nullptr);
+
+    auto formats = std::vector<surface_format_khr>(count);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.data());
+    return formats;
 }
 }  // namespace hgn
