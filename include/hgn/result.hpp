@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <expected>
 
 #include "hgn/types.hpp"
 
@@ -121,3 +122,9 @@ using result::thread_done_khr;
 using result::thread_idle_khr;
 using result::timeout;
 }  // namespace hgn
+
+namespace hgn::detail {
+[[nodiscard]] inline auto make_result(const VkResult res) noexcept -> std::unexpected<result> {
+    return std::unexpected{static_cast<result>(res)};
+}
+}  // namespace hgn::detail
