@@ -72,8 +72,8 @@ template <typename T>
 }
 
 [[nodiscard]] inline auto try_make_window_surface(hgn::instance& instance_ref, window& win) noexcept
-    -> std::expected<ref_w<hgn::surface>, hgn::result> {
-    auto*      surface = static_cast<hgn::surface*>(nullptr);
+    -> std::expected<ref_w<hgn::surface_khr>, hgn::result> {
+    auto*      surface = static_cast<hgn::surface_khr*>(nullptr);
     const auto result  = glfwCreateWindowSurface(&instance_ref, &win, nullptr, &surface);
     if (result != VK_SUCCESS) return hgn::make_result(result);
 
