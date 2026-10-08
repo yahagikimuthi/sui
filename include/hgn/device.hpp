@@ -199,4 +199,11 @@ using surface_format_khr = VkSurfaceFormatKHR;
     vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.data());
     return formats;
 }
+
+using swapchain = VkSwapchainKHR_T;
+
+inline void destroy_swapchain_khr(device& dev, swapchain& target) {
+    vkDestroySwapchainKHR(&dev, &target, nullptr);
+}
+
 }  // namespace hgn
