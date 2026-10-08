@@ -199,6 +199,7 @@ using surface_format_khr = VkSurfaceFormatKHR;
     vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.data());
     return formats;
 }
+
 using present_mode_khr = VkPresentModeKHR;
 
 [[nodiscard]] inline auto get_physical_device_surface_present_modes_khr(
