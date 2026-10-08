@@ -51,6 +51,7 @@ class device final {
 
     [[nodiscard]] auto try_get_device_queue(physical_device& physical) noexcept
         -> std::optional<hgn::queue&> {
+        if (not native_) return std::nullopt;
         return hgn::get_device_queue(*native_, physical.find_queue_families().value());
     }
 
