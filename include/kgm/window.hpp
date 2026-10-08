@@ -28,7 +28,7 @@ inline void destroy_window(window& target) noexcept {
 }
 
 [[nodiscard]] inline auto create_window(
-    const u32 width, const u32 height, std::string_view title
+    const u32 width, const u32 height, const std::string_view title
 ) noexcept -> std::optional<window&> {
     auto* ptr = glfwCreateWindow(
         static_cast<i32>(width),
