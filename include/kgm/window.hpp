@@ -51,7 +51,18 @@ inline void terminate() noexcept {
 
 template <typename T>
     requires std::is_class_v<T>
-inline void set_window_user_pointer(window& win, T&& user) noexcept {
+inline void set_window_user(window& win, T& user) noexcept {
     glfwSetWindowUserPointer(&win, &user);
+}
+
+inline void reset_window_user(window& win) noexcept {
+    glfwSetWindowUserPointer(&win, nullptr);
+}
+
+template <typename T>
+[[nodiscard]] inline auto get_window_user(window& win) noexcept -> std::optional<T&> {
+    auto* user = static_cast<T*>(glfwGetWindowUserPointer(&win));
+    if (user == nullptr) return std::nullopt;
+    return *user;
 }
 }  // namespace kgm
