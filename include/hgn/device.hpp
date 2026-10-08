@@ -22,12 +22,12 @@ using physical_device = VkPhysicalDevice_T;
     auto count   = u32{};
 
     const auto res1 = vkEnumeratePhysicalDevices(&instance_ref, &count, nullptr);
-    if (res1 != VK_SUCCESS) return detail::make_result(res1);
+    if (res1 != VK_SUCCESS) return make_result(res1);
 
     devices.resize(count);
 
     const auto res2 = vkEnumeratePhysicalDevices(&instance_ref, &count, devices.data());
-    if (res2 != VK_SUCCESS) return detail::make_result(res2);
+    if (res2 != VK_SUCCESS) return make_result(res2);
 
     return devices;
 }
@@ -141,7 +141,7 @@ using device = VkDevice_T;
 ) noexcept -> std::expected<ref_w<device>, result> {
     auto*      dev = static_cast<device*>(nullptr);
     const auto res = vkCreateDevice(&physical, &info, nullptr, &dev);
-    if (res != VK_SUCCESS) return detail::make_result(res);
+    if (res != VK_SUCCESS) return make_result(res);
 
     assert(dev != nullptr);
     return std::ref(*dev);

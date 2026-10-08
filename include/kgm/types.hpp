@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 
 namespace kgm {
 using u8  = std::uint8_t;
@@ -18,4 +19,7 @@ using f64 = double;
 
 static_assert(sizeof(f32) == 4);
 static_assert(sizeof(f64) == 8);
+
+template <typename T>
+using ref_w = std::reference_wrapper<T>;
 }  // namespace kgm

@@ -1,6 +1,11 @@
 #pragma once
 
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
+#include <expected>
+#include <hgn/instance.hpp>
+#include <hgn/surface.hpp>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -64,5 +69,16 @@ template <typename T>
     auto* user = static_cast<T*>(glfwGetWindowUserPointer(&win));
     if (user == nullptr) return std::nullopt;
     return *user;
+}
+
+[[nodiscard]] inline auto try_make_window_surface(hgn::instance& instance_ref, window& win) noexcept
+    -> std::expected<ref_w<hgn::surface>, hgn::result> {
+    auto*      surface = static_cast<hgn::surface*>(nullptr);
+    const auto result  = glfwCreateWindowSurface(&instance_ref, &win, nullptr, &surface);
+    if (result != VK_SUCCESS) return hgn::make_result(result);
+
+    assert(surface != nullptr);
+
+    return *surface;
 }
 }  // namespace kgm
