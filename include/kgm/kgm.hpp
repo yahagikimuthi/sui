@@ -24,4 +24,8 @@ namespace kgm {
     extensions = std::vector<const char*>(extensions_ptr, extensions_ptr + count);
     return extensions;  // NOLINT
 }
+
+inline void poll_events() noexcept {
+    glfwPollEvents();
+}
 }  // namespace kgm
