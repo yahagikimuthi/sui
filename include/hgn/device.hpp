@@ -175,4 +175,15 @@ using queue = VkQueue_T;
     vkGetPhysicalDeviceSurfaceSupportKHR(&physical, indices, &surface, &present_support);
     return present_support == VK_TRUE;
 }
+
+using surface_capabilities_khr = VkSurfaceCapabilitiesKHR;
+
+[[nodiscard]] inline auto get_physical_device_surface_capabilities_khr(
+    physical_device& physical, surface_khr& surface
+) noexcept -> std::expected<surface_capabilities_khr, result> {
+    auto capabilities = surface_capabilities_khr{};
+    auto res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&physical, &surface, &capabilities);
+    if (res != VK_SUCCESS) return make_result(res);
+    return capabilities;
+}
 }  // namespace hgn
