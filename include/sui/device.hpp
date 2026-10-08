@@ -34,7 +34,7 @@ class device final {
         return device{native->get()};
     }
 
-    device(const device&)                             = delete;
+    device(const device&) noexcept                    = delete;
     auto operator=(const device&) noexcept -> device& = delete;
 
     device(device&& other) noexcept : native_{std::exchange(other.native_, std::nullopt)} {}
