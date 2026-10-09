@@ -14,7 +14,7 @@ class wrapper {
   public:
     explicit wrapper() noexcept
         requires std::is_default_constructible_v<Native>
-        : native_{Native{}} {}
+    = default;
     explicit wrapper(Native& native) noexcept : native_{std::optional<Native&>{native}} {}
 
     [[nodiscard]] auto native() noexcept -> Native& {
@@ -42,6 +42,6 @@ class wrapper {
     }
 
   protected:
-    std::variant<std::optional<Native&>, Native> native_;
+    std::variant<std::optional<Native&>, Native> native_{Native{}};
 };
 }  // namespace hgn::detail
