@@ -5,7 +5,6 @@
 #include <expected>
 #include <functional>
 #include <optional>
-#include <string>
 #include <vector>
 
 #include "hgn/detail/vector.hpp"
