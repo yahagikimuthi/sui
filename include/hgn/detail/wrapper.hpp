@@ -3,14 +3,13 @@
 #include <optional>
 #include <variant>
 
-#include "hgn/detail/others.hpp"
 #include "hgn/types.hpp"
 
 namespace hgn::detail {
-// 不完全型をラップする需要はそもそも存在しない
+
+// 完全型のポインタをラップしたい場合は使用する
 template <typename Native>
-    requires(not std::is_reference_v<Native>) and (not std::is_pointer_v<Native>) and
-            (not is_optional_reference_v<Native>)
+    requires std::is_class_v<Native>
 class wrapper {
   public:
     explicit wrapper() noexcept
