@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "hgn/detail/vector.hpp"
+#include "hgn/detail/wrapper.hpp"
 #include "hgn/instance.hpp"
 #include "hgn/others.hpp"
 #include "hgn/result.hpp"
@@ -82,32 +83,26 @@ class vector<queue_family_properties> final
     return queue_families;
 }
 
-using device_queue_create_info = VkDeviceQueueCreateInfo;
-
-class device_queue_create_info_setter final {
+class device_queue_create_info final : public detail::wrapper<VkDeviceQueueCreateInfo> {
   public:
-    explicit device_queue_create_info_setter(device_queue_create_info& info) noexcept
-        : info_{info} {
-        info_.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    explicit device_queue_create_info() noexcept {
+        native().sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     }
 
-    auto queue_family_index(const u32 idx) noexcept -> device_queue_create_info_setter& {
-        info_.queueFamilyIndex = idx;
+    auto queue_family_index(const u32 idx) noexcept -> device_queue_create_info& {
+        native().queueFamilyIndex = idx;
         return *this;
     }
 
-    auto queue_count(const u32 cnt) noexcept -> device_queue_create_info_setter& {
-        info_.queueCount = cnt;
+    auto queue_count(const u32 cnt) noexcept -> device_queue_create_info& {
+        native().queueCount = cnt;
         return *this;
     }
 
-    auto queue_priorities(f32& priority) noexcept -> device_queue_create_info_setter& {
-        info_.pQueuePriorities = &priority;
+    auto queue_priorities(f32& priority) noexcept -> device_queue_create_info& {
+        native().pQueuePriorities = &priority;
         return *this;
     }
-
-  private:
-    device_queue_create_info& info_;
 };
 
 using physical_device_features = VkPhysicalDeviceFeatures;
@@ -122,7 +117,7 @@ class device_create_info_setter final {
     auto queue_create_infos(const std::span<const device_queue_create_info> infos) noexcept
         -> device_create_info_setter& {
         info_.queueCreateInfoCount = static_cast<u32>(infos.size());
-        info_.pQueueCreateInfos    = infos.data();
+        info_.pQueueCreateInfos    = &infos.data()->native();
         return *this;
     }
 
