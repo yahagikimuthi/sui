@@ -37,7 +37,7 @@ class wrapper {
                     const auto& out = *ref;
                     return out;
                 },
-                [](const Native& native) noexcept -> const Native& { return native; }
+                [](const Native& native) noexcept -> const Native& { return native; }  // NOLINT
             }
         );
     }
