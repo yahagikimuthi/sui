@@ -11,6 +11,8 @@ template <typename Native, typename Handler = std::monostate>
 class base_vector;
 
 // 完全型の実体配列
+//! HandlerはNativeの参照を持つことが期待されています
+//! アクセスによる変更を配列へ波及させるためです
 template <typename Native, typename Handler>
     requires(std::is_class_v<Native>) and (std::is_class_v<Handler>) and
             std::is_constructible_v<Handler, Native&> and
@@ -91,6 +93,8 @@ class base_vector<Native, Handler> {
     std::optional<Handler> handler_;
 };
 
+// 列挙体配列
+// FIXME ほとんど参照を返さないため直感的記述に欠ける
 template <typename Enum, typename Scoped>
     requires std::is_enum_v<Enum> and std::is_scoped_enum_v<Scoped> and requires(Enum e, Scoped s) {
         static_cast<Enum>(s);
