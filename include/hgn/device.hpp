@@ -5,7 +5,6 @@
 #include <expected>
 #include <functional>
 #include <optional>
-#include <vector>
 
 #include "hgn/detail/vector.hpp"
 #include "hgn/detail/wrapper.hpp"
@@ -66,8 +65,8 @@ class queue_family_properties : public detail::wrapper<VkQueueFamilyProperties> 
 
 template <>
 class vector<queue_family_properties> final
-    : public detail::base_vector<VkQueueFamilyProperties, queue_family_properties> {
-    using base_vector<VkQueueFamilyProperties, queue_family_properties>::base_vector;
+    : public detail::view_vector<VkQueueFamilyProperties, queue_family_properties> {
+    using view_vector<VkQueueFamilyProperties, queue_family_properties>::view_vector;
 };
 
 [[nodiscard]] inline auto get_physical_device_queue_family_properties(
@@ -108,8 +107,8 @@ class device_queue_create_info final : public detail::wrapper<VkDeviceQueueCreat
 
 template <>
 class vector<device_queue_create_info> final
-    : public detail::base_vector<VkDeviceQueueCreateInfo, device_queue_create_info> {
-    using base_vector<VkDeviceQueueCreateInfo, device_queue_create_info>::base_vector;
+    : public detail::view_vector<VkDeviceQueueCreateInfo, device_queue_create_info> {
+    using view_vector<VkDeviceQueueCreateInfo, device_queue_create_info>::view_vector;
 };
 
 using physical_device_features = VkPhysicalDeviceFeatures;
@@ -215,8 +214,8 @@ class surface_format_khr final : public detail::wrapper<VkSurfaceFormatKHR> {
 
 template <>
 class vector<surface_format_khr>
-    : public detail::base_vector<VkSurfaceFormatKHR, surface_format_khr> {
-    using base_vector<VkSurfaceFormatKHR, surface_format_khr>::base_vector;
+    : public detail::view_vector<VkSurfaceFormatKHR, surface_format_khr> {
+    using view_vector<VkSurfaceFormatKHR, surface_format_khr>::view_vector;
 };
 
 [[nodiscard]] inline auto get_physical_device_surface_formats_khr(
@@ -230,9 +229,32 @@ class vector<surface_format_khr>
     return formats;
 }
 
+class present_mode_khr {
+  public:
+    explicit present_mode_khr(VkPresentModeKHR& native) noexcept : native_{native} {}
+
+    auto operator=(present_mode_khr_t scoped) noexcept -> present_mode_khr& {
+        native_ = static_cast<VkPresentModeKHR>(scoped);
+        return *this;
+    }
+
+    [[nodiscard]] auto operator==(const present_mode_khr_t scoped) noexcept -> bool {
+        return static_cast<VkPresentModeKHR>(scoped) == native_;
+    }
+
+    [[nodiscard]] operator present_mode_khr_t() const noexcept {
+        return static_cast<present_mode_khr_t>(native_);
+    }
+
+    [[nodiscard]] auto native() noexcept -> VkPresentModeKHR& { return native_; }
+
+  private:
+    VkPresentModeKHR& native_;
+};
+
 template <>
-class vector<present_mode_khr> : public detail::base_vector<VkPresentModeKHR, present_mode_khr> {
-    using base_vector<VkPresentModeKHR, present_mode_khr>::base_vector;
+class vector<present_mode_khr> : public detail::view_vector<VkPresentModeKHR, present_mode_khr> {
+    using view_vector<VkPresentModeKHR, present_mode_khr>::view_vector;
 };
 
 [[nodiscard]] inline auto get_physical_device_surface_present_modes_khr(
@@ -243,7 +265,7 @@ class vector<present_mode_khr> : public detail::base_vector<VkPresentModeKHR, pr
         vkGetPhysicalDeviceSurfacePresentModesKHR(&physical, &surface, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 
-    auto       modes = vector<present_mode_khr>(count, present_mode_immediate_khr);
+    auto       modes = vector<present_mode_khr>(count);
     const auto res2 =
         vkGetPhysicalDeviceSurfacePresentModesKHR(&physical, &surface, &count, modes.native_data());
     if (res2 != VK_SUCCESS) return make_result(res2);
