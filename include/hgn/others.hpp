@@ -47,7 +47,7 @@ inline constexpr auto queue_video_encode_bit_khr = queue_flag_bits::video_encode
 inline constexpr auto queue_optical_flow_bit_nv  = queue_flag_bits::optical_flow_nv;
 inline constexpr auto queue_flag_bits_max_enum   = queue_flag_bits::max;
 
-enum class format : i32 { b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB };
+enum class format : u8 { b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB };
 
 inline constexpr auto format_b8g8r8a8_srgb = format::b8g8r8a8_srgb;
 
