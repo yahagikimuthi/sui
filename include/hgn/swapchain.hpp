@@ -4,6 +4,8 @@
 #include <cassert>
 #include <expected>
 
+#include "hgn/detail/vector.hpp"
+#include "hgn/detail/wrapper.hpp"
 #include "hgn/device.hpp"
 #include "hgn/result.hpp"
 #include "hgn/surface.hpp"
@@ -98,6 +100,27 @@ using swapchain = VkSwapchainKHR_T;
 
     return std::ref(*chain);
 }
+
+using image = VkImage_T;
+
+template <>
+class vector<image> : public detail::base_vector<image*> {
+    using base_vector<image*>::base_vector;
+};
+
+[[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain& chain) noexcept
+    -> std::expected<vector<image>, result> {
+    auto       count = u32{};
+    const auto res1  = vkGetSwapchainImagesKHR(&dev, &chain, &count, nullptr);
+    if (res1 != VK_SUCCESS) return make_result(res1);
+
+    auto images = vector<image>(count);
+
+    const auto res2 = vkGetSwapchainImagesKHR(&dev, &chain, &count, images.native_data());
+    if (res2 != VK_SUCCESS) return make_result(res2);
+
+    return images;
+};
 
 inline void destroy_swapchain_khr(device& dev, swapchain& target) {
     vkDestroySwapchainKHR(&dev, &target, nullptr);
