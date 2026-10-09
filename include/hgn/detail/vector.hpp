@@ -6,18 +6,16 @@
 #include <variant>
 #include <vector>
 
-#include "hgn/types.hpp"
-
 namespace hgn::detail {
 template <typename Native, typename Handler = std::monostate>
 class base_vector;
 
 // 完全型の実体配列
 template <typename Native, typename Handler>
-    requires std::is_default_constructible_v<Handler> and
+    requires std::is_class_v<Native> and std::is_class_v<Handler> and
+             std::is_default_constructible_v<Handler> and
              std::is_constructible_v<Handler, Native&> and
-             (not std::same_as<Handler, std::monostate>) and (not std::is_reference_v<Native>) and
-             (std::is_move_constructible_v<Handler>) and (not std::is_const_v<Native>)
+             (not std::same_as<Handler, std::monostate>) and (std::is_move_constructible_v<Handler>)
 class base_vector<Native, Handler> {
   public:
     explicit base_vector() noexcept = default;
@@ -86,6 +84,7 @@ class base_vector<Native, Handler> {
 
 // 不完全型のポインタ配列
 template <typename Native>
+    requires std::is_class_v<Native>
 class base_vector<Native*> {
   public:
     explicit base_vector() noexcept = default;
@@ -150,7 +149,7 @@ class base_vector<Native*> {
 
   private:
     std::vector<Native*>   vec_;
-    std::optional<Native&> native_;
+    std::optional<Native&> native_{std::nullopt};
 };
 }  // namespace hgn::detail
 
