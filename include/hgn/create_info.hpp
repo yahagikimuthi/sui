@@ -29,11 +29,9 @@ class instance_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const native_instance_create_info& {
-        return native_;
-    }
+    [[nodiscard]] auto native() const noexcept -> const VkInstanceCreateInfo& { return native_; }
 
   private:
-    native_instance_create_info native_{};
+    VkInstanceCreateInfo native_{};
 };
 }  // namespace hgn
