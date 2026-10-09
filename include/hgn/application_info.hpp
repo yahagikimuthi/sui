@@ -10,43 +10,43 @@ using native_application_info = VkApplicationInfo;
 
 class application_info final {
   public:
-    explicit application_info() noexcept { info_.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO; }
+    explicit application_info() noexcept { native_.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO; }
 
     template <typename T>
         requires detail::is_string_literal_v<T>
     auto application_name(const T& name) noexcept -> application_info& {
-        info_.pApplicationName = name;
+        native_.pApplicationName = name;
         return *this;
     }
 
     auto application_version(const u32 major, const u32 minor, const u32 patch) noexcept
         -> application_info& {
-        info_.applicationVersion = detail::make_version(major, minor, patch);
+        native_.applicationVersion = detail::make_version(major, minor, patch);
         return *this;
     }
 
     template <typename T>
         requires detail::is_string_literal_v<T>
     auto engine_name(const T& name) noexcept -> application_info& {
-        info_.pEngineName = name;
+        native_.pEngineName = name;
         return *this;
     }
 
     auto engine_version(const u32 major, const u32 minor, const u32 patch) noexcept
         -> application_info& {
-        info_.engineVersion = detail::make_version(major, minor, patch);
+        native_.engineVersion = detail::make_version(major, minor, patch);
         return *this;
     }
 
     auto api_version(const u32 major, const u32 minor, const u32 patch) noexcept
         -> application_info& {
-        info_.apiVersion = VK_MAKE_API_VERSION(0, major, minor, patch);
+        native_.apiVersion = VK_MAKE_API_VERSION(0, major, minor, patch);
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const native_application_info& { return info_; }
+    [[nodiscard]] auto native() const noexcept -> const native_application_info& { return native_; }
 
   private:
-    native_application_info info_{};
+    native_application_info native_{};
 };
 }  // namespace hgn
