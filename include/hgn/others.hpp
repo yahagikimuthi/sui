@@ -64,4 +64,6 @@ inline constexpr auto present_mode_fifo_khr    = present_mode_khr_t::fifo;
 inline constexpr auto present_mode_mailbox_khr = present_mode_khr_t::mailbox;
 
 using extent2d = VkExtent2D;
+
+inline constexpr auto* khr_swapchain_extention_name = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 }  // namespace hgn
