@@ -16,7 +16,8 @@ class base_vector;
 template <typename Native, typename Handler>
     requires std::is_default_constructible_v<Handler> and
              std::is_constructible_v<Handler, Native&> and
-             (not std::same_as<Handler, std::monostate>)
+             (not std::same_as<Handler, std::monostate>) and (not std::is_reference_v<Native>) and
+             (std::is_move_constructible_v<Handler>) and (not std::is_const_v<Native>)
 class base_vector<Native, Handler> {
   public:
     explicit base_vector() noexcept = default;
