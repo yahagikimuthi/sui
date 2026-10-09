@@ -7,6 +7,7 @@
 
 #include "hgn/create_info.hpp"
 #include "hgn/detail/vector.hpp"
+#include "hgn/detail/wrapper.hpp"
 #include "hgn/result.hpp"
 #include "hgn/types.hpp"
 
