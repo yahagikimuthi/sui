@@ -4,7 +4,6 @@
 #include <span>
 
 #include "hgn/detail/others.hpp"
-#include "hgn/detail/wrapper.hpp"
 #include "hgn/types.hpp"
 
 namespace hgn {
