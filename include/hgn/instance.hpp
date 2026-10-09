@@ -24,11 +24,9 @@ using instance = VkInstance_T;
     return std::ref(*ins);
 }
 
-using native_layer_properties = VkLayerProperties;
-
-class layer_properties final : public detail::wrapper<native_layer_properties> {
+class layer_properties final : public detail::wrapper<VkLayerProperties> {
   public:
-    using wrapper<native_layer_properties>::wrapper;
+    using wrapper<VkLayerProperties>::wrapper;
 
     [[nodiscard]] auto name() const noexcept -> std::string_view {
         const auto out = std::string_view{static_cast<const char*>(native().layerName)};
@@ -37,9 +35,8 @@ class layer_properties final : public detail::wrapper<native_layer_properties> {
 };
 
 template <>
-class vector<layer_properties>
-    : public detail::base_vector<native_layer_properties, layer_properties> {
-    using detail::base_vector<native_layer_properties, layer_properties>::base_vector;
+class vector<layer_properties> : public detail::base_vector<VkLayerProperties, layer_properties> {
+    using detail::base_vector<VkLayerProperties, layer_properties>::base_vector;
 };
 
 [[nodiscard]] inline auto try_enumerate_instance_layer_properties() noexcept
