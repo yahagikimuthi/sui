@@ -186,8 +186,8 @@ class surface_capabilities_khr : public detail::wrapper<VkSurfaceCapabilitiesKHR
 
     [[nodiscard]] auto max_image_count() const noexcept -> u32 { return native().maxImageCount; }
 
-    [[nodiscard]] auto current_transform() const noexcept -> u32 {
-        return native().currentTransform;
+    [[nodiscard]] auto current_transform() const noexcept -> surface_transform_flag_bits_khr {
+        return static_cast<surface_transform_flag_bits_khr>(native().currentTransform);
     }
 };
 
@@ -200,17 +200,33 @@ class surface_capabilities_khr : public detail::wrapper<VkSurfaceCapabilitiesKHR
     if (res != VK_SUCCESS) return make_result(res);
     return capabilities;
 }
+class surface_format_khr final : public detail::wrapper<VkSurfaceFormatKHR> {
+  public:
+    using wrapper<VkSurfaceFormatKHR>::wrapper;
 
-using surface_format_khr = VkSurfaceFormatKHR;
+    [[nodiscard]] auto setting_format() const noexcept -> format {
+        return static_cast<format>(native().format);
+    }
+
+    [[nodiscard]] auto color_space() const noexcept -> color_space_khr {
+        return static_cast<color_space_khr>(native().colorSpace);
+    }
+};
+
+template <>
+class vector<surface_format_khr>
+    : public detail::base_vector<VkSurfaceFormatKHR, surface_format_khr> {
+    using base_vector<VkSurfaceFormatKHR, surface_format_khr>::base_vector;
+};
 
 [[nodiscard]] inline auto get_physical_device_surface_formats_khr(
     physical_device& physical, surface_khr& surface
-) noexcept -> std::vector<surface_format_khr> {
+) noexcept -> vector<surface_format_khr> {
     auto count = u32{};
     vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, nullptr);
 
-    auto formats = std::vector<surface_format_khr>(count);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.data());
+    auto formats = vector<surface_format_khr>(count);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.native_data());
     return formats;
 }
 
