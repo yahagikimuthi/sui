@@ -174,26 +174,26 @@ class base_vector<Enum, Scoped> {
 
 // 不完全型のポインタ配列
 template <typename Native>
-    requires std::is_class_v<Native>
-class base_vector<Native*> {
-  public:
-    explicit base_vector() noexcept = default;
-    explicit base_vector(const std::size_t n) noexcept { vec_.resize(n); }
+    requires std::is_pointer_v<Native>
+class pointer_vector {
+    using pointer    = Native;
+    using value_type = std::remove_pointer_t<Native>;
 
-    ~base_vector() noexcept = default;
+  public:
+    explicit pointer_vector() noexcept = default;
+    explicit pointer_vector(const std::size_t n) noexcept { vec_.resize(n); }
+
+    ~pointer_vector() noexcept = default;
 
     class iterator final {
       public:
-        explicit iterator(std::vector<Native*>::iterator it) noexcept : it_{it} {}
+        explicit iterator(std::vector<pointer>::iterator it) noexcept : it_{it} {}
 
-        [[nodiscard]] auto operator*() noexcept -> std::optional<Native&>& {
+        [[nodiscard]] auto operator*() noexcept -> std::optional<value_type&> {
             auto* ptr = *it_;
-            if (ptr == nullptr) {
-                native_.reset();
-            } else {
-                native_ = std::optional<Native&>(*ptr);
-            }
-            return native_;
+            if (ptr == nullptr) return std::nullopt;
+            auto& out = *ptr;
+            return out;
         }
 
         auto operator++() noexcept -> auto& {
@@ -206,8 +206,7 @@ class base_vector<Native*> {
         }
 
       private:
-        std::vector<Native*>::iterator it_;
-        std::optional<Native&>         native_{std::nullopt};
+        std::vector<pointer>::iterator it_;
     };
 
     [[nodiscard]] auto begin() noexcept -> auto { return iterator{vec_.begin()}; }
@@ -218,28 +217,24 @@ class base_vector<Native*> {
 
     [[nodiscard]] auto size() const noexcept -> std::size_t { return vec_.size(); }
 
-    [[nodiscard]] auto operator[](const std::size_t i) noexcept -> std::optional<Native&>& {
+    [[nodiscard]] auto operator[](const std::size_t i) noexcept -> std::optional<value_type&> {
         auto* ptr = vec_[i];
-        if (vec_[i] == nullptr) {
-            native_.reset();
-        } else {
-            native_ = std::optional<Native&>{*ptr};
-        }
-        return native_;
+        if (vec_[i] == nullptr) return std::nullopt;
+        auto& out = *ptr;
+        return out;
     }
 
-    [[nodiscard]] auto native_data() noexcept -> Native** { return vec_.data(); }
-    [[nodiscard]] auto native_data() const noexcept -> const Native** { return vec_.data(); }
+    [[nodiscard]] auto native_data() noexcept -> pointer* { return vec_.data(); }
+    [[nodiscard]] auto native_data() const noexcept -> const pointer* { return vec_.data(); }
 
   protected:
-    base_vector(const base_vector&) noexcept                    = default;
-    auto operator=(const base_vector&) noexcept -> base_vector& = default;
-    base_vector(base_vector&&) noexcept                         = default;
-    auto operator=(base_vector&&) noexcept -> base_vector&      = default;
+    pointer_vector(const pointer_vector&) noexcept                    = default;
+    auto operator=(const pointer_vector&) noexcept -> pointer_vector& = default;
+    pointer_vector(pointer_vector&&) noexcept                         = default;
+    auto operator=(pointer_vector&&) noexcept -> pointer_vector&      = default;
 
   private:
-    std::vector<Native*>   vec_;
-    std::optional<Native&> native_{std::nullopt};
+    std::vector<pointer> vec_;
 };
 }  // namespace hgn::detail
 

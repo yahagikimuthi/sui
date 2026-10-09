@@ -104,8 +104,8 @@ using swapchain = VkSwapchainKHR_T;
 using image = VkImage_T;
 
 template <>
-class vector<image> : public detail::base_vector<image*> {
-    using base_vector<image*>::base_vector;
+class vector<image> : public detail::pointer_vector<image*> {
+    using pointer_vector<image*>::pointer_vector;
 };
 
 [[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain& chain) noexcept

@@ -19,8 +19,8 @@ namespace hgn {
 using physical_device = VkPhysicalDevice_T;
 
 template <>
-class vector<std::optional<physical_device&>> : public detail::base_vector<physical_device*> {
-    using base_vector<physical_device*>::base_vector;
+class vector<std::optional<physical_device&>> : public detail::pointer_vector<physical_device*> {
+    using pointer_vector<physical_device*>::pointer_vector;
 };
 
 [[nodiscard]] inline auto try_enumerate_physical_devices(instance& instance_ref) noexcept
