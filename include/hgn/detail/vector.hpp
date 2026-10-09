@@ -21,7 +21,7 @@ class view_vector {
         vec_.resize(n);
     }
 
-    explicit view_vector(const std::size_t n, Handler&& handler) noexcept
+    explicit view_vector(const std::size_t n, const Handler& handler) noexcept
         requires std::copy_constructible<Native> and requires {
             { handler.native() } noexcept -> std::convertible_to<Native>;
         }
