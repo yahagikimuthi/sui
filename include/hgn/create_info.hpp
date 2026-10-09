@@ -7,8 +7,6 @@
 #include "hgn/detail/wrapper.hpp"
 
 namespace hgn {
-using native_instance_create_info = VkInstanceCreateInfo;
-
 class instance_create_info final : public detail::wrapper<VkInstanceCreateInfo> {
   public:
     explicit instance_create_info() { native().sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO; }
