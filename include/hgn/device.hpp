@@ -89,6 +89,8 @@ class device_queue_create_info final : public detail::wrapper<VkDeviceQueueCreat
         native().sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     }
 
+    using wrapper<VkDeviceQueueCreateInfo>::wrapper;
+
     auto queue_family_index(const u32 idx) noexcept -> device_queue_create_info& {
         native().queueFamilyIndex = idx;
         return *this;
@@ -105,6 +107,12 @@ class device_queue_create_info final : public detail::wrapper<VkDeviceQueueCreat
     }
 };
 
+template <>
+class vector<device_queue_create_info> final
+    : public detail::base_vector<VkDeviceQueueCreateInfo, device_queue_create_info> {
+    using base_vector<VkDeviceQueueCreateInfo, device_queue_create_info>::base_vector;
+};
+
 using physical_device_features = VkPhysicalDeviceFeatures;
 using device_create_info       = VkDeviceCreateInfo;
 
@@ -114,10 +122,10 @@ class device_create_info_setter final {
         info_.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     }
 
-    auto queue_create_infos(const std::span<const device_queue_create_info> infos) noexcept
+    auto queue_create_infos(const vector<device_queue_create_info>& infos) noexcept
         -> device_create_info_setter& {
         info_.queueCreateInfoCount = static_cast<u32>(infos.size());
-        info_.pQueueCreateInfos    = &infos.data()->native();
+        info_.pQueueCreateInfos    = infos.native_data();
         return *this;
     }
 
