@@ -66,4 +66,35 @@ inline constexpr auto present_mode_mailbox_khr = present_mode_khr_t::mailbox;
 using extent2d = VkExtent2D;
 
 inline constexpr auto* khr_swapchain_extention_name = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+
+enum class surface_transform_flag_bits_khr : i32 {
+    identity                     = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
+    rotate_90                    = VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR,
+    rotate_180                   = VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR,
+    rotate_270                   = VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR,
+    horizontal_mirror            = VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR,
+    horizontal_mirror_rotate_90  = VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR,
+    horizontal_mirror_rotate_180 = VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR,
+    horizontal_mirror_rotate_270 = VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR,
+    inherit                      = VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR,
+    max                          = VK_SURFACE_TRANSFORM_FLAG_BITS_MAX_ENUM_KHR
+};
+
+inline constexpr auto surface_transform_identity_bit_khr =
+    surface_transform_flag_bits_khr::identity;
+inline constexpr auto surface_transform_rotate_90_bit_khr =
+    surface_transform_flag_bits_khr::rotate_90;
+inline constexpr auto surface_transform_rotate_180_bit_khr =
+    surface_transform_flag_bits_khr::rotate_180;
+inline constexpr auto surface_transform_rotate_270_bit_khr =
+    surface_transform_flag_bits_khr::rotate_270;
+inline constexpr auto surface_transform_horizontal_mirror_bit_khr =
+    surface_transform_flag_bits_khr::horizontal_mirror;
+inline constexpr auto surface_transform_horizontal_mirror_rotate_90_bit_khr =
+    surface_transform_flag_bits_khr::horizontal_mirror_rotate_90;
+inline constexpr auto surface_transform_horizontal_mirror_rotate_180_bit_khr =
+    surface_transform_flag_bits_khr::horizontal_mirror_rotate_180;
+inline constexpr auto surface_transform_horizontal_mirror_rotate_270_bit_khr =
+    surface_transform_flag_bits_khr::horizontal_mirror_rotate_270;
+inline constexpr auto surface_transform_inherit_bit_khr = surface_transform_flag_bits_khr::inherit;
 }  // namespace hgn

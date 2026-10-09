@@ -174,13 +174,29 @@ using queue = VkQueue_T;
     return present_support == VK_TRUE;
 }
 
-using surface_capabilities_khr = VkSurfaceCapabilitiesKHR;
+class surface_capabilities_khr : public detail::wrapper<VkSurfaceCapabilitiesKHR> {
+  public:
+    using wrapper<VkSurfaceCapabilitiesKHR>::wrapper;
+
+    [[nodiscard]] auto current_extent() const noexcept -> extent2d {
+        return native().currentExtent;
+    }
+
+    [[nodiscard]] auto min_image_count() const noexcept -> u32 { return native().minImageCount; }
+
+    [[nodiscard]] auto max_image_count() const noexcept -> u32 { return native().maxImageCount; }
+
+    [[nodiscard]] auto current_transform() const noexcept -> u32 {
+        return native().currentTransform;
+    }
+};
 
 [[nodiscard]] inline auto try_get_physical_device_surface_capabilities_khr(
     physical_device& physical, surface_khr& surface
 ) noexcept -> std::expected<surface_capabilities_khr, result> {
     auto capabilities = surface_capabilities_khr{};  // NOLINT
-    auto res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&physical, &surface, &capabilities);
+    auto res =
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&physical, &surface, &capabilities.native());
     if (res != VK_SUCCESS) return make_result(res);
     return capabilities;
 }
