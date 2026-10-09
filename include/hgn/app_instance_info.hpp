@@ -47,7 +47,9 @@ class application_info final : public detail::wrapper<VkApplicationInfo> {
 
 class instance_create_info final : public detail::wrapper<VkInstanceCreateInfo> {
   public:
-    explicit instance_create_info() { native().sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO; }
+    explicit instance_create_info() noexcept {
+        native().sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    }
 
     auto app_info(const application_info& app) noexcept -> instance_create_info& {
         native().pApplicationInfo = &app.native();
