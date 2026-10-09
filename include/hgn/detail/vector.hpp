@@ -25,6 +25,16 @@ class base_vector<Native, Handler> {
         vec_.resize(n);
     }
 
+    explicit base_vector(std::initializer_list<Handler> handlers) noexcept
+        requires std::copy_constructible<Native> and requires(Handler handler) {
+            { handler.native() } noexcept -> std::convertible_to<Native>;
+        }
+    {
+        for (auto&& handler : handlers) {
+            vec_.emplace_back(handler.native());
+        }
+    }
+
     ~base_vector() noexcept = default;
 
     class iterator final {
