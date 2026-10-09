@@ -15,7 +15,7 @@ using instance = VkInstance_T;
 [[nodiscard]] inline auto try_make_instance(const instance_create_info& info) noexcept
     -> std::expected<ref_w<instance>, result> {
     auto*      ins = static_cast<instance*>(nullptr);
-    const auto res = vkCreateInstance(&info, nullptr, &ins);
+    const auto res = vkCreateInstance(&info.native(), nullptr, &ins);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(ins != nullptr);
