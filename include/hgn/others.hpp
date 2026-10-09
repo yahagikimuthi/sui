@@ -55,7 +55,7 @@ enum class color_space_khr : u8 { srgb_nonlinear = VK_COLOR_SPACE_SRGB_NONLINEAR
 
 inline constexpr auto color_space_srgb_nonlinear_khr = color_space_khr::srgb_nonlinear;
 
-enum class present_mode_khr : i32 {
+enum class present_mode_khr_t : i32 {
     immediate                 = VK_PRESENT_MODE_IMMEDIATE_KHR,
     mailbox                   = VK_PRESENT_MODE_MAILBOX_KHR,
     fifo                      = VK_PRESENT_MODE_FIFO_KHR,
@@ -65,13 +65,14 @@ enum class present_mode_khr : i32 {
     max                       = VK_PRESENT_MODE_MAX_ENUM_KHR
 };
 
-inline constexpr auto present_mode_immediate_khr    = present_mode_khr::immediate;
-inline constexpr auto present_mode_mailbox_khr      = present_mode_khr::mailbox;
-inline constexpr auto present_mode_fifo_khr         = present_mode_khr::fifo;
-inline constexpr auto present_mode_fifo_relaxed_khr = present_mode_khr::fifo_relaxed;
+inline constexpr auto present_mode_immediate_khr    = present_mode_khr_t::immediate;
+inline constexpr auto present_mode_mailbox_khr      = present_mode_khr_t::mailbox;
+inline constexpr auto present_mode_fifo_khr         = present_mode_khr_t::fifo;
+inline constexpr auto present_mode_fifo_relaxed_khr = present_mode_khr_t::fifo_relaxed;
 inline constexpr auto present_mode_shared_demand_refresh_khr =
-    present_mode_khr::shared_demand_refresh;
-inline constexpr auto present_mode_continuous_refresh = present_mode_khr::shared_continuous_refresh;
+    present_mode_khr_t::shared_demand_refresh;
+inline constexpr auto present_mode_continuous_refresh =
+    present_mode_khr_t::shared_continuous_refresh;
 
 using extent2d = VkExtent2D;
 
