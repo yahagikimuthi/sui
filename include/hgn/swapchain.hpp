@@ -104,17 +104,17 @@ using swapchain = VkSwapchainKHR_T;
 using image = VkImage_T;
 
 template <>
-class vector<image> : public detail::pointer_vector<image*> {
+class proxy_vector<image> : public detail::pointer_vector<image*> {
     using pointer_vector<image*>::pointer_vector;
 };
 
 [[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain& chain) noexcept
-    -> std::expected<vector<image>, result> {
+    -> std::expected<proxy_vector<image>, result> {
     auto       count = u32{};
     const auto res1  = vkGetSwapchainImagesKHR(&dev, &chain, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 
-    auto images = vector<image>(count);
+    auto images = proxy_vector<image>(count);
 
     const auto res2 = vkGetSwapchainImagesKHR(&dev, &chain, &count, images.native_data());
     if (res2 != VK_SUCCESS) return make_result(res2);

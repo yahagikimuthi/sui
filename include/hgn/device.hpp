@@ -18,18 +18,19 @@ namespace hgn {
 using physical_device = VkPhysicalDevice_T;
 
 template <>
-class vector<std::optional<physical_device&>> : public detail::pointer_vector<physical_device*> {
+class proxy_vector<std::optional<physical_device&>>
+    : public detail::pointer_vector<physical_device*> {
     using pointer_vector<physical_device*>::pointer_vector;
 };
 
 [[nodiscard]] inline auto try_enumerate_physical_devices(instance& instance_ref) noexcept
-    -> std::expected<vector<std::optional<physical_device&>>, result> {
+    -> std::expected<proxy_vector<std::optional<physical_device&>>, result> {
     auto count = u32{};
 
     const auto res1 = vkEnumeratePhysicalDevices(&instance_ref, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 
-    auto devices = vector<std::optional<physical_device&>>(count);
+    auto devices = proxy_vector<std::optional<physical_device&>>(count);
 
     const auto res2 = vkEnumeratePhysicalDevices(&instance_ref, &count, devices.native_data());
     if (res2 != VK_SUCCESS) return make_result(res2);
@@ -64,18 +65,18 @@ class queue_family_properties : public detail::wrapper<VkQueueFamilyProperties> 
 };
 
 template <>
-class vector<queue_family_properties> final
+class proxy_vector<queue_family_properties> final
     : public detail::view_vector<VkQueueFamilyProperties, queue_family_properties> {
     using view_vector<VkQueueFamilyProperties, queue_family_properties>::view_vector;
 };
 
 [[nodiscard]] inline auto get_physical_device_queue_family_properties(
     physical_device& device
-) noexcept -> vector<queue_family_properties> {
+) noexcept -> proxy_vector<queue_family_properties> {
     auto count = u32{};
     vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, nullptr);
 
-    auto queue_families = vector<queue_family_properties>(count);
+    auto queue_families = proxy_vector<queue_family_properties>(count);
     vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, queue_families.native_data());
 
     return queue_families;
@@ -106,7 +107,7 @@ class device_queue_create_info final : public detail::wrapper<VkDeviceQueueCreat
 };
 
 template <>
-class vector<device_queue_create_info> final
+class proxy_vector<device_queue_create_info> final
     : public detail::view_vector<VkDeviceQueueCreateInfo, device_queue_create_info> {
     using view_vector<VkDeviceQueueCreateInfo, device_queue_create_info>::view_vector;
 };
@@ -119,7 +120,7 @@ class device_create_info final : public detail::wrapper<VkDeviceCreateInfo> {
         native().sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     }
 
-    auto queue_create_infos(const vector<device_queue_create_info>& infos) noexcept
+    auto queue_create_infos(const proxy_vector<device_queue_create_info>& infos) noexcept
         -> device_create_info& {
         native().queueCreateInfoCount = static_cast<u32>(infos.size());
         native().pQueueCreateInfos    = infos.native_data();
@@ -213,18 +214,18 @@ class surface_format_khr final : public detail::wrapper<VkSurfaceFormatKHR> {
 };
 
 template <>
-class vector<surface_format_khr>
+class proxy_vector<surface_format_khr>
     : public detail::view_vector<VkSurfaceFormatKHR, surface_format_khr> {
     using view_vector<VkSurfaceFormatKHR, surface_format_khr>::view_vector;
 };
 
 [[nodiscard]] inline auto get_physical_device_surface_formats_khr(
     physical_device& physical, surface_khr& surface
-) noexcept -> vector<surface_format_khr> {
+) noexcept -> proxy_vector<surface_format_khr> {
     auto count = u32{};
     vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, nullptr);
 
-    auto formats = vector<surface_format_khr>(count);
+    auto formats = proxy_vector<surface_format_khr>(count);
     vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.native_data());
     return formats;
 }
@@ -253,19 +254,20 @@ class present_mode_khr {
 };
 
 template <>
-class vector<present_mode_khr> : public detail::view_vector<VkPresentModeKHR, present_mode_khr> {
+class proxy_vector<present_mode_khr>
+    : public detail::view_vector<VkPresentModeKHR, present_mode_khr> {
     using view_vector<VkPresentModeKHR, present_mode_khr>::view_vector;
 };
 
 [[nodiscard]] inline auto get_physical_device_surface_present_modes_khr(
     physical_device& physical, surface_khr& surface
-) noexcept -> std::expected<vector<present_mode_khr>, result> {
+) noexcept -> std::expected<proxy_vector<present_mode_khr>, result> {
     auto       count = u32{};
     const auto res1 =
         vkGetPhysicalDeviceSurfacePresentModesKHR(&physical, &surface, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 
-    auto       modes = vector<present_mode_khr>(count);
+    auto       modes = proxy_vector<present_mode_khr>(count);
     const auto res2 =
         vkGetPhysicalDeviceSurfacePresentModesKHR(&physical, &surface, &count, modes.native_data());
     if (res2 != VK_SUCCESS) return make_result(res2);

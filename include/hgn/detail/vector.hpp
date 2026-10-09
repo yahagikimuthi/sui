@@ -153,5 +153,5 @@ class pointer_vector {
 
 namespace hgn {
 template <typename T>
-class vector;
+class proxy_vector;
 }

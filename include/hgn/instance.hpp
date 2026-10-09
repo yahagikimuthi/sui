@@ -35,17 +35,18 @@ class layer_properties final : public detail::wrapper<VkLayerProperties> {
 };
 
 template <>
-class vector<layer_properties> : public detail::view_vector<VkLayerProperties, layer_properties> {
+class proxy_vector<layer_properties>
+    : public detail::view_vector<VkLayerProperties, layer_properties> {
     using detail::view_vector<VkLayerProperties, layer_properties>::view_vector;
 };
 
 [[nodiscard]] inline auto try_enumerate_instance_layer_properties() noexcept
-    -> std::expected<vector<layer_properties>, result> {
+    -> std::expected<proxy_vector<layer_properties>, result> {
     auto count = u32{};
     if (auto res = vkEnumerateInstanceLayerProperties(&count, nullptr); res != VK_SUCCESS)
         return make_result(res);
 
-    auto properties = vector<layer_properties>(count);
+    auto properties = proxy_vector<layer_properties>(count);
     if (count <= 0) return properties;
     if (auto res = vkEnumerateInstanceLayerProperties(&count, properties.native_data());
         res != VK_SUCCESS)
