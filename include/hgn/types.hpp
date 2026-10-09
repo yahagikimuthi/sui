@@ -22,4 +22,9 @@ static_assert(sizeof(f64) == 8);
 
 template <typename T>
 using ref_w = std::reference_wrapper<T>;
+
+template <typename... Ts>
+struct overloaded final : public Ts... {
+    using Ts::operator()...;
+};
 }  // namespace hgn

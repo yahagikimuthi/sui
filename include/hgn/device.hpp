@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "hgn/detail/vector.hpp"
 #include "hgn/instance.hpp"
 #include "hgn/others.hpp"
 #include "hgn/result.hpp"
@@ -17,17 +18,21 @@
 namespace hgn {
 using physical_device = VkPhysicalDevice_T;
 
+template <>
+class vector<std::optional<physical_device&>> : public detail::base_vector<physical_device*> {
+    using base_vector<physical_device*>::base_vector;
+};
+
 [[nodiscard]] inline auto try_enumerate_physical_devices(instance& instance_ref) noexcept
-    -> std::expected<std::vector<physical_device*>, result> {
-    auto devices = std::vector<physical_device*>{};
-    auto count   = u32{};
+    -> std::expected<vector<std::optional<physical_device&>>, result> {
+    auto count = u32{};
 
     const auto res1 = vkEnumeratePhysicalDevices(&instance_ref, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 
-    devices.resize(count);
+    auto devices = vector<std::optional<physical_device&>>(count);
 
-    const auto res2 = vkEnumeratePhysicalDevices(&instance_ref, &count, devices.data());
+    const auto res2 = vkEnumeratePhysicalDevices(&instance_ref, &count, devices.native_data());
     if (res2 != VK_SUCCESS) return make_result(res2);
 
     return devices;

@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.h>
 #include <cassert>
 #include <expected>
-#include <optional>
 #include <string_view>
 
 #include "hgn/create_info.hpp"
@@ -26,25 +25,20 @@ using instance = VkInstance_T;
 
 using native_layer_properties = VkLayerProperties;
 
-class layer_properties final {};
-
-class layer_properties_view final {
+class layer_properties final : public detail::wrapper<native_layer_properties> {
   public:
-    explicit layer_properties_view(native_layer_properties& prop) noexcept : prop_{prop} {}
+    using wrapper<native_layer_properties>::wrapper;
 
     [[nodiscard]] auto name() const noexcept -> std::string_view {
-        const auto out = std::string_view{static_cast<char*>(prop_->layerName)};
+        const auto out = std::string_view{static_cast<const char*>(native().layerName)};
         return out;
     }
-
-  private:
-    std::optional<native_layer_properties&> prop_;
 };
 
 template <>
 class vector<layer_properties>
-    : public detail::base_vector<native_layer_properties, layer_properties_view> {
-    using detail::base_vector<native_layer_properties, layer_properties_view>::base_vector;
+    : public detail::base_vector<native_layer_properties, layer_properties> {
+    using detail::base_vector<native_layer_properties, layer_properties>::base_vector;
 };
 
 [[nodiscard]] inline auto try_enumerate_instance_layer_properties() noexcept
