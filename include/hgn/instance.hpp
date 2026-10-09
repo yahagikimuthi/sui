@@ -5,7 +5,7 @@
 #include <expected>
 #include <string_view>
 
-#include "hgn/create_info.hpp"
+#include "hgn/app_instance_info.hpp"
 #include "hgn/detail/vector.hpp"
 #include "hgn/detail/wrapper.hpp"
 #include "hgn/result.hpp"
