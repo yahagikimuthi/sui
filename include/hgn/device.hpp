@@ -113,34 +113,30 @@ class vector<device_queue_create_info> final
 };
 
 using physical_device_features = VkPhysicalDeviceFeatures;
-using device_create_info       = VkDeviceCreateInfo;
 
-class device_create_info_setter final {
+class device_create_info final : public detail::wrapper<VkDeviceCreateInfo> {
   public:
-    explicit device_create_info_setter(device_create_info& info) : info_{info} {
-        info_.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    explicit device_create_info() noexcept {
+        native().sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     }
 
     auto queue_create_infos(const vector<device_queue_create_info>& infos) noexcept
-        -> device_create_info_setter& {
-        info_.queueCreateInfoCount = static_cast<u32>(infos.size());
-        info_.pQueueCreateInfos    = infos.native_data();
+        -> device_create_info& {
+        native().queueCreateInfoCount = static_cast<u32>(infos.size());
+        native().pQueueCreateInfos    = infos.native_data();
         return *this;
     }
 
-    auto features(physical_device_features& features) noexcept -> device_create_info_setter& {
-        info_.pEnabledFeatures = &features;
+    auto features(physical_device_features& features) noexcept -> device_create_info& {
+        native().pEnabledFeatures = &features;
         return *this;
     }
 
-    auto extensions(std::span<const char* const> vec) noexcept -> device_create_info_setter& {
-        info_.enabledExtensionCount   = static_cast<u32>(vec.size());
-        info_.ppEnabledExtensionNames = vec.data();
+    auto extensions(std::span<const char* const> vec) noexcept -> device_create_info& {
+        native().enabledExtensionCount   = static_cast<u32>(vec.size());
+        native().ppEnabledExtensionNames = vec.data();
         return *this;
     }
-
-  private:
-    device_create_info& info_;
 };
 
 using device = VkDevice_T;
@@ -149,7 +145,7 @@ using device = VkDevice_T;
     physical_device& physical, const device_create_info& info
 ) noexcept -> std::expected<ref_w<device>, result> {
     auto*      dev = static_cast<device*>(nullptr);
-    const auto res = vkCreateDevice(&physical, &info, nullptr, &dev);
+    const auto res = vkCreateDevice(&physical, &info.native(), nullptr, &dev);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(dev != nullptr);
