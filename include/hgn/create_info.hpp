@@ -15,7 +15,7 @@ class instance_create_info_setter final {
     }
 
     auto app_info(const application_info& app) noexcept -> instance_create_info_setter& {
-        info_.pApplicationInfo = &app;
+        info_.pApplicationInfo = &app.native();
         return *this;
     }
 
