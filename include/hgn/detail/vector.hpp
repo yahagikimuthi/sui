@@ -9,13 +9,6 @@
 #include "hgn/types.hpp"
 
 namespace hgn::detail {
-
-template <typename T>
-struct is_reference_optional final : std::false_type {};
-
-template <typename T>
-struct is_reference_optional<std::optional<T&>> final : std::true_type {};
-
 template <typename Native, typename Handler = std::monostate>
 class base_vector;
 
