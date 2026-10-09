@@ -50,27 +50,32 @@ class application_info final {
     VkApplicationInfo native_{};
 };
 
-class instance_create_info final : public detail::wrapper<VkInstanceCreateInfo> {
+class instance_create_info final {
   public:
     explicit instance_create_info() noexcept {
-        native().sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        native_.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     }
 
     auto app_info(const application_info& app) noexcept -> instance_create_info& {
-        native().pApplicationInfo = &app.native();
+        native_.pApplicationInfo = &app.native();
         return *this;
     }
 
     auto layers(const std::span<const char* const> vec) noexcept -> instance_create_info& {
-        native().enabledLayerCount   = static_cast<u32>(vec.size());
-        native().ppEnabledLayerNames = vec.data();
+        native_.enabledLayerCount   = static_cast<u32>(vec.size());
+        native_.ppEnabledLayerNames = vec.data();
         return *this;
     }
 
     auto extensions(const std::span<const char* const> vec) noexcept -> instance_create_info& {
-        native().enabledExtensionCount   = static_cast<u32>(vec.size());
-        native().ppEnabledExtensionNames = vec.data();
+        native_.enabledExtensionCount   = static_cast<u32>(vec.size());
+        native_.ppEnabledExtensionNames = vec.data();
         return *this;
     }
+
+    [[nodiscard]] auto native() const noexcept -> const VkInstanceCreateInfo& { return native_; }
+
+  private:
+    VkInstanceCreateInfo native_{};
 };
 }  // namespace hgn
