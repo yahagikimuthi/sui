@@ -60,32 +60,32 @@ class physical_device_properties_view final {
     const physical_device_properties& prop_;
 };
 
-using queue_family_properties = VkQueueFamilyProperties;
+class queue_family_properties : public detail::wrapper<VkQueueFamilyProperties> {
+  public:
+    using wrapper<VkQueueFamilyProperties>::wrapper;
+
+    [[nodiscard]] auto flags() const noexcept -> queue_flag_bits {
+        return static_cast<queue_flag_bits>(native().queueFlags);
+    }
+};
+
+template <>
+class vector<queue_family_properties> final
+    : public detail::base_vector<VkQueueFamilyProperties, queue_family_properties> {
+    using base_vector<VkQueueFamilyProperties, queue_family_properties>::base_vector;
+};
 
 [[nodiscard]] inline auto get_physical_device_queue_family_properties(
     physical_device& device
-) noexcept -> std::vector<queue_family_properties> {
+) noexcept -> vector<queue_family_properties> {
     auto count = u32{};
     vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, nullptr);
 
-    auto queue_families = std::vector<queue_family_properties>(count);
-    vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, queue_families.data());
+    auto queue_families = vector<queue_family_properties>(count);
+    vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, queue_families.native_data());
 
     return queue_families;
 }
-
-class queue_family_properties_view final {
-  public:
-    explicit queue_family_properties_view(const queue_family_properties& properties) noexcept
-        : prop_{properties} {}
-
-    [[nodiscard]] auto queue_flags() const noexcept -> queue_flag_bits {
-        return static_cast<queue_flag_bits>(prop_.queueFlags);
-    }
-
-  private:
-    const queue_family_properties& prop_;
-};
 
 using device_queue_create_info = VkDeviceQueueCreateInfo;
 
