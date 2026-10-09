@@ -38,27 +38,22 @@ class vector<std::optional<physical_device&>> : public detail::base_vector<physi
     return devices;
 }
 
-using physical_device_properties = VkPhysicalDeviceProperties;
+class physical_device_properties : public detail::wrapper<VkPhysicalDeviceProperties> {
+  public:
+    using wrapper<VkPhysicalDeviceProperties>::wrapper;
+
+    [[nodiscard]] auto name() const noexcept -> std::string_view {
+        const auto* ptr = static_cast<const char*>(native().deviceName);
+        return std::string_view{ptr};
+    }
+};
 
 [[nodiscard]] inline auto get_physical_device_properties(physical_device& device) noexcept
     -> physical_device_properties {
     auto properties = physical_device_properties{};
-    vkGetPhysicalDeviceProperties(&device, &properties);
+    vkGetPhysicalDeviceProperties(&device, &properties.native());
     return properties;
 }
-
-class physical_device_properties_view final {
-  public:
-    explicit physical_device_properties_view(const physical_device_properties& properties) noexcept
-        : prop_{properties} {}
-
-    [[nodiscard]] auto device_name() const noexcept -> std::string {
-        return prop_.deviceName;  // NOLINT
-    }
-
-  private:
-    const physical_device_properties& prop_;
-};
 
 class queue_family_properties : public detail::wrapper<VkQueueFamilyProperties> {
   public:
