@@ -17,9 +17,7 @@ class view_vector {
     explicit view_vector() noexcept = default;
     explicit view_vector(const std::size_t n) noexcept
         requires std::is_default_constructible_v<Native>
-    {
-        vec_.resize(n);
-    }
+        : vec_(n) {}
 
     explicit view_vector(const std::size_t n, const Handler& handler) noexcept
         requires std::copy_constructible<Native> and requires {
@@ -96,7 +94,7 @@ class pointer_vector {
 
   public:
     explicit pointer_vector() noexcept = default;
-    explicit pointer_vector(const std::size_t n) noexcept { vec_.resize(n); }
+    explicit pointer_vector(const std::size_t n) noexcept : vec_(n) {}
 
     ~pointer_vector() noexcept = default;
 
