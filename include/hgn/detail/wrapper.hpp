@@ -8,6 +8,7 @@
 namespace hgn::detail {
 // 不完全型をラップする需要はそもそも存在しない
 template <typename Native>
+    requires(not std::is_reference_v<Native>) and (not std::is_pointer_v<Native>)
 class wrapper {
   public:
     explicit wrapper() noexcept
