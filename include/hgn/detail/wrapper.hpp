@@ -6,8 +6,6 @@
 #include "hgn/types.hpp"
 
 namespace hgn::detail {
-
-// 完全型のポインタをラップしたい場合は使用する
 template <typename Native>
     requires std::is_class_v<Native>
 class wrapper {
@@ -16,6 +14,8 @@ class wrapper {
         requires std::is_default_constructible_v<Native>
     = default;
     explicit wrapper(Native& native) noexcept : native_{std::optional<Native&>{native}} {}
+
+    ~wrapper() noexcept = default;
 
     [[nodiscard]] auto native() noexcept -> Native& {
         return native_.visit(
@@ -42,6 +42,12 @@ class wrapper {
     }
 
   protected:
+    wrapper(const wrapper&) noexcept                    = default;
+    auto operator=(const wrapper&) noexcept -> wrapper& = default;
+    wrapper(wrapper&&) noexcept                         = default;
+    auto operator=(wrapper&&) noexcept -> wrapper&      = default;
+
+  private:
     std::variant<std::optional<Native&>, Native> native_{Native{}};
 };
 }  // namespace hgn::detail
