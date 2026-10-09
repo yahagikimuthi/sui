@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <type_traits>
 #include <variant>
 
 #include "hgn/types.hpp"
@@ -51,3 +52,18 @@ class wrapper {
     std::variant<std::optional<Native&>, Native> native_{Native{}};
 };
 }  // namespace hgn::detail
+
+namespace hgn {
+template <typename Native>
+    requires std::is_class_v<Native>
+class view final : public detail::wrapper<Native> {};
+
+template <typename T>
+struct is_view final : std::false_type {};
+
+template <typename T>
+struct is_view<view<T>> : std::true_type {};
+
+template <typename T>
+inline constexpr auto is_view_v = is_view<T>::value;
+}  // namespace hgn
