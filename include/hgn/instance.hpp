@@ -35,8 +35,8 @@ class layer_properties final : public detail::wrapper<VkLayerProperties> {
 };
 
 template <>
-class vector<layer_properties> : public detail::base_vector<VkLayerProperties, layer_properties> {
-    using detail::base_vector<VkLayerProperties, layer_properties>::base_vector;
+class vector<layer_properties> : public detail::view_vector<VkLayerProperties, layer_properties> {
+    using detail::view_vector<VkLayerProperties, layer_properties>::view_vector;
 };
 
 [[nodiscard]] inline auto try_enumerate_instance_layer_properties() noexcept
