@@ -216,7 +216,7 @@ class base_vector<Native*> {
     [[nodiscard]] auto end() noexcept -> auto { return iterator{vec_.end()}; }
     [[nodiscard]] auto end() const noexcept -> auto { return iterator{vec_.end()}; }
 
-    [[nodiscard]] auto size() const noexcept -> std::size_t;
+    [[nodiscard]] auto size() const noexcept -> std::size_t { return vec_.size(); }
 
     [[nodiscard]] auto operator[](const std::size_t i) noexcept -> std::optional<Native&>& {
         auto* ptr = vec_[i];
