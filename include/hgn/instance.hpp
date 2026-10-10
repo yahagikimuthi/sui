@@ -1,12 +1,14 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <bit>
 #include <cassert>
 #include <expected>
+#include <functional>
 #include <string_view>
+#include <vector>
 
 #include "hgn/app_instance_info.hpp"
-#include "hgn/detail/experimenta.hpp"
 #include "hgn/result.hpp"
 #include "hgn/types.hpp"
 
@@ -23,39 +25,37 @@ using instance = VkInstance_T;
     return std::ref(*ins);
 }
 
-class layer_properties final : public detail::wrapper<VkLayerProperties> {
+class layer_properties final {
   public:
-    using wrapper<VkLayerProperties>::wrapper;
+    explicit layer_properties(const VkLayerProperties& native) : native_{native} {}
 
     [[nodiscard]] auto name() const noexcept -> std::string_view {
-        const auto out = std::string_view{static_cast<const char*>(native().layerName)};
+        const auto out = std::string_view{static_cast<const char*>(native_.layerName)};
         return out;
     }
-};
 
-template <>
-class view<layer_properties> final : public detail::base_view<layer_properties> {
-  public:
-    using base_view<layer_properties>::base_view;
-    [[nodiscard]] auto name() const noexcept -> std::string_view {
-        const auto out = std::string_view{static_cast<const char*>(native().layerName)};
-        return out;
-    }
+  private:
+    VkLayerProperties native_;
 };
 
 [[nodiscard]] inline auto try_enumerate_instance_layer_properties() noexcept
-    -> std::expected<proxy_vector<layer_properties>, result> {
+    -> std::expected<std::vector<layer_properties>, result> {
     auto count = u32{};
     if (auto res = vkEnumerateInstanceLayerProperties(&count, nullptr); res != VK_SUCCESS)
         return make_result(res);
 
-    auto properties = proxy_vector<layer_properties>(count);
-    if (count <= 0) return properties;
-    if (auto res = vkEnumerateInstanceLayerProperties(&count, properties.native_data());
-        res != VK_SUCCESS)
+    auto properties = std::vector<VkLayerProperties>(count);
+    if (auto res = vkEnumerateInstanceLayerProperties(&count, properties.data()); res != VK_SUCCESS)
         return make_result(res);
 
-    return properties;
+    auto out = std::vector<layer_properties>{};
+    out.reserve(count);
+
+    for (auto& property : properties) {
+        out.emplace_back(std::bit_cast<layer_properties>(property));
+    }
+
+    return out;
 }
 
 inline void destroy_instance(instance& ins) noexcept {
