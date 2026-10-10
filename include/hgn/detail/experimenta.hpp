@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace hgn::experimental {
+namespace hgn::detail {
 template <typename T>
     requires std::is_class_v<T> or std::is_enum_v<T>
 class wrapper {
@@ -89,4 +89,4 @@ class proxy_vector<std::optional<T&>> {
   private:
     std::vector<pointer> vec_;
 };
-}  // namespace hgn::experimental
+}  // namespace hgn::detail
