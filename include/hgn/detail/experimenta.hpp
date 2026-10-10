@@ -16,29 +16,38 @@ class wrapper {
     [[nodiscard]] auto native() noexcept -> T& { return native_; }
 
   protected:
-    explicit wrapper(T&& native) : native_{std::move(native)} {}
-    explicit wrapper(const T& native) : native_{native} {}
+    explicit wrapper(T&& native) noexcept : native_{std::move(native)} {}
+    explicit wrapper(const T& native) noexcept : native_{native} {}
 
   private:
     T native_;
 };
+}  // namespace hgn::detail
+
+namespace hgn {
 
 template <typename T>
-    requires std::is_class_v<std::remove_const_t<T>> and
-             std::is_class_v<std::remove_cvref_t<decltype(std::declval<T>().native())>>
-class view final {
-    using native_type = std::remove_cvref_t<decltype(std::declval<T>().native())>;
-    using reference   = std::conditional_t<std::is_const_v<T>, const native_type&, native_type&>;
+class view;
+
+template <typename Wrapper>
+    requires std::is_class_v<std::remove_const_t<Wrapper>> and
+             std::is_class_v<std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>>
+class base_view {
+    using native_type = std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>;
+    using reference =
+        std::conditional_t<std::is_const_v<Wrapper>, const native_type&, native_type&>;
 
   public:
-    view(const T& wrapper) noexcept : native_ref_{wrapper.native()} {}
+    base_view(const Wrapper& wrapper) noexcept : native_ref_{wrapper.native()} {}
 
     template <typename U>
         requires(std::conditional_t<
-                 std::is_const_v<T>,
-                 std::disjunction<std::is_same<T, U>, std::is_same<std::remove_const_t<T>, U>>,
-                 std::is_same<T, U>>::value)
-    view(const view<U> other) noexcept : native_ref_{other.native()} {}
+                 std::is_const_v<Wrapper>,
+                 std::disjunction<
+                     std::is_same<Wrapper, U>,
+                     std::is_same<std::remove_const_t<Wrapper>, U>>,
+                 std::is_same<Wrapper, U>>::value)
+    base_view(const view<U>& other) noexcept : native_ref_{other.native()} {}
 
     [[nodiscard]] auto native() const noexcept -> reference { return native_ref_; }
 
@@ -46,6 +55,14 @@ class view final {
     reference native_ref_;
 };
 
+template <typename Wrapper>
+class view final : public base_view<Wrapper> {
+  public:
+    using base_view<Wrapper>::base_view;
+};
+}  // namespace hgn
+
+namespace hgn::detail {
 template <typename Native>
 auto extract_native(const wrapper<Native>&) noexcept -> Native;
 
