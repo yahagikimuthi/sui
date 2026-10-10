@@ -76,7 +76,7 @@ class swapchain_create_info_khr final : public detail::wrapper<VkSwapchainCreate
         return *this;
     }
 
-    auto present_mode(const present_mode_khr_t mode) noexcept -> swapchain_create_info_khr& {
+    auto present_mode(const present_mode_khr mode) noexcept -> swapchain_create_info_khr& {
         native().presentMode = static_cast<VkPresentModeKHR>(mode);
         return *this;
     }
@@ -152,7 +152,7 @@ class view<swapchain_create_info_khr> final : public detail::base_view<swapchain
         return *this;
     }
 
-    auto present_mode(const present_mode_khr_t mode) noexcept -> view<swapchain_create_info_khr>& {
+    auto present_mode(const present_mode_khr mode) noexcept -> view<swapchain_create_info_khr>& {
         native().presentMode = static_cast<VkPresentModeKHR>(mode);
         return *this;
     }

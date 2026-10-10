@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <bit>
 #include <cassert>
 #include <expected>
 #include <functional>
@@ -17,180 +18,150 @@ namespace hgn {
 using physical_device = VkPhysicalDevice_T;
 
 [[nodiscard]] inline auto try_enumerate_physical_devices(instance& instance_ref) noexcept
-    -> std::expected<proxy_vector<std::optional<physical_device&>>, result> {
+    -> std::expected<std::vector<ref_w<physical_device>>, result> {
     auto count = u32{};
 
     const auto res1 = vkEnumeratePhysicalDevices(&instance_ref, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 
-    auto devices = proxy_vector<std::optional<physical_device&>>(count);
+    auto devices = std::vector<physical_device*>(count);
 
-    const auto res2 = vkEnumeratePhysicalDevices(&instance_ref, &count, devices.native_data());
+    const auto res2 = vkEnumeratePhysicalDevices(&instance_ref, &count, devices.data());
     if (res2 != VK_SUCCESS) return make_result(res2);
 
-    return devices;
+    auto out = std::vector<ref_w<physical_device>>{};
+    out.reserve(count);
+
+    for (auto* device : devices) {
+        assert(device != nullptr);
+        out.emplace_back(std::ref(*device));
+    }
+
+    return out;
 }
 
-class physical_device_properties : public detail::wrapper<VkPhysicalDeviceProperties> {
+class physical_device_properties {
   public:
-    explicit physical_device_properties() noexcept : wrapper(VkPhysicalDeviceProperties{}) {}
+    explicit physical_device_properties(const VkPhysicalDeviceProperties& native) noexcept
+        : native_{native} {}
 
     [[nodiscard]] auto name() const noexcept -> std::string_view {
-        const auto* ptr = static_cast<const char*>(native().deviceName);
+        const auto* ptr = static_cast<const char*>(native_.deviceName);
         return std::string_view{ptr};
     }
-};
 
-template <>
-class view<physical_device_properties> final
-    : public detail::base_view<physical_device_properties> {
-  public:
-    using base_view<physical_device_properties>::base_view;
-
-    [[nodiscard]] auto name() const noexcept -> std::string_view {
-        const auto* ptr = static_cast<const char*>(native().deviceName);
-        return std::string_view{ptr};
-    }
+  private:
+    VkPhysicalDeviceProperties native_;
 };
 
 [[nodiscard]] inline auto get_physical_device_properties(physical_device& device) noexcept
     -> physical_device_properties {
-    auto properties = physical_device_properties{};
-    vkGetPhysicalDeviceProperties(&device, &properties.native());
-    return properties;
+    auto properties = VkPhysicalDeviceProperties{};
+    vkGetPhysicalDeviceProperties(&device, &properties);
+    return physical_device_properties{properties};
 }
 
-class queue_family_properties : public detail::wrapper<VkQueueFamilyProperties> {
+class queue_family_properties final {
   public:
-    explicit queue_family_properties() noexcept : wrapper(VkQueueFamilyProperties{}) {}
+    explicit queue_family_properties(const VkQueueFamilyProperties& native) noexcept
+        : native_{native} {}
 
     [[nodiscard]] auto flags() const noexcept -> queue_flag_bits {
-        return static_cast<queue_flag_bits>(native().queueFlags);
+        return static_cast<queue_flag_bits>(native_.queueFlags);
     }
-};
 
-template <>
-class view<queue_family_properties> : public detail::base_view<queue_family_properties> {
-  public:
-    using base_view<queue_family_properties>::base_view;
-
-    [[nodiscard]] auto flags() const noexcept -> queue_flag_bits {
-        return static_cast<queue_flag_bits>(native().queueFlags);
-    }
+  private:
+    VkQueueFamilyProperties native_{};
 };
 
 [[nodiscard]] inline auto get_physical_device_queue_family_properties(
     physical_device& device
-) noexcept -> proxy_vector<queue_family_properties> {
+) noexcept -> std::vector<queue_family_properties> {
     auto count = u32{};
     vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, nullptr);
 
-    auto queue_families = proxy_vector<queue_family_properties>(count);
-    vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, queue_families.native_data());
+    auto queue_families = std::vector<VkQueueFamilyProperties>(count);
+    vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, queue_families.data());
 
-    return queue_families;
-}
+    auto out = std::vector<queue_family_properties>{};
+    out.reserve(count);
 
-class device_queue_create_info final : public detail::wrapper<VkDeviceQueueCreateInfo> {
-  public:
-    explicit device_queue_create_info() noexcept : wrapper(VkDeviceQueueCreateInfo{}) {
-        native().sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    for (const auto& family : queue_families) {
+        out.emplace_back(std::bit_cast<queue_family_properties>(family));
     }
 
-    using wrapper<VkDeviceQueueCreateInfo>::wrapper;
+    return out;
+}
+
+class device_queue_create_info final {
+  public:
+    explicit device_queue_create_info() noexcept {
+        native_.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    }
 
     auto queue_family_index(const u32 idx) noexcept -> device_queue_create_info& {
-        native().queueFamilyIndex = idx;
+        native_.queueFamilyIndex = idx;
         return *this;
     }
 
     auto queue_count(const u32 cnt) noexcept -> device_queue_create_info& {
-        native().queueCount = cnt;
+        native_.queueCount = cnt;
         return *this;
     }
 
     auto queue_priorities(f32& priority) noexcept -> device_queue_create_info& {
-        native().pQueuePriorities = &priority;
-        return *this;
-    }
-};
-
-template <>
-class view<device_queue_create_info> final : public detail::base_view<device_queue_create_info> {
-  public:
-    using base_view<device_queue_create_info>::base_view;
-
-    auto queue_family_index(const u32 idx) noexcept -> view<device_queue_create_info>& {
-        native().queueFamilyIndex = idx;
+        native_.pQueuePriorities = &priority;
         return *this;
     }
 
-    auto queue_count(const u32 cnt) noexcept -> view<device_queue_create_info>& {
-        native().queueCount = cnt;
-        return *this;
-    }
+    [[nodiscard]] auto native() const noexcept -> const VkDeviceQueueCreateInfo& { return native_; }
 
-    auto queue_priorities(f32& priority) noexcept -> view<device_queue_create_info>& {
-        native().pQueuePriorities = &priority;
-        return *this;
-    }
+  private:
+    VkDeviceQueueCreateInfo native_{};
 };
 
 using physical_device_features = VkPhysicalDeviceFeatures;
 
-class device_create_info final : public detail::wrapper<VkDeviceCreateInfo> {
+class device_create_info final {
   public:
-    explicit device_create_info() noexcept : wrapper(VkDeviceCreateInfo{}) {
-        native().sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    }
+    explicit device_create_info() noexcept { native_.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO; }
 
-    auto queue_create_infos(const proxy_vector<device_queue_create_info>& infos) noexcept
+    auto queue_create_infos(const std::vector<device_queue_create_info>& infos) noexcept
         -> device_create_info& {
-        native().queueCreateInfoCount = static_cast<u32>(infos.size());
-        native().pQueueCreateInfos    = infos.native_data();
+        infos_ = std::vector<VkDeviceQueueCreateInfo>{};
+        infos_.reserve(infos.size());
+
+        for (const auto& info : infos) {
+            infos_.emplace_back(std::bit_cast<VkDeviceQueueCreateInfo>(info));
+        }
+
+        native_.queueCreateInfoCount = static_cast<u32>(infos_.size());
+        native_.pQueueCreateInfos    = infos_.data();
         return *this;
     }
 
     auto features(physical_device_features& features) noexcept -> device_create_info& {
-        native().pEnabledFeatures = &features;
+        native_.pEnabledFeatures = &features;
         return *this;
     }
 
     auto extensions(std::span<const char* const> vec) noexcept -> device_create_info& {
-        native().enabledExtensionCount   = static_cast<u32>(vec.size());
-        native().ppEnabledExtensionNames = vec.data();
-        return *this;
-    }
-};
-
-template <>
-class view<device_create_info> final : public detail::base_view<device_create_info> {
-  public:
-    using base_view<device_create_info>::base_view;
-
-    auto queue_create_infos(const proxy_vector<device_queue_create_info>& infos) noexcept
-        -> view<device_create_info>& {
-        native().queueCreateInfoCount = static_cast<u32>(infos.size());
-        native().pQueueCreateInfos    = infos.native_data();
+        native_.enabledExtensionCount   = static_cast<u32>(vec.size());
+        native_.ppEnabledExtensionNames = vec.data();
         return *this;
     }
 
-    auto features(physical_device_features& features) noexcept -> view<device_create_info>& {
-        native().pEnabledFeatures = &features;
-        return *this;
-    }
+    [[nodiscard]] auto native() const noexcept -> const VkDeviceCreateInfo& { return native_; }
 
-    auto extensions(std::span<const char* const> vec) noexcept -> view<device_create_info>& {
-        native().enabledExtensionCount   = static_cast<u32>(vec.size());
-        native().ppEnabledExtensionNames = vec.data();
-        return *this;
-    }
+  private:
+    VkDeviceCreateInfo                   native_{};
+    std::vector<VkDeviceQueueCreateInfo> infos_;
 };
 
 using device = VkDevice_T;
 
 [[nodiscard]] inline auto try_make_device(
-    physical_device& physical, const view<const device_create_info>& info
+    physical_device& physical, const device_create_info& info
 ) noexcept -> std::expected<ref_w<device>, result> {
     auto*      dev = static_cast<device*>(nullptr);
     const auto res = vkCreateDevice(&physical, &info.native(), nullptr, &dev);
@@ -222,137 +193,111 @@ using queue = VkQueue_T;
     return present_support == VK_TRUE;
 }
 
-class surface_capabilities_khr : public detail::wrapper<VkSurfaceCapabilitiesKHR> {
+class surface_capabilities_khr final {
   public:
-    explicit surface_capabilities_khr() noexcept : wrapper(VkSurfaceCapabilitiesKHR{}) {}  // NOLINT
+    explicit surface_capabilities_khr(const VkSurfaceCapabilitiesKHR& native) noexcept
+        : native_{native} {}
 
-    [[nodiscard]] auto current_extent() const noexcept -> extent2d {
-        return native().currentExtent;
-    }
+    [[nodiscard]] auto current_extent() const noexcept -> extent2d { return native_.currentExtent; }
 
-    [[nodiscard]] auto min_image_count() const noexcept -> u32 { return native().minImageCount; }
+    [[nodiscard]] auto min_image_count() const noexcept -> u32 { return native_.minImageCount; }
 
-    [[nodiscard]] auto max_image_count() const noexcept -> u32 { return native().maxImageCount; }
+    [[nodiscard]] auto max_image_count() const noexcept -> u32 { return native_.maxImageCount; }
 
     [[nodiscard]] auto current_transform() const noexcept -> surface_transform_flag_bits_khr {
-        return static_cast<surface_transform_flag_bits_khr>(native().currentTransform);
-    }
-};
-
-template <>
-class view<surface_capabilities_khr> final : public detail::base_view<surface_capabilities_khr> {
-  public:
-    using base_view<surface_capabilities_khr>::base_view;
-
-    [[nodiscard]] auto current_extent() const noexcept -> extent2d {
-        return native().currentExtent;
+        return static_cast<surface_transform_flag_bits_khr>(native_.currentTransform);
     }
 
-    [[nodiscard]] auto min_image_count() const noexcept -> u32 { return native().minImageCount; }
-
-    [[nodiscard]] auto max_image_count() const noexcept -> u32 { return native().maxImageCount; }
-
-    [[nodiscard]] auto current_transform() const noexcept -> surface_transform_flag_bits_khr {
-        return static_cast<surface_transform_flag_bits_khr>(native().currentTransform);
-    }
+  private:
+    VkSurfaceCapabilitiesKHR native_{
+        .minImageCount           = 0,
+        .maxImageCount           = 0,
+        .currentExtent           = {.width = 0, .height = 0},
+        .minImageExtent          = {.width = 0, .height = 0},
+        .maxImageExtent          = {.width = 0, .height = 0},
+        .maxImageArrayLayers     = 0,
+        .supportedTransforms     = 0,
+        .currentTransform        = static_cast<VkSurfaceTransformFlagBitsKHR>(0),
+        .supportedCompositeAlpha = 0,
+        .supportedUsageFlags     = 0
+    };
 };
 
 [[nodiscard]] inline auto try_get_physical_device_surface_capabilities_khr(
     physical_device& physical, surface_khr& surface
 ) noexcept -> std::expected<surface_capabilities_khr, result> {
-    auto capabilities = surface_capabilities_khr{};  // NOLINT
-    auto res =
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&physical, &surface, &capabilities.native());
+    auto capabilities = VkSurfaceCapabilitiesKHR{
+        .minImageCount           = 0,
+        .maxImageCount           = 0,
+        .currentExtent           = {.width = 0, .height = 0},
+        .minImageExtent          = {.width = 0, .height = 0},
+        .maxImageExtent          = {.width = 0, .height = 0},
+        .maxImageArrayLayers     = 0,
+        .supportedTransforms     = 0,
+        .currentTransform        = static_cast<VkSurfaceTransformFlagBitsKHR>(0),
+        .supportedCompositeAlpha = 0,
+        .supportedUsageFlags     = 0
+    };
+
+    auto res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&physical, &surface, &capabilities);
     if (res != VK_SUCCESS) return make_result(res);
-    return capabilities;
+
+    return surface_capabilities_khr{capabilities};
 }
-class surface_format_khr final : public detail::wrapper<VkSurfaceFormatKHR> {
+
+class surface_format_khr final {
   public:
-    explicit surface_format_khr() noexcept : wrapper(VkSurfaceFormatKHR{}) {}
+    explicit surface_format_khr() noexcept = default;
 
     [[nodiscard]] auto setting_format() const noexcept -> format {
-        return static_cast<format>(native().format);
+        return static_cast<format>(native_.format);
     }
 
     [[nodiscard]] auto color_space() const noexcept -> color_space_khr {
-        return static_cast<color_space_khr>(native().colorSpace);
-    }
-};
-
-template <>
-class view<surface_format_khr> final : public detail::base_view<surface_format_khr> {
-  public:
-    using base_view<surface_format_khr>::base_view;
-
-    [[nodiscard]] auto setting_format() const noexcept -> format {
-        return static_cast<format>(native().format);
+        return static_cast<color_space_khr>(native_.colorSpace);
     }
 
-    [[nodiscard]] auto color_space() const noexcept -> color_space_khr {
-        return static_cast<color_space_khr>(native().colorSpace);
-    }
+  private:
+    VkSurfaceFormatKHR native_{};
 };
 
 [[nodiscard]] inline auto get_physical_device_surface_formats_khr(
     physical_device& physical, surface_khr& surface
-) noexcept -> proxy_vector<surface_format_khr> {
+) noexcept -> std::vector<surface_format_khr> {
     auto count = u32{};
     vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, nullptr);
 
-    auto formats = proxy_vector<surface_format_khr>(count);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.native_data());
-    return formats;
+    auto formats = std::vector<VkSurfaceFormatKHR>(count);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.data());
+
+    auto out = std::vector<surface_format_khr>{};
+    out.reserve(count);
+    for (const auto& format : formats) {
+        out.emplace_back(std::bit_cast<surface_format_khr>(format));
+    }
+
+    return out;
 }
-
-class present_mode_khr : public detail::wrapper<VkPresentModeKHR> {
-  public:
-    explicit present_mode_khr() noexcept : wrapper(VkPresentModeKHR{}) {}
-
-    auto operator=(present_mode_khr_t scoped) noexcept -> present_mode_khr& {
-        native() = static_cast<VkPresentModeKHR>(scoped);
-        return *this;
-    }
-
-    [[nodiscard]] auto operator==(const present_mode_khr_t scoped) noexcept -> bool {
-        return static_cast<VkPresentModeKHR>(scoped) == native();
-    }
-
-    [[nodiscard]] operator present_mode_khr_t() const noexcept {
-        return static_cast<present_mode_khr_t>(native());
-    }
-};
-
-template <>
-class view<present_mode_khr> final : public detail::base_view<present_mode_khr> {
-  public:
-    using base_view<present_mode_khr>::base_view;
-
-    auto operator=(present_mode_khr_t scoped) noexcept -> view<present_mode_khr>& {
-        native() = static_cast<VkPresentModeKHR>(scoped);
-        return *this;
-    }
-
-    [[nodiscard]] auto operator==(const present_mode_khr_t scoped) const noexcept -> bool {
-        return static_cast<VkPresentModeKHR>(scoped) == native();
-    }
-
-    [[nodiscard]] operator present_mode_khr_t() const noexcept {
-        return static_cast<present_mode_khr_t>(native());
-    }
-};
 
 [[nodiscard]] inline auto get_physical_device_surface_present_modes_khr(
     physical_device& physical, surface_khr& surface
-) noexcept -> std::expected<proxy_vector<present_mode_khr>, result> {
+) noexcept -> std::expected<std::vector<present_mode_khr>, result> {
     auto       count = u32{};
     const auto res1 =
         vkGetPhysicalDeviceSurfacePresentModesKHR(&physical, &surface, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 
-    auto       modes = proxy_vector<present_mode_khr>(count);
+    auto       modes = std::vector<VkPresentModeKHR>(count);
     const auto res2 =
-        vkGetPhysicalDeviceSurfacePresentModesKHR(&physical, &surface, &count, modes.native_data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(&physical, &surface, &count, modes.data());
     if (res2 != VK_SUCCESS) return make_result(res2);
-    return modes;
+
+    auto out = std::vector<present_mode_khr>{};
+    out.reserve(count);
+    for (const auto mode : modes) {
+        out.emplace_back(std::bit_cast<present_mode_khr>(mode));
+    }
+
+    return out;
 }
 }  // namespace hgn
