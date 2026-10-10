@@ -50,7 +50,17 @@ class physical_device_properties : public detail::wrapper<VkPhysicalDeviceProper
 
 class queue_family_properties : public detail::wrapper<VkQueueFamilyProperties> {
   public:
-    using wrapper<VkQueueFamilyProperties>::wrapper;
+    explicit queue_family_properties() noexcept : wrapper(VkQueueFamilyProperties{}) {}
+
+    [[nodiscard]] auto flags() const noexcept -> queue_flag_bits {
+        return static_cast<queue_flag_bits>(native().queueFlags);
+    }
+};
+
+template <>
+class view<queue_family_properties> : public detail::base_view<queue_family_properties> {
+  public:
+    using base_view<queue_family_properties>::base_view;
 
     [[nodiscard]] auto flags() const noexcept -> queue_flag_bits {
         return static_cast<queue_flag_bits>(native().queueFlags);
@@ -183,7 +193,21 @@ class surface_capabilities_khr : public detail::wrapper<VkSurfaceCapabilitiesKHR
 }
 class surface_format_khr final : public detail::wrapper<VkSurfaceFormatKHR> {
   public:
-    using wrapper<VkSurfaceFormatKHR>::wrapper;
+    explicit surface_format_khr() noexcept : wrapper(VkSurfaceFormatKHR{}) {}
+
+    [[nodiscard]] auto setting_format() const noexcept -> format {
+        return static_cast<format>(native().format);
+    }
+
+    [[nodiscard]] auto color_space() const noexcept -> color_space_khr {
+        return static_cast<color_space_khr>(native().colorSpace);
+    }
+};
+
+template <>
+class view<surface_format_khr> final : public detail::base_view<surface_format_khr> {
+  public:
+    using base_view<surface_format_khr>::base_view;
 
     [[nodiscard]] auto setting_format() const noexcept -> format {
         return static_cast<format>(native().format);
@@ -224,13 +248,16 @@ class present_mode_khr : public detail::wrapper<VkPresentModeKHR> {
 };
 
 template <>
-class view<present_mode_khr_t> final : public detail::base_view<present_mode_khr> {
-    auto operator=(present_mode_khr_t scoped) noexcept -> view<present_mode_khr_t>& {
+class view<present_mode_khr> final : public detail::base_view<present_mode_khr> {
+  public:
+    using base_view<present_mode_khr>::base_view;
+
+    auto operator=(present_mode_khr_t scoped) noexcept -> view<present_mode_khr>& {
         native() = static_cast<VkPresentModeKHR>(scoped);
         return *this;
     }
 
-    [[nodiscard]] auto operator==(const present_mode_khr_t scoped) noexcept -> bool {
+    [[nodiscard]] auto operator==(const present_mode_khr_t scoped) const noexcept -> bool {
         return static_cast<VkPresentModeKHR>(scoped) == native();
     }
 

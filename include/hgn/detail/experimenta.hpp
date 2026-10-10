@@ -1,16 +1,35 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <initializer_list>
 #include <optional>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+namespace hgn {
+template <typename T>
+class view;
+
+template <typename View, typename Native>
+concept view_like = requires(View v) {
+    { v.native() } noexcept -> std::convertible_to<Native>;
+};
+}  // namespace hgn
 
 namespace hgn::detail {
 template <typename T>
     requires std::is_class_v<T> or std::is_enum_v<T>
 class wrapper {
   public:
+    template <view_like<T> View>
+    explicit wrapper(const view_like<T> auto& other) noexcept : native_{other.native()} {}
+
+    auto operator=(const view_like<T> auto& other) noexcept -> wrapper& {
+        native_ = other.native();
+        return *this;
+    }
+
     [[nodiscard]] auto native() const noexcept -> const T& { return native_; }
 
     [[nodiscard]] auto native() noexcept -> T& { return native_; }
@@ -27,21 +46,14 @@ template <typename Native>
 auto extract_native(const wrapper<Native>&) noexcept -> Native;
 }  // namespace hgn::detail
 
-namespace hgn {
-template <typename T>
-class view;
-}
-
 namespace hgn::detail {
 template <typename Wrapper>
 class base_view;
 
 template <typename Wrapper>
-    requires(
-        std::is_class_v<std::remove_const_t<Wrapper>> and
-        (std::is_class_v<std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>> or
-         std::is_enum_v<std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>>)
-    )
+    requires std::is_class_v<std::remove_const_t<Wrapper>> and
+             (std::is_class_v<std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>> or
+              std::is_enum_v<std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>>)
 class base_view<Wrapper> {
     using native_type = std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>;
     using reference =
@@ -49,6 +61,7 @@ class base_view<Wrapper> {
 
   public:
     base_view(const Wrapper& wrapper) noexcept : native_ref_{wrapper.native()} {}
+    virtual ~base_view() noexcept = default;
 
     template <typename U>
         requires(std::conditional_t<
@@ -59,17 +72,30 @@ class base_view<Wrapper> {
                  std::is_same<Wrapper, U>>::value)
     base_view(const view<U>& other) noexcept : native_ref_{other.native()} {}
 
-    [[nodiscard]] auto native() const noexcept -> reference { return native_ref_; }
+    base_view(reference other) noexcept : native_ref_{other} {}
+
+    base_view(const reference other) noexcept
+        requires std::is_const_v<Wrapper>
+        : native_ref_{other} {}
+
+    [[nodiscard]] auto native() const noexcept -> reference { return *native_ref_; }
+
+  protected:
+    base_view(const base_view&) noexcept = default;
+    auto operator=(const base_view& other) noexcept -> base_view& {
+        if (this == &other) return *this;
+        *native_ref_ = *other.native_ref_;
+        return *this;
+    }
+
+    base_view(base_view&&) noexcept = default;
+    auto operator=(base_view&& other) noexcept -> base_view& {
+        if (this == &other) return *this;
+        *native_ref_ = std::move(*other.native_ref_);
+    }
 
   private:
-    reference native_ref_;
-};
-
-template <typename EnumClass>
-    requires std::is_scoped_enum_v<EnumClass>
-class base_view<EnumClass> {
-  public:
-  private:
+    std::optional<reference> native_ref_;
 };
 }  // namespace hgn::detail
 
@@ -90,6 +116,11 @@ class proxy_vector final {
     explicit proxy_vector(const std::size_t n) noexcept
         requires std::is_default_constructible_v<Native>
         : vec_(n) {}
+    explicit proxy_vector(std::initializer_list<Wrapper> wrappers) noexcept {
+        for (const auto& wrapper : wrappers) {
+            vec_.emplace_back(wrapper.native());
+        }
+    }
 
     class iterator {
       public:
@@ -121,7 +152,7 @@ class proxy_vector final {
     [[nodiscard]] auto end() noexcept -> iterator { return iterator{vec_.end()}; }
 
     [[nodiscard]] auto operator[](const std::size_t i) noexcept -> view<Wrapper> {
-        return view<Wrapper>{vec_[i]};
+        return view<Wrapper>(vec_[i]);
     }
 
     [[nodiscard]] auto operator[](const std::size_t i) const noexcept -> view<const Wrapper> {
@@ -200,7 +231,7 @@ class proxy_vector<std::optional<T&>> final {
         return out;
     }
 
-    [[nodiscard]] auto native_data() noexcept -> pointer* { return vec_; }
+    [[nodiscard]] auto native_data() noexcept -> pointer* { return vec_.data(); }
 
   private:
     std::vector<pointer> vec_;
