@@ -108,12 +108,16 @@ class proxy_vector<std::optional<T&>> {
     using pointer    = T*;
 
   public:
+    explicit proxy_vector(const std::size_t n) noexcept : vec_(n) {}
+
     [[nodiscard]] auto operator[](const std::size_t i) noexcept -> std::optional<T&> {
         auto* ptr = vec_[i];
         if (ptr == nullptr) return std::nullopt;
         auto& out = *ptr;
         return out;
     }
+
+    [[nodiscard]] auto native_data() noexcept -> pointer* { return vec_; }
 
   private:
     std::vector<pointer> vec_;
