@@ -82,7 +82,7 @@ class view final : public detail::base_view<Wrapper> {
 
 template <typename Wrapper>
     requires(std::is_class_v<Wrapper>)  // 非const
-class proxy_vector {
+class proxy_vector final {
     using Native = decltype(extract_native(std::declval<Wrapper>()));
 
   public:
@@ -91,7 +91,34 @@ class proxy_vector {
         requires std::is_default_constructible_v<Native>
         : vec_(n) {}
 
+    class iterator {
+      public:
+        explicit iterator(std::vector<Native>::iterator it) noexcept : it_{it} {}
+
+        auto operator++() noexcept -> iterator& {
+            ++it_;
+            return *this;
+        }
+
+        [[nodiscard]] auto operator==(const iterator& other) const noexcept -> bool = default;
+
+        [[nodiscard]] auto operator*() const noexcept -> view<Wrapper> {
+            return view<Wrapper>{*it_};
+        }
+
+        [[nodiscard]] auto operator*() noexcept -> view<Wrapper> { return view<Wrapper>{*it_}; }
+
+      private:
+        std::vector<Native>::iterator it_;
+    };
+
     [[nodiscard]] auto size() const noexcept -> std::size_t { return vec_.size(); }
+
+    [[nodiscard]] auto begin() const noexcept -> iterator { return iterator{vec_.begin()}; }
+    [[nodiscard]] auto begin() noexcept -> iterator { return iterator{vec_.begin()}; }
+
+    [[nodiscard]] auto end() const noexcept -> iterator { return iterator{vec_.end()}; }
+    [[nodiscard]] auto end() noexcept -> iterator { return iterator{vec_.end()}; }
 
     [[nodiscard]] auto operator[](const std::size_t i) noexcept -> view<Wrapper> {
         return view<Wrapper>{vec_[i]};
@@ -115,17 +142,61 @@ class proxy_vector {
 
 template <typename T>
     requires std::is_class_v<T>
-class proxy_vector<std::optional<T&>> {
+class proxy_vector<std::optional<T&>> final {
     using value_type = T;
     using pointer    = T*;
 
   public:
     explicit proxy_vector(const std::size_t n) noexcept : vec_(n) {}
 
+    class iterator final {
+      public:
+        explicit iterator(std::vector<pointer>::iterator it) noexcept : it_{it} {}
+
+        auto operator++() noexcept -> iterator& {
+            ++it_;
+            return *this;
+        }
+
+        [[nodiscard]] auto operator==(const iterator&) const noexcept -> bool = default;
+
+        [[nodiscard]] auto operator*() const noexcept -> std::optional<const T&> {
+            const auto* ptr = *it_;
+            if (ptr == nullptr) return std::nullopt;
+            const auto& out = *ptr;
+            return out;
+        }
+
+        [[nodiscard]] auto operator*() noexcept -> std::optional<T&> {
+            auto* ptr = *it_;
+            if (ptr == nullptr) return std::nullopt;
+            auto& out = *ptr;
+            return out;
+        }
+
+      private:
+        std::vector<pointer>::iterator it_;
+    };
+
+    [[nodiscard]] auto size() const noexcept -> std::size_t { return vec_.size(); }
+
+    [[nodiscard]] auto begin() const noexcept -> iterator { return iterator{vec_.begin()}; }
+    [[nodiscard]] auto begin() noexcept -> iterator { return iterator{vec_.begin()}; }
+
+    [[nodiscard]] auto end() const noexcept -> iterator { return iterator{vec_.end()}; }
+    [[nodiscard]] auto end() noexcept -> iterator { return iterator{vec_.end()}; }
+
     [[nodiscard]] auto operator[](const std::size_t i) noexcept -> std::optional<T&> {
         auto* ptr = vec_[i];
         if (ptr == nullptr) return std::nullopt;
         auto& out = *ptr;
+        return out;
+    }
+
+    [[nodiscard]] auto operator[](const std::size_t i) const noexcept -> std::optional<const T&> {
+        const auto* ptr = vec_[i];
+        if (ptr == nullptr) return std::nullopt;
+        const auto& out = *ptr;
         return out;
     }
 
