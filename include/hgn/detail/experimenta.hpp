@@ -22,16 +22,7 @@ template <typename T>
     requires std::is_class_v<T> or std::is_enum_v<T>
 class wrapper {
   public:
-    template <view_like<T> View>
-    explicit wrapper(const view_like<T> auto& other) noexcept : native_{other.native()} {}
-
-    auto operator=(const view_like<T> auto& other) noexcept -> wrapper& {
-        native_ = other.native();
-        return *this;
-    }
-
     [[nodiscard]] auto native() const noexcept -> const T& { return native_; }
-
     [[nodiscard]] auto native() noexcept -> T& { return native_; }
 
   protected:
