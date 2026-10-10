@@ -6,8 +6,7 @@
 #include <functional>
 #include <optional>
 
-#include "hgn/detail/vector.hpp"
-#include "hgn/detail/wrapper.hpp"
+#include "hgn/detail/experimenta.hpp"
 #include "hgn/instance.hpp"
 #include "hgn/others.hpp"
 #include "hgn/result.hpp"
@@ -16,12 +15,6 @@
 
 namespace hgn {
 using physical_device = VkPhysicalDevice_T;
-
-template <>
-class proxy_vector<std::optional<physical_device&>>
-    : public detail::pointer_vector<physical_device*> {
-    using pointer_vector<physical_device*>::pointer_vector;
-};
 
 [[nodiscard]] inline auto try_enumerate_physical_devices(instance& instance_ref) noexcept
     -> std::expected<proxy_vector<std::optional<physical_device&>>, result> {
@@ -40,7 +33,7 @@ class proxy_vector<std::optional<physical_device&>>
 
 class physical_device_properties : public detail::wrapper<VkPhysicalDeviceProperties> {
   public:
-    using wrapper<VkPhysicalDeviceProperties>::wrapper;
+    explicit physical_device_properties() noexcept : wrapper(VkPhysicalDeviceProperties{}) {}
 
     [[nodiscard]] auto name() const noexcept -> std::string_view {
         const auto* ptr = static_cast<const char*>(native().deviceName);
@@ -64,12 +57,6 @@ class queue_family_properties : public detail::wrapper<VkQueueFamilyProperties> 
     }
 };
 
-template <>
-class proxy_vector<queue_family_properties> final
-    : public detail::view_vector<VkQueueFamilyProperties, queue_family_properties> {
-    using view_vector<VkQueueFamilyProperties, queue_family_properties>::view_vector;
-};
-
 [[nodiscard]] inline auto get_physical_device_queue_family_properties(
     physical_device& device
 ) noexcept -> proxy_vector<queue_family_properties> {
@@ -84,7 +71,7 @@ class proxy_vector<queue_family_properties> final
 
 class device_queue_create_info final : public detail::wrapper<VkDeviceQueueCreateInfo> {
   public:
-    explicit device_queue_create_info() noexcept {
+    explicit device_queue_create_info() noexcept : wrapper(VkDeviceQueueCreateInfo{}) {
         native().sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     }
 
@@ -106,17 +93,11 @@ class device_queue_create_info final : public detail::wrapper<VkDeviceQueueCreat
     }
 };
 
-template <>
-class proxy_vector<device_queue_create_info> final
-    : public detail::view_vector<VkDeviceQueueCreateInfo, device_queue_create_info> {
-    using view_vector<VkDeviceQueueCreateInfo, device_queue_create_info>::view_vector;
-};
-
 using physical_device_features = VkPhysicalDeviceFeatures;
 
 class device_create_info final : public detail::wrapper<VkDeviceCreateInfo> {
   public:
-    explicit device_create_info() noexcept {
+    explicit device_create_info() noexcept : wrapper(VkDeviceCreateInfo{}) {
         native().sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     }
 
@@ -176,7 +157,7 @@ using queue = VkQueue_T;
 
 class surface_capabilities_khr : public detail::wrapper<VkSurfaceCapabilitiesKHR> {
   public:
-    using wrapper<VkSurfaceCapabilitiesKHR>::wrapper;
+    explicit surface_capabilities_khr() noexcept : wrapper(VkSurfaceCapabilitiesKHR{}) {}  // NOLINT
 
     [[nodiscard]] auto current_extent() const noexcept -> extent2d {
         return native().currentExtent;
@@ -213,12 +194,6 @@ class surface_format_khr final : public detail::wrapper<VkSurfaceFormatKHR> {
     }
 };
 
-template <>
-class proxy_vector<surface_format_khr>
-    : public detail::view_vector<VkSurfaceFormatKHR, surface_format_khr> {
-    using view_vector<VkSurfaceFormatKHR, surface_format_khr>::view_vector;
-};
-
 [[nodiscard]] inline auto get_physical_device_surface_formats_khr(
     physical_device& physical, surface_khr& surface
 ) noexcept -> proxy_vector<surface_format_khr> {
@@ -230,33 +205,38 @@ class proxy_vector<surface_format_khr>
     return formats;
 }
 
-class present_mode_khr {
+class present_mode_khr : public detail::wrapper<VkPresentModeKHR> {
   public:
-    explicit present_mode_khr(VkPresentModeKHR& native) noexcept : native_{native} {}
+    explicit present_mode_khr() noexcept : wrapper(VkPresentModeKHR{}) {}
 
     auto operator=(present_mode_khr_t scoped) noexcept -> present_mode_khr& {
-        native_ = static_cast<VkPresentModeKHR>(scoped);
+        native() = static_cast<VkPresentModeKHR>(scoped);
         return *this;
     }
 
     [[nodiscard]] auto operator==(const present_mode_khr_t scoped) noexcept -> bool {
-        return static_cast<VkPresentModeKHR>(scoped) == native_;
+        return static_cast<VkPresentModeKHR>(scoped) == native();
     }
 
     [[nodiscard]] operator present_mode_khr_t() const noexcept {
-        return static_cast<present_mode_khr_t>(native_);
+        return static_cast<present_mode_khr_t>(native());
     }
-
-    [[nodiscard]] auto native() noexcept -> VkPresentModeKHR& { return native_; }
-
-  private:
-    VkPresentModeKHR& native_;
 };
 
 template <>
-class proxy_vector<present_mode_khr>
-    : public detail::view_vector<VkPresentModeKHR, present_mode_khr> {
-    using view_vector<VkPresentModeKHR, present_mode_khr>::view_vector;
+class view<present_mode_khr_t> final : public detail::base_view<present_mode_khr> {
+    auto operator=(present_mode_khr_t scoped) noexcept -> view<present_mode_khr_t>& {
+        native() = static_cast<VkPresentModeKHR>(scoped);
+        return *this;
+    }
+
+    [[nodiscard]] auto operator==(const present_mode_khr_t scoped) noexcept -> bool {
+        return static_cast<VkPresentModeKHR>(scoped) == native();
+    }
+
+    [[nodiscard]] operator present_mode_khr_t() const noexcept {
+        return static_cast<present_mode_khr_t>(native());
+    }
 };
 
 [[nodiscard]] inline auto get_physical_device_surface_present_modes_khr(

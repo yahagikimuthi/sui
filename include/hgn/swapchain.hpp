@@ -4,8 +4,7 @@
 #include <cassert>
 #include <expected>
 
-#include "hgn/detail/vector.hpp"
-#include "hgn/detail/wrapper.hpp"
+#include "hgn/detail/experimenta.hpp"
 #include "hgn/device.hpp"
 #include "hgn/result.hpp"
 #include "hgn/surface.hpp"
@@ -14,7 +13,7 @@
 namespace hgn {
 class swapchain_create_info_khr final : public detail::wrapper<VkSwapchainCreateInfoKHR> {
   public:
-    explicit swapchain_create_info_khr() noexcept {
+    explicit swapchain_create_info_khr() noexcept : wrapper(VkSwapchainCreateInfoKHR{}) {  // NOLINT
         native().sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     }
 
@@ -103,18 +102,13 @@ using swapchain = VkSwapchainKHR_T;
 
 using image = VkImage_T;
 
-template <>
-class proxy_vector<image> : public detail::pointer_vector<image*> {
-    using pointer_vector<image*>::pointer_vector;
-};
-
 [[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain& chain) noexcept
-    -> std::expected<proxy_vector<image>, result> {
+    -> std::expected<proxy_vector<std::optional<image&>>, result> {
     auto       count = u32{};
     const auto res1  = vkGetSwapchainImagesKHR(&dev, &chain, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 
-    auto images = proxy_vector<image>(count);
+    auto images = proxy_vector<std::optional<image&>>(count);
 
     const auto res2 = vkGetSwapchainImagesKHR(&dev, &chain, &count, images.native_data());
     if (res2 != VK_SUCCESS) return make_result(res2);

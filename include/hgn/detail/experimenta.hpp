@@ -34,9 +34,15 @@ class view;
 
 namespace hgn::detail {
 template <typename Wrapper>
-    requires std::is_class_v<std::remove_const_t<Wrapper>> and
-             std::is_class_v<std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>>
-class base_view {
+class base_view;
+
+template <typename Wrapper>
+    requires(
+        std::is_class_v<std::remove_const_t<Wrapper>> and
+        (std::is_class_v<std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>> or
+         std::is_enum_v<std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>>)
+    )
+class base_view<Wrapper> {
     using native_type = std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>;
     using reference =
         std::conditional_t<std::is_const_v<Wrapper>, const native_type&, native_type&>;
@@ -59,6 +65,12 @@ class base_view {
     reference native_ref_;
 };
 
+template <typename EnumClass>
+    requires std::is_scoped_enum_v<EnumClass>
+class base_view<EnumClass> {
+  public:
+  private:
+};
 }  // namespace hgn::detail
 
 namespace hgn {

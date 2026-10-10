@@ -48,7 +48,7 @@ class application_info final : public detail::wrapper<VkApplicationInfo> {
 };
 
 template <>
-class view<application_info> final : public base_view<application_info> {
+class view<application_info> final : public detail::base_view<application_info> {
     using base_view<application_info>::base_view;
 
   public:
