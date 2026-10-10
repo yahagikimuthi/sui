@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.h>
 #include <span>
 
-#include "hgn/detail/experimenta.hpp"
 #include "hgn/detail/others.hpp"
 #include "hgn/types.hpp"
 
