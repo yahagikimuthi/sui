@@ -39,7 +39,7 @@ using physical_device = VkPhysicalDevice_T;
     return out;
 }
 
-class physical_device_properties {
+class physical_device_properties final {
   public:
     explicit physical_device_properties(const VkPhysicalDeviceProperties& native) noexcept
         : native_{native} {}
