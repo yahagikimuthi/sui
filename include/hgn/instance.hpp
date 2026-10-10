@@ -6,8 +6,7 @@
 #include <string_view>
 
 #include "hgn/app_instance_info.hpp"
-#include "hgn/detail/vector.hpp"
-#include "hgn/detail/wrapper.hpp"
+#include "hgn/detail/experimenta.hpp"
 #include "hgn/result.hpp"
 #include "hgn/types.hpp"
 
@@ -35,9 +34,13 @@ class layer_properties final : public detail::wrapper<VkLayerProperties> {
 };
 
 template <>
-class proxy_vector<layer_properties>
-    : public detail::view_vector<VkLayerProperties, layer_properties> {
-    using detail::view_vector<VkLayerProperties, layer_properties>::view_vector;
+class view<layer_properties> final : public detail::base_view<layer_properties> {
+  public:
+    using base_view<layer_properties>::base_view;
+    [[nodiscard]] auto name() const noexcept -> std::string_view {
+        const auto out = std::string_view{static_cast<const char*>(native().layerName)};
+        return out;
+    }
 };
 
 [[nodiscard]] inline auto try_enumerate_instance_layer_properties() noexcept
