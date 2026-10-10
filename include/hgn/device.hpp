@@ -7,7 +7,6 @@
 #include <functional>
 #include <optional>
 
-#include "hgn/detail/experimenta.hpp"
 #include "hgn/instance.hpp"
 #include "hgn/others.hpp"
 #include "hgn/result.hpp"
