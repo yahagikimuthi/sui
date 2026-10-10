@@ -41,6 +41,18 @@ class physical_device_properties : public detail::wrapper<VkPhysicalDeviceProper
     }
 };
 
+template <>
+class view<physical_device_properties> final
+    : public detail::base_view<physical_device_properties> {
+  public:
+    using base_view<physical_device_properties>::base_view;
+
+    [[nodiscard]] auto name() const noexcept -> std::string_view {
+        const auto* ptr = static_cast<const char*>(native().deviceName);
+        return std::string_view{ptr};
+    }
+};
+
 [[nodiscard]] inline auto get_physical_device_properties(physical_device& device) noexcept
     -> physical_device_properties {
     auto properties = physical_device_properties{};
@@ -103,6 +115,27 @@ class device_queue_create_info final : public detail::wrapper<VkDeviceQueueCreat
     }
 };
 
+template <>
+class view<device_queue_create_info> final : public detail::base_view<device_queue_create_info> {
+  public:
+    using base_view<device_queue_create_info>::base_view;
+
+    auto queue_family_index(const u32 idx) noexcept -> view<device_queue_create_info>& {
+        native().queueFamilyIndex = idx;
+        return *this;
+    }
+
+    auto queue_count(const u32 cnt) noexcept -> view<device_queue_create_info>& {
+        native().queueCount = cnt;
+        return *this;
+    }
+
+    auto queue_priorities(f32& priority) noexcept -> view<device_queue_create_info>& {
+        native().pQueuePriorities = &priority;
+        return *this;
+    }
+};
+
 using physical_device_features = VkPhysicalDeviceFeatures;
 
 class device_create_info final : public detail::wrapper<VkDeviceCreateInfo> {
@@ -124,6 +157,30 @@ class device_create_info final : public detail::wrapper<VkDeviceCreateInfo> {
     }
 
     auto extensions(std::span<const char* const> vec) noexcept -> device_create_info& {
+        native().enabledExtensionCount   = static_cast<u32>(vec.size());
+        native().ppEnabledExtensionNames = vec.data();
+        return *this;
+    }
+};
+
+template <>
+class view<device_create_info> final : public detail::base_view<device_create_info> {
+  public:
+    using base_view<device_create_info>::base_view;
+
+    auto queue_create_infos(const proxy_vector<device_queue_create_info>& infos) noexcept
+        -> view<device_create_info>& {
+        native().queueCreateInfoCount = static_cast<u32>(infos.size());
+        native().pQueueCreateInfos    = infos.native_data();
+        return *this;
+    }
+
+    auto features(physical_device_features& features) noexcept -> view<device_create_info>& {
+        native().pEnabledFeatures = &features;
+        return *this;
+    }
+
+    auto extensions(std::span<const char* const> vec) noexcept -> view<device_create_info>& {
         native().enabledExtensionCount   = static_cast<u32>(vec.size());
         native().ppEnabledExtensionNames = vec.data();
         return *this;
@@ -168,6 +225,24 @@ using queue = VkQueue_T;
 class surface_capabilities_khr : public detail::wrapper<VkSurfaceCapabilitiesKHR> {
   public:
     explicit surface_capabilities_khr() noexcept : wrapper(VkSurfaceCapabilitiesKHR{}) {}  // NOLINT
+
+    [[nodiscard]] auto current_extent() const noexcept -> extent2d {
+        return native().currentExtent;
+    }
+
+    [[nodiscard]] auto min_image_count() const noexcept -> u32 { return native().minImageCount; }
+
+    [[nodiscard]] auto max_image_count() const noexcept -> u32 { return native().maxImageCount; }
+
+    [[nodiscard]] auto current_transform() const noexcept -> surface_transform_flag_bits_khr {
+        return static_cast<surface_transform_flag_bits_khr>(native().currentTransform);
+    }
+};
+
+template <>
+class view<surface_capabilities_khr> final : public detail::base_view<surface_capabilities_khr> {
+  public:
+    using base_view<surface_capabilities_khr>::base_view;
 
     [[nodiscard]] auto current_extent() const noexcept -> extent2d {
         return native().currentExtent;

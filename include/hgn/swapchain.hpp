@@ -87,6 +87,82 @@ class swapchain_create_info_khr final : public detail::wrapper<VkSwapchainCreate
     }
 };
 
+template <>
+class view<swapchain_create_info_khr> final : public detail::base_view<swapchain_create_info_khr> {
+  public:
+    using base_view<swapchain_create_info_khr>::base_view;
+
+    auto surface(surface_khr& surface) noexcept -> view<swapchain_create_info_khr>& {
+        native().surface = &surface;
+        return *this;
+    }
+
+    auto min_image_count(const u32 count) noexcept -> view<swapchain_create_info_khr>& {
+        native().minImageCount = count;
+        return *this;
+    }
+
+    auto image_format(const format f) noexcept -> view<swapchain_create_info_khr>& {
+        native().imageFormat = static_cast<VkFormat>(f);
+        return *this;
+    }
+
+    auto image_color_space(const color_space_khr color) noexcept
+        -> view<swapchain_create_info_khr>& {
+        native().imageColorSpace = static_cast<VkColorSpaceKHR>(color);
+        return *this;
+    }
+
+    auto image_extent(const extent2d extent) noexcept -> view<swapchain_create_info_khr>& {
+        native().imageExtent = extent;
+        return *this;
+    }
+
+    auto image_array_layers(const u32 layers) noexcept -> view<swapchain_create_info_khr>& {
+        native().imageArrayLayers = layers;
+        return *this;
+    }
+
+    auto image_usage(const VkImageUsageFlags usage) noexcept -> view<swapchain_create_info_khr>& {
+        native().imageUsage = usage;
+        return *this;
+    }
+
+    auto image_sharing_mode(const VkSharingMode mode) noexcept -> view<swapchain_create_info_khr>& {
+        native().imageSharingMode = mode;
+        return *this;
+    }
+
+    auto queue_family_indices(const std::span<const u32> indices) noexcept
+        -> view<swapchain_create_info_khr>& {
+        native().queueFamilyIndexCount = static_cast<u32>(indices.size());
+        native().pQueueFamilyIndices   = indices.data();
+        return *this;
+    }
+
+    auto pre_transform(const surface_transform_flag_bits_khr transform) noexcept
+        -> view<swapchain_create_info_khr>& {
+        native().preTransform = static_cast<VkSurfaceTransformFlagBitsKHR>(transform);
+        return *this;
+    }
+
+    auto composite_alpha(const VkCompositeAlphaFlagBitsKHR bits) noexcept
+        -> view<swapchain_create_info_khr>& {
+        native().compositeAlpha = bits;
+        return *this;
+    }
+
+    auto present_mode(const present_mode_khr_t mode) noexcept -> view<swapchain_create_info_khr>& {
+        native().presentMode = static_cast<VkPresentModeKHR>(mode);
+        return *this;
+    }
+
+    auto clipped(const bool cond) noexcept -> view<swapchain_create_info_khr>& {
+        native().clipped = static_cast<u32>(cond);
+        return *this;
+    }
+};
+
 using swapchain = VkSwapchainKHR_T;
 
 [[nodiscard]] inline auto try_make_swapchain(device& dev, swapchain_create_info_khr& info) noexcept

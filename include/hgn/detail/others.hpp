@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <optional>
 #include <type_traits>
 
 #include <hgn/types.hpp>
@@ -21,13 +20,4 @@ inline constexpr auto is_string_literal_v = is_string_literal<T>::value;
 ) noexcept -> u32 {
     return VK_MAKE_VERSION(major, minor, patch);
 }
-
-template <typename T>
-struct is_optional_reference final : public std::false_type {};
-
-template <typename T>
-struct is_optional_reference<std::optional<T&>> final : public std::true_type {};
-
-template <typename T>
-inline constexpr auto is_optional_reference_v = is_optional_reference<T>::value;
 }  // namespace hgn::detail

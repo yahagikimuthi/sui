@@ -85,32 +85,51 @@ class view<application_info> final : public detail::base_view<application_info> 
     }
 };
 
-class instance_create_info final {
+class instance_create_info final : public detail::wrapper<VkInstanceCreateInfo> {
   public:
-    explicit instance_create_info() noexcept {
-        native_.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    explicit instance_create_info() noexcept : wrapper(VkInstanceCreateInfo{}) {
+        native().sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     }
 
     auto app_info(const application_info& app) noexcept -> instance_create_info& {
-        native_.pApplicationInfo = &app.native();
+        native().pApplicationInfo = &app.native();
         return *this;
     }
 
     auto layers(const std::span<const char* const> vec) noexcept -> instance_create_info& {
-        native_.enabledLayerCount   = static_cast<u32>(vec.size());
-        native_.ppEnabledLayerNames = vec.data();
+        native().enabledLayerCount   = static_cast<u32>(vec.size());
+        native().ppEnabledLayerNames = vec.data();
         return *this;
     }
 
     auto extensions(const std::span<const char* const> vec) noexcept -> instance_create_info& {
-        native_.enabledExtensionCount   = static_cast<u32>(vec.size());
-        native_.ppEnabledExtensionNames = vec.data();
+        native().enabledExtensionCount   = static_cast<u32>(vec.size());
+        native().ppEnabledExtensionNames = vec.data();
+        return *this;
+    }
+};
+
+template <>
+class view<instance_create_info> final : public detail::base_view<instance_create_info> {
+  public:
+    using base_view<instance_create_info>::base_view;
+
+    auto app_info(const application_info& app) noexcept -> view<instance_create_info>& {
+        native().pApplicationInfo = &app.native();
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkInstanceCreateInfo& { return native_; }
+    auto layers(const std::span<const char* const> vec) noexcept -> view<instance_create_info>& {
+        native().enabledLayerCount   = static_cast<u32>(vec.size());
+        native().ppEnabledLayerNames = vec.data();
+        return *this;
+    }
 
-  private:
-    VkInstanceCreateInfo native_{};
+    auto extensions(const std::span<const char* const> vec) noexcept
+        -> view<instance_create_info>& {
+        native().enabledExtensionCount   = static_cast<u32>(vec.size());
+        native().ppEnabledExtensionNames = vec.data();
+        return *this;
+    }
 };
 }  // namespace hgn
