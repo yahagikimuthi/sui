@@ -190,7 +190,7 @@ class view<device_create_info> final : public detail::base_view<device_create_in
 using device = VkDevice_T;
 
 [[nodiscard]] inline auto try_make_device(
-    physical_device& physical, const device_create_info& info
+    physical_device& physical, const view<const device_create_info>& info
 ) noexcept -> std::expected<ref_w<device>, result> {
     auto*      dev = static_cast<device*>(nullptr);
     const auto res = vkCreateDevice(&physical, &info.native(), nullptr, &dev);
