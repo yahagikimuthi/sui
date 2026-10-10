@@ -22,13 +22,17 @@ class wrapper {
   private:
     T native_;
 };
+
+template <typename Native>
+auto extract_native(const wrapper<Native>&) noexcept -> Native;
 }  // namespace hgn::detail
 
 namespace hgn {
-
 template <typename T>
 class view;
+}
 
+namespace hgn::detail {
 template <typename Wrapper>
     requires std::is_class_v<std::remove_const_t<Wrapper>> and
              std::is_class_v<std::remove_cvref_t<decltype(std::declval<Wrapper>().native())>>
@@ -55,22 +59,26 @@ class base_view {
     reference native_ref_;
 };
 
-template <typename Wrapper>
-class view final : public base_view<Wrapper> {
-  public:
-    using base_view<Wrapper>::base_view;
-};
-}  // namespace hgn
+}  // namespace hgn::detail
 
-namespace hgn::detail {
-template <typename Native>
-auto extract_native(const wrapper<Native>&) noexcept -> Native;
+namespace hgn {
+template <typename Wrapper>
+class view final : public detail::base_view<Wrapper> {
+  public:
+    using detail::base_view<Wrapper>::base_view;
+};
 
 template <typename Wrapper>
     requires(std::is_class_v<Wrapper>)  // 非const
 class proxy_vector {
-  public:
     using Native = decltype(extract_native(std::declval<Wrapper>()));
+
+  public:
+    explicit proxy_vector() noexcept = default;
+    explicit proxy_vector(const std::size_t n) noexcept
+        requires std::is_default_constructible_v<Native>
+        : vec_(n) {}
+
     [[nodiscard]] auto size() const noexcept -> std::size_t { return vec_.size(); }
 
     [[nodiscard]] auto operator[](const std::size_t i) noexcept -> view<Wrapper> {
@@ -84,6 +92,10 @@ class proxy_vector {
     [[nodiscard]] auto push_back(const view<const Wrapper> element) noexcept {
         vec_.emplace_back(element.native());
     }
+
+    [[nodiscard]] auto native_data() noexcept -> Native* { return vec_.data(); }
+
+    [[nodiscard]] auto native_data() const noexcept -> const Native* { return vec_.data(); }
 
   private:
     std::vector<Native> vec_;
@@ -106,4 +118,4 @@ class proxy_vector<std::optional<T&>> {
   private:
     std::vector<pointer> vec_;
 };
-}  // namespace hgn::detail
+}  // namespace hgn
