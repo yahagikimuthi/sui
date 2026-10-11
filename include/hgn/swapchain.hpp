@@ -5,6 +5,7 @@
 #include <expected>
 #include <functional>
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include "hgn/device.hpp"
