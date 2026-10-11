@@ -71,7 +71,7 @@ class device_create_info final {
         return *this;
     }
 
-    auto features(physical_device_features& features) noexcept -> device_create_info& {
+    auto features(const physical_device_features& features) noexcept -> device_create_info& {
         features_                = features.native();
         native_.pEnabledFeatures = &features_;
         return *this;
