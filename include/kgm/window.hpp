@@ -65,7 +65,7 @@ inline void reset_window_user(window& win) noexcept {
 }
 
 template <typename T>
-[[nodiscard]] inline auto get_window_user(window& win) noexcept -> std::optional<T&> {
+[[nodiscard]] inline auto try_get_window_user(window& win) noexcept -> std::optional<T&> {
     auto* user = static_cast<T*>(glfwGetWindowUserPointer(&win));
     if (user == nullptr) return std::nullopt;
     return *user;
