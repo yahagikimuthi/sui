@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+#include <cassert>
 #include <expected>
 #include <functional>
 #include <optional>
@@ -36,6 +38,10 @@ using image = VkImage_T;
 
     return out;
 };
+
+inline void destroy_image(device& dev, image& target) noexcept {
+    vkDestroyImage(&dev, &target, nullptr);
+}
 
 class image_view_create_info final {
   public:
@@ -102,6 +108,8 @@ class image_view_create_info final {
         return *this;
     }
 
+    [[nodiscard]] auto native() const noexcept -> const VkImageViewCreateInfo& { return native_; }
+
   private:
     void reset() noexcept {
         if (native_.image != nullptr) {
@@ -113,4 +121,17 @@ class image_view_create_info final {
     VkImageViewCreateInfo native_{};
     std::optional<image&> image_;
 };
+
+using image_view = VkImageView_T;
+
+[[nodiscard]] inline auto try_make_image_view(
+    device& dev, const image_view_create_info& info
+) noexcept -> std::expected<std::reference_wrapper<image_view>, result> {
+    auto*      view = static_cast<image_view*>(nullptr);
+    const auto res  = vkCreateImageView(&dev, &info.native(), nullptr, &view);
+    if (res != VK_SUCCESS) return make_result(res);
+
+    assert(view != nullptr);
+    return std::ref(*view);
+}
 }  // namespace hgn
