@@ -14,7 +14,7 @@ namespace kgm {
 [[nodiscard]] inline auto get_required_instance_extensions() noexcept -> std::vector<const char*> {
     auto         count          = u32{};
     auto         extensions     = std::vector<const char*>{};
-    const char** extensions_ptr = glfwGetRequiredInstanceExtensions(&count);
+    const auto** extensions_ptr = glfwGetRequiredInstanceExtensions(&count);
 
     if (extensions_ptr == nullptr or count == 0) {
         return extensions;
