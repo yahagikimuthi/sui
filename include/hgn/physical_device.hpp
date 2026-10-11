@@ -16,7 +16,7 @@ namespace hgn {
 using physical_device = VkPhysicalDevice_T;
 
 [[nodiscard]] inline auto try_enumerate_physical_devices(instance& instance_ref) noexcept
-    -> std::expected<std::vector<ref_w<physical_device>>, result> {
+    -> std::expected<std::vector<std::reference_wrapper<physical_device>>, result> {
     auto count = u32{};
 
     const auto res1 = vkEnumeratePhysicalDevices(&instance_ref, &count, nullptr);
@@ -27,14 +27,16 @@ using physical_device = VkPhysicalDevice_T;
     const auto res2 = vkEnumeratePhysicalDevices(&instance_ref, &count, devices.data());
     if (res2 != VK_SUCCESS) return make_result(res2);
 
-    auto out = std::vector<ref_w<physical_device>>{};
+    auto out = std::vector<std::reference_wrapper<physical_device>>{};
     out.reserve(count);
     out.assign_range(
         devices |
-        std::views::transform([](physical_device* device) noexcept -> ref_w<physical_device> {
-            assert(device != nullptr);
-            return std::ref(*device);
-        })
+        std::views::transform(
+            [](physical_device* device) noexcept -> std::reference_wrapper<physical_device> {
+                assert(device != nullptr);
+                return std::ref(*device);
+            }
+        )
     );
 
     return out;

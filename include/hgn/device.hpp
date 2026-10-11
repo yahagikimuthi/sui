@@ -85,7 +85,7 @@ using device = VkDevice_T;
 
 [[nodiscard]] inline auto try_make_device(
     physical_device& physical, const device_create_info& info
-) noexcept -> std::expected<ref_w<device>, result> {
+) noexcept -> std::expected<std::reference_wrapper<device>, result> {
     auto*      dev = static_cast<device*>(nullptr);
     const auto res = vkCreateDevice(&physical, &info.native(), nullptr, &dev);
     if (res != VK_SUCCESS) return make_result(res);

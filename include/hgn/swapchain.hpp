@@ -121,7 +121,7 @@ using swapchain = VkSwapchainKHR_T;
 
 [[nodiscard]] inline auto try_make_swapchain(
     device& dev, const swapchain_create_info_khr& info
-) noexcept -> std::expected<ref_w<swapchain>, result> {
+) noexcept -> std::expected<std::reference_wrapper<swapchain>, result> {
     auto*      chain = static_cast<swapchain*>(nullptr);
     const auto res   = vkCreateSwapchainKHR(&dev, &info.native(), nullptr, &chain);
     if (res != VK_SUCCESS) return make_result(res);
@@ -134,7 +134,7 @@ using swapchain = VkSwapchainKHR_T;
 using image = VkImage_T;
 
 [[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain& chain) noexcept
-    -> std::expected<std::vector<ref_w<image>>, result> {
+    -> std::expected<std::vector<std::reference_wrapper<image>>, result> {
     auto       count = u32{};
     const auto res1  = vkGetSwapchainImagesKHR(&dev, &chain, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
@@ -144,12 +144,14 @@ using image = VkImage_T;
     const auto res2 = vkGetSwapchainImagesKHR(&dev, &chain, &count, images.data());
     if (res2 != VK_SUCCESS) return make_result(res2);
 
-    auto out = std::vector<ref_w<image>>{};
+    auto out = std::vector<std::reference_wrapper<image>>{};
     out.reserve(count);
-    out.assign_range(images | std::views::transform([](image* ptr) noexcept -> ref_w<image> {
-                         assert(ptr != nullptr);
-                         return std::ref(*ptr);
-                     }));
+    out.assign_range(
+        images | std::views::transform([](image* ptr) noexcept -> std::reference_wrapper<image> {
+            assert(ptr != nullptr);
+            return std::ref(*ptr);
+        })
+    );
 
     return out;
 };
