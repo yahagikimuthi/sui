@@ -15,9 +15,7 @@
 namespace hgn {
 class swapchain_create_info_khr final {
   public:
-    explicit swapchain_create_info_khr() noexcept {
-        native_.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    }
+    explicit swapchain_create_info_khr() noexcept = default;
 
     auto surface(surface_khr& surface) noexcept -> swapchain_create_info_khr& {
         surface_        = surface;
@@ -95,7 +93,26 @@ class swapchain_create_info_khr final {
     }
 
   private:
-    VkSwapchainCreateInfoKHR    native_{};
+    VkSwapchainCreateInfoKHR native_{
+        .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+        .pNext                 = nullptr,
+        .flags                 = 0,
+        .surface               = nullptr,
+        .minImageCount         = 0,
+        .imageFormat           = static_cast<VkFormat>(0),
+        .imageColorSpace       = static_cast<VkColorSpaceKHR>(0),
+        .imageExtent           = {},
+        .imageArrayLayers      = 0,
+        .imageUsage            = 0,
+        .imageSharingMode      = static_cast<VkSharingMode>(0),
+        .queueFamilyIndexCount = 0,
+        .pQueueFamilyIndices   = nullptr,
+        .preTransform          = static_cast<VkSurfaceTransformFlagBitsKHR>(0),
+        .compositeAlpha        = static_cast<VkCompositeAlphaFlagBitsKHR>(0),
+        .presentMode           = static_cast<VkPresentModeKHR>(0),
+        .clipped               = 0,
+        .oldSwapchain          = nullptr
+    };
     std::vector<u32>            queue_family_indices_;
     std::optional<surface_khr&> surface_{std::nullopt};
 };
