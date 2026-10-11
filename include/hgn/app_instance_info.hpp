@@ -40,7 +40,7 @@ class application_info final {
 
     auto api_version(const u32 major, const u32 minor, const u32 patch) noexcept
         -> application_info& {
-        native_.apiVersion = VK_MAKE_API_VERSION(0, major, minor, patch);
+        native_.apiVersion = detail::make_api_version(0, major, minor, patch);
         return *this;
     }
 
