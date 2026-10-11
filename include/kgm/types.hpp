@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
 
 namespace kgm {
 using u8  = std::uint8_t;
