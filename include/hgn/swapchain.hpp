@@ -17,6 +17,44 @@ class swapchain_create_info_khr final {
   public:
     explicit swapchain_create_info_khr() noexcept = default;
 
+    swapchain_create_info_khr(const swapchain_create_info_khr& other) noexcept
+        : native_{other.native_},
+          queue_family_indices_{other.queue_family_indices_},
+          surface_{other.surface_} {
+        reset();
+    }
+
+    auto operator=(const swapchain_create_info_khr& other) noexcept -> swapchain_create_info_khr& {
+        if (this == &other) return *this;
+
+        native_               = other.native_;
+        queue_family_indices_ = other.queue_family_indices_;
+        surface_              = other.surface_;
+
+        reset();
+        return *this;
+    }
+
+    swapchain_create_info_khr(swapchain_create_info_khr&& other) noexcept
+        : native_{other.native_},
+          queue_family_indices_{std::move(other.queue_family_indices_)},
+          surface_{other.surface_} {
+        reset();
+    }
+
+    auto operator=(swapchain_create_info_khr&& other) noexcept -> swapchain_create_info_khr& {
+        if (this == &other) return *this;
+
+        native_               = other.native_;
+        queue_family_indices_ = std::move(other.queue_family_indices_);
+        surface_              = other.surface_;
+
+        reset();
+        return *this;
+    }
+
+    ~swapchain_create_info_khr() noexcept = default;
+
     auto surface(surface_khr& surface) noexcept -> swapchain_create_info_khr& {
         surface_        = surface;
         native_.surface = &*surface_;
@@ -93,6 +131,15 @@ class swapchain_create_info_khr final {
     }
 
   private:
+    void reset() noexcept {
+        if (native_.pQueueFamilyIndices != nullptr)
+            native_.pQueueFamilyIndices = queue_family_indices_.data();
+        if (native_.surface != nullptr) {
+            assert(surface_);
+            native_.surface = &*surface_;
+        }
+    }
+
     VkSwapchainCreateInfoKHR native_{
         .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         .pNext                 = nullptr,
