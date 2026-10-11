@@ -12,8 +12,8 @@ namespace hgn::detail {
 }
 
 [[nodiscard]] constexpr auto make_api_version(
-    const u32 major, const u32 minor, const u32 patch
+    u32 variant, const u32 major, const u32 minor, const u32 patch
 ) noexcept -> u32 {
-    return VK_MAKE_API_VERSION(0, major, minor, patch);
+    return VK_MAKE_API_VERSION(variant, major, minor, patch);
 }
 }  // namespace hgn::detail
