@@ -6,6 +6,7 @@
 #include <expected>
 #include <functional>
 #include <optional>
+#include <ranges>
 
 #include "hgn/instance.hpp"
 #include "hgn/others.hpp"
@@ -30,11 +31,13 @@ using physical_device = VkPhysicalDevice_T;
 
     auto out = std::vector<ref_w<physical_device>>{};
     out.reserve(count);
-
-    for (auto* device : devices) {
-        assert(device != nullptr);
-        out.emplace_back(std::ref(*device));
-    }
+    out.append_range(
+        devices |
+        std::views::transform([](physical_device* device) noexcept -> ref_w<physical_device> {
+            assert(device != nullptr);
+            return std::ref(*device);
+        })
+    );
 
     return out;
 }

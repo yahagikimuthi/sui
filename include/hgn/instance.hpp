@@ -5,6 +5,7 @@
 #include <cassert>
 #include <expected>
 #include <functional>
+#include <ranges>
 #include <string_view>
 #include <vector>
 
@@ -50,10 +51,12 @@ class layer_properties final {
 
     auto out = std::vector<layer_properties>{};
     out.reserve(count);
-
-    for (auto& property : properties) {
-        out.emplace_back(std::bit_cast<layer_properties>(property));
-    }
+    out.append_range(
+        properties |
+        std::views::transform([](const VkLayerProperties& prop) noexcept -> layer_properties {
+            return std::bit_cast<layer_properties>(prop);
+        })
+    );
 
     return out;
 }
