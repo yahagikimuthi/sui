@@ -41,7 +41,15 @@ class device_queue_create_info final {
     f32                     priority_{};
 };
 
-using physical_device_features = VkPhysicalDeviceFeatures;
+class physical_device_features final {
+  public:
+    [[nodiscard]] auto native() const noexcept -> const VkPhysicalDeviceFeatures& {
+        return native_;
+    }
+
+  private:
+    VkPhysicalDeviceFeatures native_{};
+};
 
 class device_create_info final {
   public:
@@ -64,7 +72,8 @@ class device_create_info final {
     }
 
     auto features(physical_device_features& features) noexcept -> device_create_info& {
-        native_.pEnabledFeatures = &features;
+        features_                = features.native();
+        native_.pEnabledFeatures = &features_;
         return *this;
     }
 
@@ -78,6 +87,7 @@ class device_create_info final {
 
   private:
     VkDeviceCreateInfo                   native_{};
+    VkPhysicalDeviceFeatures             features_{};
     std::vector<VkDeviceQueueCreateInfo> infos_;
 };
 
