@@ -65,6 +65,7 @@ class instance_create_info final {
     }
 
     auto layers(const std::span<const char* const> vec) noexcept -> instance_create_info& {
+        layers_.reserve(vec.size());
         layers_.assign_range(vec);
         native_.enabledLayerCount   = static_cast<u32>(layers_.size());
         native_.ppEnabledLayerNames = layers_.data();
@@ -72,6 +73,7 @@ class instance_create_info final {
     }
 
     auto extensions(const std::span<const char* const> vec) noexcept -> instance_create_info& {
+        extensions_.reserve(vec.size());
         extensions_.assign_range(vec);
         native_.enabledExtensionCount   = static_cast<u32>(extensions_.size());
         native_.ppEnabledExtensionNames = extensions_.data();
