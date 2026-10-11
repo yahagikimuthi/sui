@@ -21,8 +21,8 @@ namespace kgm {
     }
 
     // ポインタ範囲指定コンストラクタで vector にまとめて返す
-    extensions = std::vector<const char*>(extensions_ptr, extensions_ptr + count);
-    return extensions;  // NOLINT
+    extensions = std::vector<const char*>(extensions_ptr, extensions_ptr + count);  // NOLINT
+    return extensions;
 }
 
 inline void poll_events() noexcept {
