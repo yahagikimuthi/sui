@@ -44,8 +44,6 @@ class application_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() noexcept -> VkApplicationInfo& { return native_; }
-
     [[nodiscard]] auto native() const noexcept -> const VkApplicationInfo& { return native_; }
 
   private:
@@ -57,30 +55,28 @@ class application_info final {
 class instance_create_info final {
   public:
     explicit instance_create_info() noexcept {
-        native().sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        native_.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     }
 
     auto app_info(const application_info& app) noexcept -> instance_create_info& {
-        app_info_                 = app.native();
-        native().pApplicationInfo = &app_info_;
+        app_info_                = app.native();
+        native_.pApplicationInfo = &app_info_;
         return *this;
     }
 
     auto layers(const std::span<const char* const> vec) noexcept -> instance_create_info& {
-        layers_                      = std::vector<const char*>(vec.begin(), vec.end());
-        native().enabledLayerCount   = static_cast<u32>(layers_.size());
-        native().ppEnabledLayerNames = layers_.data();
+        layers_                     = std::vector<const char*>(vec.begin(), vec.end());
+        native_.enabledLayerCount   = static_cast<u32>(layers_.size());
+        native_.ppEnabledLayerNames = layers_.data();
         return *this;
     }
 
     auto extensions(const std::span<const char* const> vec) noexcept -> instance_create_info& {
-        extensions_                      = std::vector<const char*>(vec.begin(), vec.end());
-        native().enabledExtensionCount   = static_cast<u32>(extensions_.size());
-        native().ppEnabledExtensionNames = extensions_.data();
+        extensions_                     = std::vector<const char*>(vec.begin(), vec.end());
+        native_.enabledExtensionCount   = static_cast<u32>(extensions_.size());
+        native_.ppEnabledExtensionNames = extensions_.data();
         return *this;
     }
-
-    [[nodiscard]] auto native() noexcept -> VkInstanceCreateInfo& { return native_; }
 
     [[nodiscard]] auto native() const noexcept -> const VkInstanceCreateInfo& { return native_; }
 
