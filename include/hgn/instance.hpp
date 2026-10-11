@@ -28,8 +28,6 @@ using instance = VkInstance_T;
 
 class layer_properties final {
   public:
-    explicit layer_properties(const VkLayerProperties& native) : native_{native} {}
-
     [[nodiscard]] auto name() const noexcept -> std::string_view {
         const auto out = std::string_view{static_cast<const char*>(native_.layerName)};
         return out;
