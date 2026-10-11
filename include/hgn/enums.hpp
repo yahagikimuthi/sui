@@ -53,6 +53,7 @@ enum class surface_transform_flag_bits_khr : i32 {};
 enum class result : i32 {};
 
 enum class image_view_type : i32 { type_2d = VK_IMAGE_VIEW_TYPE_2D };  // NOLINT
+inline constexpr auto image_view_type_2d = image_view_type::type_2d;
 
 [[nodiscard]] constexpr auto make_result(const VkResult res) noexcept -> std::unexpected<result> {
     return std::unexpected{static_cast<result>(res)};
