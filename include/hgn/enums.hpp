@@ -55,6 +55,13 @@ enum class result : i32 {};
 enum class image_view_type : i32 { type_2d = VK_IMAGE_VIEW_TYPE_2D };  // NOLINT
 inline constexpr auto image_view_type_2d = image_view_type::type_2d;
 
+enum class command_buffer_level : u8 {
+    primary   = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+    secondary = VK_COMMAND_BUFFER_LEVEL_SECONDARY
+};
+inline constexpr auto command_buffer_level_primary   = command_buffer_level::primary;
+inline constexpr auto command_buffer_level_secondary = command_buffer_level::secondary;
+
 [[nodiscard]] constexpr auto make_result(const VkResult res) noexcept -> std::unexpected<result> {
     return std::unexpected{static_cast<result>(res)};
 }
