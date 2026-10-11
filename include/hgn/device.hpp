@@ -87,10 +87,14 @@ class queue_family_properties final {
 
     auto out = std::vector<queue_family_properties>{};
     out.reserve(count);
-
-    for (const auto& family : queue_families) {
-        out.emplace_back(std::bit_cast<queue_family_properties>(family));
-    }
+    out.append_range(
+        queue_families |
+        std::views::transform(
+            [](const VkQueueFamilyProperties& prop) noexcept -> queue_family_properties {
+                return std::bit_cast<queue_family_properties>(prop);
+            }
+        )
+    );
 
     return out;
 }
@@ -111,8 +115,9 @@ class device_queue_create_info final {
         return *this;
     }
 
-    auto queue_priorities(f32& priority) noexcept -> device_queue_create_info& {
-        native_.pQueuePriorities = &priority;
+    auto queue_priorities(const f32 priority) noexcept -> device_queue_create_info& {
+        priority_                = priority;
+        native_.pQueuePriorities = &priority_;
         return *this;
     }
 
@@ -120,6 +125,7 @@ class device_queue_create_info final {
 
   private:
     VkDeviceQueueCreateInfo native_{};
+    f32                     priority_{};
 };
 
 using physical_device_features = VkPhysicalDeviceFeatures;
@@ -128,14 +134,16 @@ class device_create_info final {
   public:
     explicit device_create_info() noexcept { native_.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO; }
 
-    auto queue_create_infos(const std::vector<device_queue_create_info>& infos) noexcept
+    auto queue_create_infos(const std::span<const device_queue_create_info> infos) noexcept
         -> device_create_info& {
         infos_ = std::vector<VkDeviceQueueCreateInfo>{};
         infos_.reserve(infos.size());
-
-        for (const auto& info : infos) {
-            infos_.emplace_back(std::bit_cast<VkDeviceQueueCreateInfo>(info));
-        }
+        infos_.append_range(
+            infos | std::views::transform(
+                        [](const device_queue_create_info& info) noexcept
+                            -> const VkDeviceQueueCreateInfo& { return info.native(); }
+                    )
+        );
 
         native_.queueCreateInfoCount = static_cast<u32>(infos_.size());
         native_.pQueueCreateInfos    = infos_.data();
@@ -197,8 +205,7 @@ using queue = VkQueue_T;
 
 class surface_capabilities_khr final {
   public:
-    explicit surface_capabilities_khr(const VkSurfaceCapabilitiesKHR& native) noexcept
-        : native_{native} {}
+    explicit surface_capabilities_khr() noexcept = default;
 
     [[nodiscard]] auto current_extent() const noexcept -> extent2d { return native_.currentExtent; }
 
@@ -244,7 +251,7 @@ class surface_capabilities_khr final {
     auto res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&physical, &surface, &capabilities);
     if (res != VK_SUCCESS) return make_result(res);
 
-    return surface_capabilities_khr{capabilities};
+    return std::bit_cast<surface_capabilities_khr>(capabilities);
 }
 
 class surface_format_khr final {
@@ -274,9 +281,12 @@ class surface_format_khr final {
 
     auto out = std::vector<surface_format_khr>{};
     out.reserve(count);
-    for (const auto& format : formats) {
-        out.emplace_back(std::bit_cast<surface_format_khr>(format));
-    }
+    out.append_range(
+        formats |
+        std::views::transform([](const VkSurfaceFormatKHR& format) noexcept -> surface_format_khr {
+            return std::bit_cast<surface_format_khr>(format);
+        })
+    );
 
     return out;
 }
@@ -296,9 +306,11 @@ class surface_format_khr final {
 
     auto out = std::vector<present_mode_khr>{};
     out.reserve(count);
-    for (const auto mode : modes) {
-        out.emplace_back(std::bit_cast<present_mode_khr>(mode));
-    }
+    out.assign_range(
+        modes | std::views::transform([](const VkPresentModeKHR mode) noexcept -> present_mode_khr {
+            return std::bit_cast<present_mode_khr>(mode);
+        })
+    );
 
     return out;
 }
