@@ -26,7 +26,7 @@ class application_info final {
         return *this;
     }
 
-    auto engine_name(const std::string_view& name) noexcept -> application_info& {
+    auto engine_name(const std::string_view name) noexcept -> application_info& {
         engine_name_        = name;
         native_.pEngineName = engine_name_.c_str();
         return *this;
@@ -65,14 +65,14 @@ class instance_create_info final {
     }
 
     auto layers(const std::span<const char* const> vec) noexcept -> instance_create_info& {
-        layers_                     = std::vector<const char*>(vec.begin(), vec.end());
+        layers_.assign_range(vec);
         native_.enabledLayerCount   = static_cast<u32>(layers_.size());
         native_.ppEnabledLayerNames = layers_.data();
         return *this;
     }
 
     auto extensions(const std::span<const char* const> vec) noexcept -> instance_create_info& {
-        extensions_                     = std::vector<const char*>(vec.begin(), vec.end());
+        extensions_.assign_range(vec);
         native_.enabledExtensionCount   = static_cast<u32>(extensions_.size());
         native_.ppEnabledExtensionNames = extensions_.data();
         return *this;
