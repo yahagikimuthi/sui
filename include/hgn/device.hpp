@@ -6,6 +6,7 @@
 #include <functional>
 #include <optional>
 #include <ranges>
+#include <utility>
 
 #include "hgn/enums.hpp"
 #include "hgn/physical_device.hpp"
@@ -17,6 +18,38 @@ class device_queue_create_info final {
     explicit device_queue_create_info() noexcept {
         native_.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     }
+
+    device_queue_create_info(const device_queue_create_info& other) noexcept
+        : native_{other.native_}, priority_{other.priority_} {
+        reset();
+    }
+
+    auto operator=(const device_queue_create_info& other) noexcept -> device_queue_create_info& {
+        if (this == &other) return *this;
+
+        native_   = other.native_;
+        priority_ = other.priority_;
+
+        reset();
+        return *this;
+    }
+
+    device_queue_create_info(device_queue_create_info&& other) noexcept
+        : native_{other.native_}, priority_{other.priority_} {
+        reset();
+    }
+
+    auto operator=(device_queue_create_info&& other) noexcept -> device_queue_create_info& {
+        if (this == &other) return *this;
+
+        native_   = other.native_;
+        priority_ = other.priority_;
+
+        reset();
+        return *this;
+    }
+
+    ~device_queue_create_info() noexcept = default;
 
     auto queue_family_index(const u32 idx) noexcept -> device_queue_create_info& {
         native_.queueFamilyIndex = idx;
@@ -37,6 +70,10 @@ class device_queue_create_info final {
     [[nodiscard]] auto native() const noexcept -> const VkDeviceQueueCreateInfo& { return native_; }
 
   private:
+    void reset() noexcept {
+        if (native_.pQueuePriorities != nullptr) native_.pQueuePriorities = &priority_;
+    }
+
     VkDeviceQueueCreateInfo native_{};
     f32                     priority_{};
 };
@@ -54,6 +91,39 @@ class physical_device_features final {
 class device_create_info final {
   public:
     explicit device_create_info() noexcept { native_.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO; }
+
+    device_create_info(const device_create_info& other) noexcept
+        : native_{other.native_}, features_{other.features_}, infos_{other.infos_} {
+        reset();
+    }
+
+    auto operator=(const device_create_info& other) noexcept -> device_create_info& {
+        if (this == &other) return *this;
+        native_   = other.native_;
+        features_ = other.features_;
+        infos_    = other.infos_;
+
+        reset();
+        return *this;
+    }
+
+    device_create_info(device_create_info&& other) noexcept
+        : native_{other.native_}, features_{other.features_}, infos_{std::move(other.infos_)} {
+        reset();
+    }
+
+    auto operator=(device_create_info&& other) noexcept -> device_create_info& {
+        if (this == &other) return *this;
+
+        native_   = other.native_;
+        features_ = other.features_;
+        infos_    = other.infos_;
+
+        reset();
+        return *this;
+    }
+
+    ~device_create_info() noexcept = default;
 
     auto queue_create_infos(const std::span<const device_queue_create_info> infos) noexcept
         -> device_create_info& {
@@ -86,6 +156,11 @@ class device_create_info final {
     [[nodiscard]] auto native() const noexcept -> const VkDeviceCreateInfo& { return native_; }
 
   private:
+    void reset() noexcept {
+        if (native_.pEnabledFeatures != nullptr) native_.pEnabledFeatures = &features_;
+        if (native_.pQueueCreateInfos != nullptr) native_.pQueueCreateInfos = infos_.data();
+    }
+
     VkDeviceCreateInfo                   native_{};
     VkPhysicalDeviceFeatures             features_{};
     std::vector<VkDeviceQueueCreateInfo> infos_;
