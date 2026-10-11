@@ -2,6 +2,9 @@
 
 #include <vulkan/vulkan.h>
 #include <span>
+#include <string>
+#include <string_view>
+#include <vector>
 
 #include "hgn/detail/others.hpp"
 #include "hgn/types.hpp"
@@ -11,10 +14,9 @@ class application_info final {
   public:
     explicit application_info() noexcept { native_.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO; }
 
-    template <typename T>
-        requires detail::is_string_literal_v<T>
-    auto application_name(const T& name) noexcept -> application_info& {
-        native_.pApplicationName = name;
+    auto application_name(const std::string_view name) noexcept -> application_info& {
+        app_name_                = name;
+        native_.pApplicationName = app_name_.c_str();
         return *this;
     }
 
@@ -24,10 +26,9 @@ class application_info final {
         return *this;
     }
 
-    template <typename T>
-        requires detail::is_string_literal_v<T>
-    auto engine_name(const T& name) noexcept -> application_info& {
-        native_.pEngineName = name;
+    auto engine_name(const std::string_view& name) noexcept -> application_info& {
+        engine_name_        = name;
+        native_.pEngineName = engine_name_.c_str();
         return *this;
     }
 
@@ -49,6 +50,8 @@ class application_info final {
 
   private:
     VkApplicationInfo native_{};
+    std::string       app_name_;
+    std::string       engine_name_;
 };
 
 class instance_create_info final {
@@ -58,19 +61,22 @@ class instance_create_info final {
     }
 
     auto app_info(const application_info& app) noexcept -> instance_create_info& {
-        native().pApplicationInfo = &app.native();
+        app_info_                 = app.native();
+        native().pApplicationInfo = &app_info_;
         return *this;
     }
 
     auto layers(const std::span<const char* const> vec) noexcept -> instance_create_info& {
-        native().enabledLayerCount   = static_cast<u32>(vec.size());
-        native().ppEnabledLayerNames = vec.data();
+        layers_                      = std::vector<const char*>(vec.begin(), vec.end());
+        native().enabledLayerCount   = static_cast<u32>(layers_.size());
+        native().ppEnabledLayerNames = layers_.data();
         return *this;
     }
 
     auto extensions(const std::span<const char* const> vec) noexcept -> instance_create_info& {
-        native().enabledExtensionCount   = static_cast<u32>(vec.size());
-        native().ppEnabledExtensionNames = vec.data();
+        extensions_                      = std::vector<const char*>(vec.begin(), vec.end());
+        native().enabledExtensionCount   = static_cast<u32>(extensions_.size());
+        native().ppEnabledExtensionNames = extensions_.data();
         return *this;
     }
 
@@ -79,6 +85,9 @@ class instance_create_info final {
     [[nodiscard]] auto native() const noexcept -> const VkInstanceCreateInfo& { return native_; }
 
   private:
-    VkInstanceCreateInfo native_{};
+    VkInstanceCreateInfo     native_{};
+    VkApplicationInfo        app_info_{};
+    std::vector<const char*> layers_;
+    std::vector<const char*> extensions_;
 };
 }  // namespace hgn
