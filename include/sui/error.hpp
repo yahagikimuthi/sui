@@ -53,7 +53,7 @@ class error final {
         auto codes = std::vector<error_code>{};
         codes.reserve(1 + child_error.codes_.size());
         codes.emplace_back(type, std::string_view{message});
-        codes.append_range(child_error.codes_);
+        codes.assign_range(child_error.codes_);
 
         const auto out = error{std::move(codes)};
         return std::unexpected{out};
@@ -72,7 +72,7 @@ class error final {
         auto codes = std::vector<error_code>{};
         codes.reserve(1 + child_error.codes_.size());
         codes.emplace_back(type, std::string{message});
-        codes.append_range(child_error.codes_);
+        codes.assign_range(child_error.codes_);
 
         const auto out = error{std::move(codes)};
         return std::unexpected{out};

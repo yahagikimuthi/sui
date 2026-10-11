@@ -51,7 +51,7 @@ class layer_properties final {
 
     auto out = std::vector<layer_properties>{};
     out.reserve(count);
-    out.append_range(
+    out.assign_range(
         properties |
         std::views::transform([](const VkLayerProperties& prop) noexcept -> layer_properties {
             return std::bit_cast<layer_properties>(prop);

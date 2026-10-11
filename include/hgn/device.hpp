@@ -31,7 +31,7 @@ using physical_device = VkPhysicalDevice_T;
 
     auto out = std::vector<ref_w<physical_device>>{};
     out.reserve(count);
-    out.append_range(
+    out.assign_range(
         devices |
         std::views::transform([](physical_device* device) noexcept -> ref_w<physical_device> {
             assert(device != nullptr);
@@ -87,7 +87,7 @@ class queue_family_properties final {
 
     auto out = std::vector<queue_family_properties>{};
     out.reserve(count);
-    out.append_range(
+    out.assign_range(
         queue_families |
         std::views::transform(
             [](const VkQueueFamilyProperties& prop) noexcept -> queue_family_properties {
@@ -138,7 +138,7 @@ class device_create_info final {
         -> device_create_info& {
         infos_ = std::vector<VkDeviceQueueCreateInfo>{};
         infos_.reserve(infos.size());
-        infos_.append_range(
+        infos_.assign_range(
             infos | std::views::transform(
                         [](const device_queue_create_info& info) noexcept
                             -> const VkDeviceQueueCreateInfo& { return info.native(); }
@@ -281,7 +281,7 @@ class surface_format_khr final {
 
     auto out = std::vector<surface_format_khr>{};
     out.reserve(count);
-    out.append_range(
+    out.assign_range(
         formats |
         std::views::transform([](const VkSurfaceFormatKHR& format) noexcept -> surface_format_khr {
             return std::bit_cast<surface_format_khr>(format);
