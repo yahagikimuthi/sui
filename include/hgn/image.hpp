@@ -2,10 +2,10 @@
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
+#include <bit>
 #include <cassert>
 #include <expected>
 #include <functional>
-#include <optional>
 #include <vector>
 
 #include "hgn/device.hpp"
@@ -56,41 +56,8 @@ class image_view_create_info final {
         native_.subresourceRange.layerCount     = 1;
     }
 
-    image_view_create_info(const image_view_create_info& other)
-        : native_{other.native_}, image_{other.image_} {
-        reset();
-    }
-
-    auto operator=(const image_view_create_info& other) noexcept -> image_view_create_info& {
-        if (this == &other) return *this;
-
-        native_ = other.native_;
-        image_  = other.image_;
-
-        reset();
-        return *this;
-    }
-
-    image_view_create_info(image_view_create_info&& other) noexcept
-        : native_{other.native_}, image_{other.image_} {
-        reset();
-    }
-
-    auto operator=(image_view_create_info&& other) noexcept -> image_view_create_info& {
-        if (this == &other) return *this;
-
-        native_ = other.native_;
-        image_  = other.image_;
-
-        reset();
-        return *this;
-    }
-
-    ~image_view_create_info() noexcept = default;
-
     auto setting_image(image& image_ref) noexcept -> image_view_create_info& {
-        image_        = image_ref;
-        native_.image = &*image_;
+        native_.image = &image_ref;
         return *this;
     }
 
@@ -104,18 +71,8 @@ class image_view_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkImageViewCreateInfo& { return native_; }
-
   private:
-    void reset() noexcept {
-        if (native_.image != nullptr) {
-            assert(image_);
-            native_.image = &*image_;
-        }
-    }
-
     VkImageViewCreateInfo native_{};
-    std::optional<image&> image_;
 };
 
 using image_view = VkImageView_T;
@@ -123,8 +80,9 @@ using image_view = VkImageView_T;
 [[nodiscard]] inline auto try_make_image_view(
     device& dev, const image_view_create_info& info
 ) noexcept -> std::expected<std::reference_wrapper<image_view>, result> {
-    auto*      view = static_cast<image_view*>(nullptr);
-    const auto res  = vkCreateImageView(&dev, &info.native(), nullptr, &view);
+    auto*      view        = static_cast<image_view*>(nullptr);
+    auto       native_info = std::bit_cast<VkImageViewCreateInfo>(info);
+    const auto res         = vkCreateImageView(&dev, &native_info, nullptr, &view);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(view != nullptr);

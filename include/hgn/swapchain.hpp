@@ -4,7 +4,6 @@
 #include <cassert>
 #include <expected>
 #include <functional>
-#include <optional>
 #include <utility>
 #include <vector>
 
@@ -19,9 +18,7 @@ class swapchain_create_info_khr final {
     explicit swapchain_create_info_khr() noexcept = default;
 
     swapchain_create_info_khr(const swapchain_create_info_khr& other) noexcept
-        : native_{other.native_},
-          queue_family_indices_{other.queue_family_indices_},
-          surface_{other.surface_} {
+        : native_{other.native_}, queue_family_indices_{other.queue_family_indices_} {
         reset();
     }
 
@@ -30,16 +27,13 @@ class swapchain_create_info_khr final {
 
         native_               = other.native_;
         queue_family_indices_ = other.queue_family_indices_;
-        surface_              = other.surface_;
 
         reset();
         return *this;
     }
 
     swapchain_create_info_khr(swapchain_create_info_khr&& other) noexcept
-        : native_{other.native_},
-          queue_family_indices_{std::move(other.queue_family_indices_)},
-          surface_{other.surface_} {
+        : native_{other.native_}, queue_family_indices_{std::move(other.queue_family_indices_)} {
         reset();
     }
 
@@ -48,7 +42,6 @@ class swapchain_create_info_khr final {
 
         native_               = other.native_;
         queue_family_indices_ = std::move(other.queue_family_indices_);
-        surface_              = other.surface_;
 
         reset();
         return *this;
@@ -57,8 +50,7 @@ class swapchain_create_info_khr final {
     ~swapchain_create_info_khr() noexcept = default;
 
     auto surface(surface_khr& surface) noexcept -> swapchain_create_info_khr& {
-        surface_        = surface;
-        native_.surface = &*surface_;
+        native_.surface = &surface;
         return *this;
     }
 
@@ -135,10 +127,6 @@ class swapchain_create_info_khr final {
     void reset() noexcept {
         if (native_.pQueueFamilyIndices != nullptr)
             native_.pQueueFamilyIndices = queue_family_indices_.data();
-        if (native_.surface != nullptr) {
-            assert(surface_);
-            native_.surface = &*surface_;
-        }
     }
 
     VkSwapchainCreateInfoKHR native_{
@@ -161,8 +149,7 @@ class swapchain_create_info_khr final {
         .clipped               = 0,
         .oldSwapchain          = nullptr
     };
-    std::vector<u32>            queue_family_indices_;
-    std::optional<surface_khr&> surface_{std::nullopt};
+    std::vector<u32> queue_family_indices_;
 };
 
 using swapchain = VkSwapchainKHR_T;
