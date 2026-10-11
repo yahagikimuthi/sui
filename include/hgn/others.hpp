@@ -51,7 +51,7 @@ enum class format : i32 { b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB };  // NOLINT
 
 inline constexpr auto format_b8g8r8a8_srgb = format::b8g8r8a8_srgb;
 
-enum class color_space_khr : u8 { srgb_nonlinear = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };
+enum class color_space_khr : i32 { srgb_nonlinear = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };  // NOLINT
 
 inline constexpr auto color_space_srgb_nonlinear_khr = color_space_khr::srgb_nonlinear;
 
