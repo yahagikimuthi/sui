@@ -146,11 +146,10 @@ using image = VkImage_T;
 
     auto out = std::vector<ref_w<image>>{};
     out.reserve(count);
-
-    for (auto* image_ptr : images) {
-        assert(image_ptr != nullptr);
-        out.emplace_back(std::ref(*image_ptr));
-    }
+    out.assign_range(images | std::views::transform([](image* ptr) noexcept -> ref_w<image> {
+                         assert(ptr != nullptr);
+                         return std::ref(*ptr);
+                     }));
 
     return out;
 };
