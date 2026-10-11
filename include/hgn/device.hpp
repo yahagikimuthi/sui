@@ -7,8 +7,8 @@
 #include <optional>
 #include <ranges>
 
+#include "hgn/enums.hpp"
 #include "hgn/physical_device.hpp"
-#include "hgn/result.hpp"
 #include "hgn/types.hpp"
 
 namespace hgn {

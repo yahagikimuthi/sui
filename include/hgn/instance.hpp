@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "hgn/app_instance_info.hpp"
-#include "hgn/result.hpp"
+#include "hgn/enums.hpp"
 #include "hgn/types.hpp"
 
 namespace hgn {

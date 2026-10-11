@@ -6,8 +6,8 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
+#include "hgn/enums.hpp"
 #include "hgn/instance.hpp"
-#include "hgn/others.hpp"
 #include "hgn/physical_device.hpp"
 #include "hgn/types.hpp"
 

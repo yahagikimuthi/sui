@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "hgn/device.hpp"
-#include "hgn/result.hpp"
+#include "hgn/enums.hpp"
 #include "hgn/surface.hpp"
 #include "hgn/types.hpp"
 

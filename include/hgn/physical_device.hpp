@@ -8,8 +8,8 @@
 #include <string_view>
 #include <vector>
 
+#include "hgn/enums.hpp"
 #include "hgn/instance.hpp"
-#include "hgn/others.hpp"
 #include "hgn/types.hpp"
 
 namespace hgn {
