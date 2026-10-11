@@ -44,9 +44,6 @@ using physical_device = VkPhysicalDevice_T;
 
 class physical_device_properties final {
   public:
-    explicit physical_device_properties(const VkPhysicalDeviceProperties& native) noexcept
-        : native_{native} {}
-
     [[nodiscard]] auto name() const noexcept -> std::string_view {
         const auto* ptr = static_cast<const char*>(native_.deviceName);
         return std::string_view{ptr};
@@ -60,14 +57,12 @@ class physical_device_properties final {
     -> physical_device_properties {
     auto properties = VkPhysicalDeviceProperties{};
     vkGetPhysicalDeviceProperties(&device, &properties);
-    return physical_device_properties{properties};
+
+    return std::bit_cast<physical_device_properties>(properties);
 }
 
 class queue_family_properties final {
   public:
-    explicit queue_family_properties(const VkQueueFamilyProperties& native) noexcept
-        : native_{native} {}
-
     [[nodiscard]] auto flags() const noexcept -> queue_flag_bits {
         return static_cast<queue_flag_bits>(native_.queueFlags);
     }
