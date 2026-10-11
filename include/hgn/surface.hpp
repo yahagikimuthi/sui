@@ -41,18 +41,7 @@ class surface_capabilities_khr final {
     }
 
   private:
-    VkSurfaceCapabilitiesKHR native_{
-        .minImageCount           = 0,
-        .maxImageCount           = 0,
-        .currentExtent           = {.width = 0, .height = 0},
-        .minImageExtent          = {.width = 0, .height = 0},
-        .maxImageExtent          = {.width = 0, .height = 0},
-        .maxImageArrayLayers     = 0,
-        .supportedTransforms     = 0,
-        .currentTransform        = static_cast<VkSurfaceTransformFlagBitsKHR>(0),
-        .supportedCompositeAlpha = 0,
-        .supportedUsageFlags     = 0
-    };
+    VkSurfaceCapabilitiesKHR native_;
 };
 
 [[nodiscard]] inline auto try_get_physical_device_surface_capabilities_khr(
@@ -61,9 +50,9 @@ class surface_capabilities_khr final {
     auto capabilities = VkSurfaceCapabilitiesKHR{
         .minImageCount           = 0,
         .maxImageCount           = 0,
-        .currentExtent           = {.width = 0, .height = 0},
-        .minImageExtent          = {.width = 0, .height = 0},
-        .maxImageExtent          = {.width = 0, .height = 0},
+        .currentExtent           = {},
+        .minImageExtent          = {},
+        .maxImageExtent          = {},
         .maxImageArrayLayers     = 0,
         .supportedTransforms     = 0,
         .currentTransform        = static_cast<VkSurfaceTransformFlagBitsKHR>(0),
