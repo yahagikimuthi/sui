@@ -122,7 +122,7 @@ using result::thread_done_khr;
 using result::thread_idle_khr;
 using result::timeout;
 
-[[nodiscard]] inline auto make_result(const VkResult res) noexcept -> std::unexpected<result> {
+[[nodiscard]] constexpr auto make_result(const VkResult res) noexcept -> std::unexpected<result> {
     return std::unexpected{static_cast<result>(res)};
 }  // namespace hgn::detail
 }  // namespace hgn
