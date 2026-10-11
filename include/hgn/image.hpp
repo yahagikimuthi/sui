@@ -39,10 +39,6 @@ using image = VkImage_T;
     return out;
 };
 
-inline void destroy_image(device& dev, image& target) noexcept {
-    vkDestroyImage(&dev, &target, nullptr);
-}
-
 class image_view_create_info final {
   public:
     explicit image_view_create_info() noexcept {
@@ -133,5 +129,9 @@ using image_view = VkImageView_T;
 
     assert(view != nullptr);
     return std::ref(*view);
+}
+
+inline void destroy_image_view(device& dev, image_view& view) noexcept {
+    vkDestroyImageView(&dev, &view, nullptr);
 }
 }  // namespace hgn
