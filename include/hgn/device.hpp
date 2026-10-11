@@ -1,17 +1,14 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <bit>
 #include <cassert>
 #include <expected>
 #include <functional>
 #include <optional>
 #include <ranges>
 
-#include "hgn/others.hpp"
 #include "hgn/physical_device.hpp"
 #include "hgn/result.hpp"
-#include "hgn/surface.hpp"
 #include "hgn/types.hpp"
 
 namespace hgn {
