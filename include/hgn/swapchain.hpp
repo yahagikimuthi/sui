@@ -4,6 +4,7 @@
 #include <cassert>
 #include <expected>
 #include <functional>
+#include <optional>
 #include <vector>
 
 #include "hgn/device.hpp"
@@ -14,12 +15,13 @@
 namespace hgn {
 class swapchain_create_info_khr final {
   public:
-    explicit swapchain_create_info_khr() noexcept {  // NOLINT
+    explicit swapchain_create_info_khr() noexcept {
         native_.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     }
 
     auto surface(surface_khr& surface) noexcept -> swapchain_create_info_khr& {
-        native_.surface = &surface;
+        surface_        = surface;
+        native_.surface = &*surface_;
         return *this;
     }
 
@@ -60,8 +62,9 @@ class swapchain_create_info_khr final {
 
     auto queue_family_indices(const std::span<const u32> indices) noexcept
         -> swapchain_create_info_khr& {
-        native_.queueFamilyIndexCount = static_cast<u32>(indices.size());
-        native_.pQueueFamilyIndices   = indices.data();
+        queue_family_indices_.assign_range(indices);
+        native_.queueFamilyIndexCount = static_cast<u32>(queue_family_indices_.size());
+        native_.pQueueFamilyIndices   = queue_family_indices_.data();
         return *this;
     }
 
@@ -87,17 +90,23 @@ class swapchain_create_info_khr final {
         return *this;
     }
 
+    [[nodiscard]] auto native() const noexcept -> const VkSwapchainCreateInfoKHR& {
+        return native_;
+    }
+
   private:
-    VkSwapchainCreateInfoKHR native_;
+    VkSwapchainCreateInfoKHR    native_{};
+    std::vector<u32>            queue_family_indices_;
+    std::optional<surface_khr&> surface_{std::nullopt};
 };
 
 using swapchain = VkSwapchainKHR_T;
 
-[[nodiscard]] inline auto try_make_swapchain(device& dev, swapchain_create_info_khr& info) noexcept
-    -> std::expected<ref_w<swapchain>, result> {
-    auto*      chain       = static_cast<swapchain*>(nullptr);
-    auto       native_info = std::bit_cast<VkSwapchainCreateInfoKHR>(info);
-    const auto res         = vkCreateSwapchainKHR(&dev, &native_info, nullptr, &chain);
+[[nodiscard]] inline auto try_make_swapchain(
+    device& dev, const swapchain_create_info_khr& info
+) noexcept -> std::expected<ref_w<swapchain>, result> {
+    auto*      chain = static_cast<swapchain*>(nullptr);
+    const auto res   = vkCreateSwapchainKHR(&dev, &info.native(), nullptr, &chain);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(chain != nullptr);
