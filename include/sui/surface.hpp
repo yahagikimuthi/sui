@@ -34,6 +34,8 @@ class surface final {
 
     ~surface() noexcept { destroy(); }
 
+    [[nodiscard]] auto native() noexcept -> hgn::surface_khr& { return native_.value(); }
+
   private:
     void destroy() noexcept {
         if (not native_) return;
