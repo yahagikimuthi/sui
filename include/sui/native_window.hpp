@@ -48,6 +48,8 @@ class native_window final {
         return kgm::window_should_close(*native_);
     }
 
+    [[nodiscard]] auto native() noexcept -> kgm::window& { return native_.value(); }
+
   private:
     explicit native_window(kgm::window& native) : native_{native} {}
 
