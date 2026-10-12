@@ -84,4 +84,55 @@ class command_buffer_allocate_info final {
     assert(buffers != nullptr);
     return std::ref(*buffers);
 }
+
+class command_buffer_begin_info final {
+  public:
+    explicit command_buffer_begin_info() noexcept {
+        native_.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        native_.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    }
+
+    [[nodiscard]] auto native() const noexcept -> const VkCommandBufferBeginInfo& {
+        return native_;
+    }
+
+  private:
+    VkCommandBufferBeginInfo native_{};
+};
+
+[[nodiscard]] inline auto try_begin_command_buffer(
+    command_buffer& buffer, const command_buffer_begin_info& info
+) noexcept -> std::expected<void, result> {
+    const auto res = vkBeginCommandBuffer(&buffer, &info.native());
+    if (res != VK_SUCCESS) return make_result(res);
+    return {};
+}
+
+class image_memory_barrier final {
+  public:
+    explicit image_memory_barrier() noexcept {
+        native_.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        native_.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    }
+
+    [[nodiscard]] auto native() const noexcept -> const VkImageMemoryBarrier& { return native_; }
+
+  private:
+    VkImageMemoryBarrier native_{};
+};
+
+inline auto command_pipeline_barrier(command_buffer& buffer, image_memory_barrier& barrier) {
+    vkCmdPipelineBarrier(
+        &buffer,
+        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        0,
+        0,
+        nullptr,
+        0,
+        nullptr,
+        1,
+        &barrier.native()
+    );
+}
 }  // namespace hgn
