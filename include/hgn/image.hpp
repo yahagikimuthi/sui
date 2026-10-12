@@ -1,16 +1,19 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #include <bit>
 #include <cassert>
 #include <cstdint>
 #include <expected>
 #include <functional>
+#include <limits>
 #include <vector>
 
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/swapchain.hpp"
+#include "hgn/sync.hpp"
 
 namespace hgn {
 using image = VkImage_T;
@@ -90,5 +93,30 @@ using image_view = VkImageView_T;
 
 inline void destroy_image_view(device& dev, image_view& view) noexcept {
     vkDestroyImageView(&dev, &view, nullptr);
+}
+
+[[nodiscard]] inline auto try_acquire_next_image_khr(
+    device&             dev,
+    swapchain&          chain,
+    semaphore&          semaphore,
+    fence&              fence,
+    const std::uint32_t timeout = std::numeric_limits<std::uint32_t>::max()
+) noexcept -> std::expected<std::uint32_t, result> {
+    auto       index = std::uint32_t{};
+    const auto res   = vkAcquireNextImageKHR(&dev, &chain, timeout, &semaphore, &fence, &index);
+    if (res != VK_SUCCESS) return make_result(res);
+    return index;
+}
+
+[[nodiscard]] inline auto try_acquire_next_image_khr(
+    device&             dev,
+    swapchain&          chain,
+    semaphore&          semaphore,
+    const std::uint32_t timeout = std::numeric_limits<std::uint32_t>::max()
+) noexcept -> std::expected<std::uint32_t, result> {
+    auto       index = std::uint32_t{};
+    const auto res   = vkAcquireNextImageKHR(&dev, &chain, timeout, &semaphore, nullptr, &index);
+    if (res != VK_SUCCESS) return make_result(res);
+    return index;
 }
 }  // namespace hgn
