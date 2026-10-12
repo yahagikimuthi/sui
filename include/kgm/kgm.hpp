@@ -1,9 +1,8 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
+#include <cstdint>
 #include <vector>
-
-#include "kgm/types.hpp"
 
 namespace kgm {
 [[nodiscard]] inline auto try_init() noexcept -> bool {
@@ -12,7 +11,7 @@ namespace kgm {
 }
 
 [[nodiscard]] inline auto get_required_instance_extensions() noexcept -> std::vector<const char*> {
-    auto         count          = u32{};
+    auto         count          = std::uint32_t{};
     auto         extensions     = std::vector<const char*>{};
     const auto** extensions_ptr = glfwGetRequiredInstanceExtensions(&count);
 
@@ -32,4 +31,7 @@ inline void poll_events() noexcept {
 inline void terminate() noexcept {
     glfwTerminate();
 }
+
+static_assert(sizeof(float) == 4);
+static_assert(sizeof(double) == 8);
 }  // namespace kgm

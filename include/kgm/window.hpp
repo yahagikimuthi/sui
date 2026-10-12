@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 #include <cassert>
+#include <cstdint>
 #include <expected>
 #include <hgn/instance.hpp>
 #include <hgn/surface.hpp>
@@ -12,10 +13,8 @@
 #include <string_view>
 #include <type_traits>
 
-#include "kgm/types.hpp"
-
 namespace kgm {
-enum class window_hint_t : i32 {
+enum class window_hint_t : std::int32_t {
     client_api = GLFW_CLIENT_API,
     no_api     = GLFW_NO_API,
 };
@@ -24,7 +23,7 @@ using window_hint_t::client_api;
 using window_hint_t::no_api;
 
 inline void window_hint(const window_hint_t hint1, const window_hint_t hint2) noexcept {
-    glfwWindowHint(static_cast<i32>(hint1), static_cast<i32>(hint2));
+    glfwWindowHint(static_cast<std::int32_t>(hint1), static_cast<std::int32_t>(hint2));
 }
 
 inline void default_window_hints() noexcept {
@@ -38,11 +37,11 @@ inline void destroy_window(window& target) noexcept {
 }
 
 [[nodiscard]] inline auto try_make_window(
-    const u32 width, const u32 height, const std::string_view title = "No Title"
+    const std::uint32_t width, const std::uint32_t height, const std::string_view title = "No Title"
 ) noexcept -> std::optional<window&> {
     auto* ptr = glfwCreateWindow(
-        static_cast<i32>(width),
-        static_cast<i32>(height),
+        static_cast<std::int32_t>(width),
+        static_cast<std::int32_t>(height),
         std::string{title}.c_str(),
         nullptr,
         nullptr
