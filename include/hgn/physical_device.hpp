@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <cassert>
+#include <cstdint>
 #include <expected>
 #include <functional>
 #include <ranges>
@@ -10,14 +11,13 @@
 
 #include "hgn/enums.hpp"
 #include "hgn/instance.hpp"
-#include "hgn/types.hpp"
 
 namespace hgn {
 using physical_device = VkPhysicalDevice_T;
 
 [[nodiscard]] inline auto try_enumerate_physical_devices(instance& instance_ref) noexcept
     -> std::expected<std::vector<std::reference_wrapper<physical_device>>, result> {
-    auto count = u32{};
+    auto count = std::uint32_t{};
 
     const auto res1 = vkEnumeratePhysicalDevices(&instance_ref, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
@@ -74,7 +74,7 @@ class queue_family_properties final {
 [[nodiscard]] inline auto get_physical_device_queue_family_properties(
     physical_device& device
 ) noexcept -> std::vector<queue_family_properties> {
-    auto count = u32{};
+    auto count = std::uint32_t{};
     vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, nullptr);
 
     auto queue_families = std::vector<VkQueueFamilyProperties>(count);

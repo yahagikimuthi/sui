@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <bit>
 #include <cassert>
+#include <cstdint>
 #include <expected>
 #include <functional>
 #include <ranges>
@@ -11,7 +12,6 @@
 
 #include "hgn/app_instance_info.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/types.hpp"
 
 namespace hgn {
 using instance = VkInstance_T;
@@ -39,7 +39,7 @@ class layer_properties final {
 
 [[nodiscard]] inline auto try_enumerate_instance_layer_properties() noexcept
     -> std::expected<std::vector<layer_properties>, result> {
-    auto count = u32{};
+    auto count = std::uint32_t{};
     if (auto res = vkEnumerateInstanceLayerProperties(&count, nullptr); res != VK_SUCCESS)
         return make_result(res);
 

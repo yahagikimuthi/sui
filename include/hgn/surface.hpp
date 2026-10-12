@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bit>
+#include <cstdint>
 #include <expected>
 #include <ranges>
 #include <vector>
@@ -9,7 +10,6 @@
 #include "hgn/enums.hpp"
 #include "hgn/instance.hpp"
 #include "hgn/physical_device.hpp"
-#include "hgn/types.hpp"
 
 namespace hgn {
 using surface_khr = VkSurfaceKHR_T;
@@ -19,7 +19,7 @@ inline void destroy_surface_khr(instance& ins, surface_khr& target) noexcept {
 }
 
 [[nodiscard]] inline auto is_physical_device_surface_support_khr(
-    physical_device& physical, u32 indices, surface_khr& surface
+    physical_device& physical, const std::uint32_t indices, surface_khr& surface
 ) noexcept -> bool {
     auto present_support = VK_FALSE;
     vkGetPhysicalDeviceSurfaceSupportKHR(&physical, indices, &surface, &present_support);
@@ -32,9 +32,13 @@ class surface_capabilities_khr final {
 
     [[nodiscard]] auto current_extent() const noexcept -> extent2d { return native_.currentExtent; }
 
-    [[nodiscard]] auto min_image_count() const noexcept -> u32 { return native_.minImageCount; }
+    [[nodiscard]] auto min_image_count() const noexcept -> std::uint32_t {
+        return native_.minImageCount;
+    }
 
-    [[nodiscard]] auto max_image_count() const noexcept -> u32 { return native_.maxImageCount; }
+    [[nodiscard]] auto max_image_count() const noexcept -> std::uint32_t {
+        return native_.maxImageCount;
+    }
 
     [[nodiscard]] auto current_transform() const noexcept -> surface_transform_flag_bits_khr {
         return static_cast<surface_transform_flag_bits_khr>(native_.currentTransform);
@@ -85,7 +89,7 @@ class surface_format_khr final {
 [[nodiscard]] inline auto get_physical_device_surface_formats_khr(
     physical_device& physical, surface_khr& surface
 ) noexcept -> std::vector<surface_format_khr> {
-    auto count = u32{};
+    auto count = std::uint32_t{};
     vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, nullptr);
 
     auto formats = std::vector<VkSurfaceFormatKHR>(count);
@@ -106,7 +110,7 @@ class surface_format_khr final {
 [[nodiscard]] inline auto get_physical_device_surface_present_modes_khr(
     physical_device& physical, surface_khr& surface
 ) noexcept -> std::expected<std::vector<present_mode_khr>, result> {
-    auto       count = u32{};
+    auto       count = std::uint32_t{};
     const auto res1 =
         vkGetPhysicalDeviceSurfacePresentModesKHR(&physical, &surface, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);

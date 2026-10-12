@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <cassert>
+#include <cstdint>
 #include <expected>
 #include <functional>
 #include <span>
@@ -11,7 +12,6 @@
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/surface.hpp"
-#include "hgn/types.hpp"
 
 namespace hgn {
 class swapchain_create_info_khr final {
@@ -55,7 +55,7 @@ class swapchain_create_info_khr final {
         return *this;
     }
 
-    auto min_image_count(const u32 count) noexcept -> swapchain_create_info_khr& {
+    auto min_image_count(const std::uint32_t count) noexcept -> swapchain_create_info_khr& {
         native_.minImageCount = count;
         return *this;
     }
@@ -75,7 +75,7 @@ class swapchain_create_info_khr final {
         return *this;
     }
 
-    auto image_array_layers(const u32 layers) noexcept -> swapchain_create_info_khr& {
+    auto image_array_layers(const std::uint32_t layers) noexcept -> swapchain_create_info_khr& {
         native_.imageArrayLayers = layers;
         return *this;
     }
@@ -90,10 +90,10 @@ class swapchain_create_info_khr final {
         return *this;
     }
 
-    auto queue_family_indices(const std::span<const u32> indices) noexcept
+    auto queue_family_indices(const std::span<const std::uint32_t> indices) noexcept
         -> swapchain_create_info_khr& {
         queue_family_indices_.assign_range(indices);
-        native_.queueFamilyIndexCount = static_cast<u32>(queue_family_indices_.size());
+        native_.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_family_indices_.size());
         native_.pQueueFamilyIndices   = queue_family_indices_.data();
         return *this;
     }
@@ -116,7 +116,7 @@ class swapchain_create_info_khr final {
     }
 
     auto clipped(const bool cond) noexcept -> swapchain_create_info_khr& {
-        native_.clipped = static_cast<u32>(cond);
+        native_.clipped = static_cast<std::uint32_t>(cond);
         return *this;
     }
 
@@ -150,7 +150,7 @@ class swapchain_create_info_khr final {
         .clipped               = 0,
         .oldSwapchain          = nullptr
     };
-    std::vector<u32> queue_family_indices_;
+    std::vector<std::uint32_t> queue_family_indices_;
 };
 
 using swapchain = VkSwapchainKHR_T;

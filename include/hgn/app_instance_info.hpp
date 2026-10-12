@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <cstdint>
 #include <span>
 #include <string>
 #include <string_view>
@@ -8,7 +9,6 @@
 #include <vector>
 
 #include "hgn/detail/others.hpp"
-#include "hgn/types.hpp"
 
 namespace hgn {
 class application_info final {
@@ -57,8 +57,9 @@ class application_info final {
         return *this;
     }
 
-    auto application_version(const u32 major, const u32 minor, const u32 patch) noexcept
-        -> application_info& {
+    auto application_version(
+        const std::uint32_t major, const std::uint32_t minor, const std::uint32_t patch
+    ) noexcept -> application_info& {
         native_.applicationVersion = detail::make_version(major, minor, patch);
         return *this;
     }
@@ -69,14 +70,16 @@ class application_info final {
         return *this;
     }
 
-    auto engine_version(const u32 major, const u32 minor, const u32 patch) noexcept
-        -> application_info& {
+    auto engine_version(
+        const std::uint32_t major, const std::uint32_t minor, const std::uint32_t patch
+    ) noexcept -> application_info& {
         native_.engineVersion = detail::make_version(major, minor, patch);
         return *this;
     }
 
-    auto api_version(const u32 major, const u32 minor, const u32 patch) noexcept
-        -> application_info& {
+    auto api_version(
+        const std::uint32_t major, const std::uint32_t minor, const std::uint32_t patch
+    ) noexcept -> application_info& {
         native_.apiVersion = detail::make_api_version(0, major, minor, patch);
         return *this;
     }
@@ -151,7 +154,7 @@ class instance_create_info final {
     auto layers(const std::span<const char* const> vec) noexcept -> instance_create_info& {
         layers_.reserve(vec.size());
         layers_.assign_range(vec);
-        native_.enabledLayerCount   = static_cast<u32>(layers_.size());
+        native_.enabledLayerCount   = static_cast<std::uint32_t>(layers_.size());
         native_.ppEnabledLayerNames = layers_.data();
         return *this;
     }
@@ -159,7 +162,7 @@ class instance_create_info final {
     auto extensions(const std::span<const char* const> vec) noexcept -> instance_create_info& {
         extensions_.reserve(vec.size());
         extensions_.assign_range(vec);
-        native_.enabledExtensionCount   = static_cast<u32>(extensions_.size());
+        native_.enabledExtensionCount   = static_cast<std::uint32_t>(extensions_.size());
         native_.ppEnabledExtensionNames = extensions_.data();
         return *this;
     }

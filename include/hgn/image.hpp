@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <bit>
 #include <cassert>
+#include <cstdint>
 #include <expected>
 #include <functional>
 #include <vector>
@@ -10,14 +11,13 @@
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/swapchain.hpp"
-#include "hgn/types.hpp"
 
 namespace hgn {
 using image = VkImage_T;
 
 [[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain& chain) noexcept
     -> std::expected<std::vector<std::reference_wrapper<image>>, result> {
-    auto       count = u32{};
+    auto       count = std::uint32_t{};
     const auto res1  = vkGetSwapchainImagesKHR(&dev, &chain, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 

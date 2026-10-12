@@ -3,12 +3,12 @@
 #include <vulkan/vulkan.h>
 #include <bit>
 #include <cassert>
+#include <cstdint>
 #include <expected>
 #include <functional>
 
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/types.hpp"
 
 namespace hgn {
 using command_pool   = VkCommandPool_T;
@@ -21,7 +21,7 @@ class command_pool_create_info final {
         native_.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     }
 
-    auto queue_family_index(const u32 index) noexcept -> command_pool_create_info& {
+    auto queue_family_index(const std::uint32_t index) noexcept -> command_pool_create_info& {
         native_.queueFamilyIndex = index;
         return *this;
     }
@@ -63,7 +63,7 @@ class command_buffer_allocate_info final {
         return *this;
     }
 
-    auto command_buffer_count(const u32 count) noexcept -> command_buffer_allocate_info& {
+    auto command_buffer_count(const std::uint32_t count) noexcept -> command_buffer_allocate_info& {
         native_.commandBufferCount = count;
         return *this;
     }

@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <cassert>
+#include <cstdint>
 #include <expected>
 #include <functional>
 #include <optional>
@@ -12,7 +13,6 @@
 
 #include "hgn/enums.hpp"
 #include "hgn/physical_device.hpp"
-#include "hgn/types.hpp"
 
 namespace hgn {
 class device_queue_create_info final {
@@ -53,17 +53,17 @@ class device_queue_create_info final {
 
     ~device_queue_create_info() noexcept = default;
 
-    auto queue_family_index(const u32 idx) noexcept -> device_queue_create_info& {
+    auto queue_family_index(const std::uint32_t idx) noexcept -> device_queue_create_info& {
         native_.queueFamilyIndex = idx;
         return *this;
     }
 
-    auto queue_count(const u32 cnt) noexcept -> device_queue_create_info& {
+    auto queue_count(const std::uint32_t cnt) noexcept -> device_queue_create_info& {
         native_.queueCount = cnt;
         return *this;
     }
 
-    auto queue_priorities(const f32 priority) noexcept -> device_queue_create_info& {
+    auto queue_priorities(const float priority) noexcept -> device_queue_create_info& {
         priority_                = priority;
         native_.pQueuePriorities = &priority_;
         return *this;
@@ -77,7 +77,7 @@ class device_queue_create_info final {
     }
 
     VkDeviceQueueCreateInfo native_{};
-    f32                     priority_{};
+    float                   priority_{};
 };
 
 class physical_device_features final {
@@ -138,7 +138,7 @@ class device_create_info final {
                     )
         );
 
-        native_.queueCreateInfoCount = static_cast<u32>(infos_.size());
+        native_.queueCreateInfoCount = static_cast<std::uint32_t>(infos_.size());
         native_.pQueueCreateInfos    = infos_.data();
         return *this;
     }
@@ -150,7 +150,7 @@ class device_create_info final {
     }
 
     auto extensions(std::span<const char* const> vec) noexcept -> device_create_info& {
-        native_.enabledExtensionCount   = static_cast<u32>(vec.size());
+        native_.enabledExtensionCount   = static_cast<std::uint32_t>(vec.size());
         native_.ppEnabledExtensionNames = vec.data();
         return *this;
     }
@@ -187,8 +187,9 @@ inline void destroy_device(device& dev) noexcept {
 
 using queue = VkQueue_T;
 
-[[nodiscard]] inline auto try_get_device_queue(device& dev, const u32 graphic_family) noexcept
-    -> std::optional<queue&> {
+[[nodiscard]] inline auto try_get_device_queue(
+    device& dev, const std::uint32_t graphic_family
+) noexcept -> std::optional<queue&> {
     auto* out = static_cast<queue*>(nullptr);
     vkGetDeviceQueue(&dev, graphic_family, 0, &out);
     if (out == nullptr) return std::nullopt;

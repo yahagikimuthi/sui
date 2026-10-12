@@ -1,19 +1,24 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-
-#include "hgn/types.hpp"
+#include <cstdint>
 
 namespace hgn::detail {
 [[nodiscard]] constexpr auto make_version(
-    const u32 major, const u32 minor, const u32 patch
-) noexcept -> u32 {
+    const std::uint32_t major, const std::uint32_t minor, const std::uint32_t patch
+) noexcept -> std::uint32_t {
     return VK_MAKE_VERSION(major, minor, patch);
 }
 
 [[nodiscard]] constexpr auto make_api_version(
-    u32 variant, const u32 major, const u32 minor, const u32 patch
-) noexcept -> u32 {
+    std::uint32_t       variant,
+    const std::uint32_t major,
+    const std::uint32_t minor,
+    const std::uint32_t patch
+) noexcept -> std::uint32_t {
     return VK_MAKE_API_VERSION(variant, major, minor, patch);
 }
+
+static_assert(sizeof(float) == 4);
+static_assert(sizeof(double) == 8);
 }  // namespace hgn::detail
