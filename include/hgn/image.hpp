@@ -98,12 +98,12 @@ inline void destroy_image_view(device& dev, image_view& view) noexcept {
 [[nodiscard]] inline auto try_acquire_next_image_khr(
     device&             dev,
     swapchain&          chain,
-    semaphore&          semaphore,
-    fence&              fence,
+    semaphore&          semaph,
+    fence&              fence_ref,
     const std::uint32_t timeout = std::numeric_limits<std::uint32_t>::max()
 ) noexcept -> std::expected<std::uint32_t, result> {
     auto       index = std::uint32_t{};
-    const auto res   = vkAcquireNextImageKHR(&dev, &chain, timeout, &semaphore, &fence, &index);
+    const auto res   = vkAcquireNextImageKHR(&dev, &chain, timeout, &semaph, &fence_ref, &index);
     if (res != VK_SUCCESS) return make_result(res);
     return index;
 }
@@ -111,11 +111,11 @@ inline void destroy_image_view(device& dev, image_view& view) noexcept {
 [[nodiscard]] inline auto try_acquire_next_image_khr(
     device&             dev,
     swapchain&          chain,
-    semaphore&          semaphore,
+    semaphore&          semaph,
     const std::uint32_t timeout = std::numeric_limits<std::uint32_t>::max()
 ) noexcept -> std::expected<std::uint32_t, result> {
     auto       index = std::uint32_t{};
-    const auto res   = vkAcquireNextImageKHR(&dev, &chain, timeout, &semaphore, nullptr, &index);
+    const auto res   = vkAcquireNextImageKHR(&dev, &chain, timeout, &semaph, nullptr, &index);
     if (res != VK_SUCCESS) return make_result(res);
     return index;
 }
