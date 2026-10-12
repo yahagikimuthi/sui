@@ -20,7 +20,8 @@ class instance final {
             .application_version(1, 0, 0)
             .engine_name("No Engine")
             .engine_version(1, 0, 0)
-            .engine_version(1, 3, 0);
+            .engine_version(1, 3, 0)
+            .api_version(1, 3, 0);
 
         auto info = hgn::instance_create_info{};
         info.app_info(app_info).extensions(required_extensions());
@@ -31,7 +32,7 @@ class instance final {
         auto ins = hgn::try_make_instance(info);
         if (not ins) return make_error(runtime_error, "Failed to make hagane instance\n");
 
-        return instance{*ins};
+        return instance{ins->get()};
     }
 
     instance(const instance&) noexcept = delete;
@@ -51,6 +52,8 @@ class instance final {
     }
 
     ~instance() noexcept { destroy(); }
+
+    [[nodiscard]] auto native() noexcept -> hgn::instance& { return native_.value(); }
 
   private:
     explicit instance(hgn::instance& native) : native_{native} {}
