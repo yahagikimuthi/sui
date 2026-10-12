@@ -54,7 +54,9 @@ class native_window final {
     explicit native_window(kgm::window& native) : native_{native} {}
 
     void destroy() noexcept {
-        if (native_) kgm::destroy_window(*native_);
+        if (not native_) return;
+        kgm::destroy_window(*native_);
+        kgm::terminate();
     }
 
     std::optional<kgm::window&> native_;
