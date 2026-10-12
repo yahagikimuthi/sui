@@ -11,4 +11,7 @@ struct is_string_literal final
 
 template <typename T>
 inline constexpr auto is_string_literal_v = is_string_literal<T>::value;
+
+static_assert(sizeof(float) == 4);
+static_assert(sizeof(double) == 8);
 }  // namespace sui::detail
