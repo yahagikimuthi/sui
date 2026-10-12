@@ -121,7 +121,7 @@ class image_memory_barrier final {
     VkImageMemoryBarrier native_{};
 };
 
-inline auto command_pipeline_barrier(command_buffer& buffer, image_memory_barrier& barrier) {
+inline void command_pipeline_barrier(command_buffer& buffer, image_memory_barrier& barrier) {
     vkCmdPipelineBarrier(
         &buffer,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
@@ -134,5 +134,11 @@ inline auto command_pipeline_barrier(command_buffer& buffer, image_memory_barrie
         1,
         &barrier.native()
     );
+}
+
+inline auto try_end_command_buffer(command_buffer& buffer) noexcept -> std::expected<void, result> {
+    const auto res = vkEndCommandBuffer(&buffer);
+    if (res != VK_SUCCESS) return make_result(res);
+    return {};
 }
 }  // namespace hgn
