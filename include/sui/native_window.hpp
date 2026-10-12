@@ -43,6 +43,11 @@ class native_window final {
 
     ~native_window() noexcept { destroy(); }
 
+    [[nodiscard]] auto is_open() const noexcept -> bool {
+        if (not native_) return false;
+        return kgm::window_should_close(*native_);
+    }
+
   private:
     explicit native_window(kgm::window& native) : native_{native} {}
 
