@@ -1,8 +1,5 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
 #include <cassert>
 #include <cstdint>
 #include <expected>
@@ -12,6 +9,10 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 namespace kgm {
 enum class window_hint_t : std::int32_t {

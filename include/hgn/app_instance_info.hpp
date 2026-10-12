@@ -1,12 +1,13 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <cstdint>
 #include <span>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
+
+#include <vulkan/vulkan.h>
 
 #include "hgn/detail/others.hpp"
 

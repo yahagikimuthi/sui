@@ -1,11 +1,12 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <bit>
 #include <cassert>
 #include <cstdint>
 #include <expected>
 #include <functional>
+
+#include <vulkan/vulkan.h>
 
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"

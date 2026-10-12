@@ -1,8 +1,9 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
 #include <cstdint>
 #include <vector>
+
+#include <GLFW/glfw3.h>
 
 namespace kgm {
 [[nodiscard]] inline auto try_init() noexcept -> bool {

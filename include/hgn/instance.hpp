@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <bit>
 #include <cassert>
 #include <cstdint>
@@ -9,6 +8,8 @@
 #include <ranges>
 #include <string_view>
 #include <vector>
+
+#include <vulkan/vulkan.h>
 
 #include "hgn/app_instance_info.hpp"
 #include "hgn/enums.hpp"

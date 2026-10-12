@@ -1,7 +1,8 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <cstdint>
+
+#include <vulkan/vulkan.h>
 
 namespace hgn::detail {
 [[nodiscard]] constexpr auto make_version(

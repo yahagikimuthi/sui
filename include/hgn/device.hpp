@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <cassert>
 #include <cstdint>
 #include <expected>
@@ -10,6 +9,8 @@
 #include <span>
 #include <utility>
 #include <vector>
+
+#include <vulkan/vulkan.h>
 
 #include "hgn/enums.hpp"
 #include "hgn/physical_device.hpp"
