@@ -30,7 +30,9 @@ class native_window final {
     auto operator=(const native_window&) noexcept -> native_window& = delete;
 
     native_window(native_window&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)} {}
+        : native_{std::exchange(other.native_, std::nullopt)} {
+        if (native_) kgm::set_window_user(*native_, *this);
+    }
 
     auto operator=(native_window&& other) noexcept -> native_window& {
         if (this == &other) return *this;
@@ -38,6 +40,8 @@ class native_window final {
         destroy();
 
         native_ = std::exchange(other.native_, std::nullopt);
+        if (native_) kgm::set_window_user(*native_, *this);
+
         return *this;
     }
 
@@ -51,7 +55,9 @@ class native_window final {
     [[nodiscard]] auto native() noexcept -> kgm::window& { return native_.value(); }
 
   private:
-    explicit native_window(kgm::window& native) : native_{native} {}
+    explicit native_window(kgm::window& native) : native_{native} {
+        kgm::set_window_user(native, *this);
+    }
 
     void destroy() noexcept {
         if (not native_) return;
