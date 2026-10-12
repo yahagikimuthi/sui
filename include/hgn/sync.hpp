@@ -66,7 +66,7 @@ inline void destroy_semaphore(device& dev, semaphore& target) noexcept {
     return std::ref(*in_fence);
 }
 
-[[nodiscard]] auto try_wait_for_fence(
+[[nodiscard]] inline auto try_wait_for_fence(
     device&                 dev,
     std::span<fence* const> fences,
     const bool              is_wait_all = true,
