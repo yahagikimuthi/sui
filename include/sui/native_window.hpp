@@ -1,0 +1,55 @@
+#pragma once
+
+#include <expected>
+#include <optional>
+#include <string_view>
+#include <utility>
+
+#include <kgm/kgm.hpp>
+#include <kgm/window.hpp>
+
+#include "sui/error.hpp"
+
+namespace sui {
+class native_window final {
+  public:
+    [[nodiscard]] static auto try_make(
+        const std::uint32_t width, const std::uint32_t height, std::string_view title = "No Title"
+    ) noexcept -> std::expected<native_window, error> {
+        if (not kgm::try_init()) return make_error(runtime_error, "Failed to initialize Kagami");
+
+        kgm::window_hint(kgm::client_api, kgm::no_api);
+        auto win = kgm::try_make_window(width, height, title);
+        if (not win) return make_error(runtime_error, "Failed to make window\n");
+
+        return native_window{*win};
+    }
+
+    native_window(const native_window&) noexcept = delete;
+
+    auto operator=(const native_window&) noexcept -> native_window& = delete;
+
+    native_window(native_window&& other) noexcept
+        : native_{std::exchange(other.native_, std::nullopt)} {}
+
+    auto operator=(native_window&& other) noexcept -> native_window& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        native_ = std::exchange(other.native_, std::nullopt);
+        return *this;
+    }
+
+    ~native_window() noexcept { destroy(); }
+
+  private:
+    explicit native_window(kgm::window& native) : native_{native} {}
+
+    void destroy() noexcept {
+        if (native_) kgm::destroy_window(*native_);
+    }
+
+    std::optional<kgm::window&> native_;
+};
+}  // namespace sui
