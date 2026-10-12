@@ -4,6 +4,7 @@
 #include <cassert>
 #include <expected>
 #include <functional>
+#include <span>
 #include <utility>
 #include <vector>
 

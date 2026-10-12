@@ -3,6 +3,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
+#include <cassert>
 #include <expected>
 #include <hgn/instance.hpp>
 #include <hgn/surface.hpp>
