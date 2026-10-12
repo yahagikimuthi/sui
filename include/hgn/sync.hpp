@@ -6,6 +6,8 @@
 #include <cassert>
 #include <expected>
 #include <functional>
+#include <limits>
+#include <span>
 
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
@@ -62,6 +64,24 @@ inline void destroy_semaphore(device& dev, semaphore& target) noexcept {
 
     assert(in_fence != nullptr);
     return std::ref(*in_fence);
+}
+
+[[nodiscard]] auto try_wait_for_fence(
+    device&                 dev,
+    std::span<fence* const> fences,
+    const bool              is_wait_all = true,
+    std::uint64_t           timeout     = std::numeric_limits<std::uint64_t>::max()
+) noexcept -> std::expected<void, result> {
+    const auto res = vkWaitForFences(
+        &dev,
+        static_cast<std::uint32_t>(fences.size()),
+        fences.data(),
+        static_cast<VkBool32>(is_wait_all),
+        timeout
+    );
+
+    if (res != VK_SUCCESS) return make_result(res);
+    return {};
 }
 
 inline void destroy_fence(device& dev, fence& target) noexcept {
