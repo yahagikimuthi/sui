@@ -14,4 +14,6 @@ inline constexpr auto is_string_literal_v = is_string_literal<T>::value;
 
 static_assert(sizeof(float) == 4);
 static_assert(sizeof(double) == 8);
+
+constexpr auto nothing([[maybe_unused]] auto&&... _) noexcept {}
 }  // namespace sui::detail
