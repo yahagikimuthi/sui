@@ -43,18 +43,15 @@ struct vec2 final {
     }
 
     [[nodiscard]] friend constexpr auto operator+(vec2 a, const vec2 b) noexcept -> vec2 {
-        a += b;
-        return a;
+        return a += b;
     }
 
     [[nodiscard]] friend constexpr auto operator-(vec2 a, const vec2 b) noexcept -> vec2 {
-        a -= b;
-        return a;
+        return a -= b;
     }
 
     [[nodiscard]] friend constexpr auto operator*(vec2 a, const float b) noexcept -> vec2 {
-        a *= b;
-        return a;
+        return a *= b;
     }
 
     [[nodiscard]] friend constexpr auto operator*(const float a, vec2 b) noexcept -> vec2 {
@@ -62,8 +59,7 @@ struct vec2 final {
     }
 
     [[nodiscard]] friend constexpr auto operator/(vec2 a, const float b) noexcept -> vec2 {
-        a /= b;
-        return a;
+        return a /= b;
     }
 };
 }  // namespace sui

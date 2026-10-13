@@ -38,18 +38,15 @@ struct uv final {
     }
 
     [[nodiscard]] friend constexpr auto operator+(uv a, const uv b) noexcept -> uv {
-        a += b;
-        return a;
+        return a += b;
     }
 
     [[nodiscard]] friend constexpr auto operator-(uv a, const uv b) noexcept -> uv {
-        a -= b;
-        return a;
+        return a -= b;
     }
 
     [[nodiscard]] friend constexpr auto operator*(uv a, const float b) noexcept -> uv {
-        a *= b;
-        return a;
+        return a *= b;
     }
 
     [[nodiscard]] friend constexpr auto operator*(const float a, uv b) noexcept -> uv {
@@ -57,8 +54,7 @@ struct uv final {
     }
 
     [[nodiscard]] friend constexpr auto operator/(uv a, const float b) noexcept -> uv {
-        a /= b;
-        return a;
+        return a /= b;
     }
 };
 }  // namespace sui
