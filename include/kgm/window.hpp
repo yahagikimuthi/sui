@@ -3,16 +3,17 @@
 #include <cassert>
 #include <cstdint>
 #include <expected>
-#include <hgn/instance.hpp>
-#include <hgn/surface.hpp>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
 
+#include <vulkan/vulkan.h>
+#include <hgn/instance.hpp>
+#include <hgn/surface.hpp>
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
 
 namespace kgm {
 enum class window_hint_t : std::int32_t {
