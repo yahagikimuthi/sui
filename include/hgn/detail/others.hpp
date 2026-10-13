@@ -12,7 +12,7 @@ namespace hgn::detail {
 }
 
 [[nodiscard]] constexpr auto make_api_version(
-    std::uint32_t       variant,
+    const std::uint32_t variant,
     const std::uint32_t major,
     const std::uint32_t minor,
     const std::uint32_t patch
