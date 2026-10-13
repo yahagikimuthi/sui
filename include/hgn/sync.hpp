@@ -66,16 +66,21 @@ inline void destroy_semaphore(device& dev, semaphore& target) noexcept {
     return std::ref(*in_fence);
 }
 
+template <std::size_t N>
 [[nodiscard]] inline auto try_wait_for_fence(
-    device&                 dev,
-    std::span<fence* const> fences,
-    const bool              is_wait_all = true,
-    std::uint64_t           timeout     = std::numeric_limits<std::uint64_t>::max()
+    device&                                     dev,
+    std::span<std::reference_wrapper<fence>, N> fences,
+    const bool                                  is_wait_all = true,
+    std::uint64_t                               timeout = std::numeric_limits<std::uint64_t>::max()
 ) noexcept -> std::expected<void, result> {
+    auto native_fences = std::array<fence*, N>{};
+    for (const auto i : std::views::indices(N)) {
+        native_fences[i] = &fences[i].get();
+    }
     const auto res = vkWaitForFences(
         &dev,
-        static_cast<std::uint32_t>(fences.size()),
-        fences.data(),
+        static_cast<std::uint32_t>(N),
+        native_fences.data(),
         static_cast<VkBool32>(is_wait_all),
         timeout
     );
