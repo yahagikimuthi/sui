@@ -42,12 +42,12 @@ struct vec2 final {
         return *this;
     }
 
-    [[nodiscard]] friend constexpr auto operator+(vec2 a, const vec2& b) noexcept -> vec2 {
+    [[nodiscard]] friend constexpr auto operator+(vec2 a, const vec2 b) noexcept -> vec2 {
         a += b;
         return a;
     }
 
-    [[nodiscard]] friend constexpr auto operator-(vec2 a, const vec2& b) noexcept -> vec2 {
+    [[nodiscard]] friend constexpr auto operator-(vec2 a, const vec2 b) noexcept -> vec2 {
         a -= b;
         return a;
     }
