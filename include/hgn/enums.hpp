@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <expected>
+#include <string_view>
 #include <utility>
 
 #include <vulkan/vulkan.h>
@@ -43,7 +44,8 @@ enum class present_mode_khr : std::int32_t {  // NOLINT
 
 using extent2d = VkExtent2D;
 
-inline constexpr auto* khr_swapchain_extention_name = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+inline constexpr auto khr_swapchain_extention_name =
+    std::string_view{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 enum class surface_transform_flag_bits_khr : std::int32_t {};
 
