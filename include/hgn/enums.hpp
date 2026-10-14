@@ -58,6 +58,23 @@ enum class result : std::int32_t {};
 enum class image_view_type : std::int32_t { type_2d = VK_IMAGE_VIEW_TYPE_2D };  // NOLINT
 inline constexpr auto image_view_type_2d = image_view_type::type_2d;
 
+enum class image_usage_flags : std::int32_t {  // NOLINT
+    color_attachment = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+};
+inline constexpr auto image_usage_color_attachment_bit = image_usage_flags::color_attachment;
+
+enum class sharing_mode : std::int32_t {  // NOLINT
+    concurrent,
+    exclusive
+};
+inline constexpr auto sharing_mode_concurrent = sharing_mode::concurrent;
+inline constexpr auto sharing_mode_exclusive  = sharing_mode::exclusive;
+
+enum class composite_alpha_flag_bits_khr : std::int32_t {  // NOLINT
+    opaque
+};
+inline constexpr auto composite_alpha_opaque_bit_khr = composite_alpha_flag_bits_khr::opaque;
+
 enum class command_buffer_level : std::uint8_t {
     primary   = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
     secondary = VK_COMMAND_BUFFER_LEVEL_SECONDARY

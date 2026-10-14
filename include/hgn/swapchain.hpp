@@ -81,13 +81,13 @@ class swapchain_create_info_khr final {
         return *this;
     }
 
-    auto image_usage(const VkImageUsageFlags usage) noexcept -> swapchain_create_info_khr& {
-        native_.imageUsage = usage;
+    auto image_usage(const image_usage_flags usage) noexcept -> swapchain_create_info_khr& {
+        native_.imageUsage = static_cast<VkImageUsageFlags>(usage);
         return *this;
     }
 
-    auto image_sharing_mode(const VkSharingMode mode) noexcept -> swapchain_create_info_khr& {
-        native_.imageSharingMode = mode;
+    auto image_sharing_mode(const sharing_mode mode) noexcept -> swapchain_create_info_khr& {
+        native_.imageSharingMode = static_cast<VkSharingMode>(mode);
         return *this;
     }
 
@@ -105,9 +105,9 @@ class swapchain_create_info_khr final {
         return *this;
     }
 
-    auto composite_alpha(const VkCompositeAlphaFlagBitsKHR bits) noexcept
+    auto composite_alpha(const composite_alpha_flag_bits_khr bits) noexcept
         -> swapchain_create_info_khr& {
-        native_.compositeAlpha = bits;
+        native_.compositeAlpha = static_cast<VkCompositeAlphaFlagBitsKHR>(bits);
         return *this;
     }
 
