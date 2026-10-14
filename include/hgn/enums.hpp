@@ -64,9 +64,8 @@ enum class composite_alpha_flag_bits_khr : std::int32_t {  // NOLINT
     opaque
 };
 
-enum class command_buffer_level : std::uint8_t {
-    primary   = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-    secondary = VK_COMMAND_BUFFER_LEVEL_SECONDARY
+enum class command_buffer_level : std::int32_t {  // NOLINT
+    primary = VK_COMMAND_BUFFER_LEVEL_PRIMARY
 };
 
 [[nodiscard]] constexpr auto make_result(const VkResult res) noexcept -> std::unexpected<result> {
