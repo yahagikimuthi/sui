@@ -69,10 +69,10 @@ inline void destroy_semaphore(device& dev, semaphore& target) noexcept {
 
 template <std::size_t N>
 [[nodiscard]] inline auto try_wait_for_fence(
-    device&                                     dev,
-    std::span<std::reference_wrapper<fence>, N> fences,
-    const bool                                  is_wait_all = true,
-    std::uint64_t                               timeout = std::numeric_limits<std::uint64_t>::max()
+    device&                                           dev,
+    const std::span<std::reference_wrapper<fence>, N> fences,
+    const bool                                        is_wait_all = true,
+    std::uint64_t timeout = std::numeric_limits<std::uint64_t>::max()
 ) noexcept -> std::expected<void, result> {
     auto native_fences = std::inplace_vector<fence*, N>{};
     native_fences.assign_range(
