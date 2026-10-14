@@ -51,7 +51,7 @@ class instance final {
         return *this;
     }
 
-    ~instance() noexcept { destroy(); }
+    ~instance() noexcept = default;
 
     [[nodiscard]] auto native() noexcept -> hgn::instance& { return native_.value(); }
 

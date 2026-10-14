@@ -31,7 +31,7 @@ class swapchain final {
         return *this;
     }
 
-    ~swapchain() noexcept { destroy(); }
+    ~swapchain() noexcept = default;
 
     [[nodiscard]] auto native() noexcept -> hgn::swapchain& { return native_.value(); }
 
