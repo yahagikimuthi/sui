@@ -7,6 +7,7 @@
 #include <optional>
 #include <ranges>
 #include <span>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -150,9 +151,15 @@ class device_create_info final {
         return *this;
     }
 
-    auto extensions(std::span<const char* const> vec) noexcept -> device_create_info& {
-        native_.enabledExtensionCount   = static_cast<std::uint32_t>(vec.size());
-        native_.ppEnabledExtensionNames = vec.data();
+    auto extensions(std::span<const std::string_view> vec) noexcept -> device_create_info& {
+        extensions_.reserve(vec.size());
+        extensions_.assign_range(
+            vec | std::views::transform([](const std::string_view view) noexcept -> const char* {
+                return view.data();
+            })
+        );
+        native_.enabledExtensionCount   = static_cast<std::uint32_t>(extensions_.size());
+        native_.ppEnabledExtensionNames = extensions_.data();
         return *this;
     }
 
@@ -162,11 +169,14 @@ class device_create_info final {
     void reset() noexcept {
         if (native_.pEnabledFeatures != nullptr) native_.pEnabledFeatures = &features_;
         if (native_.pQueueCreateInfos != nullptr) native_.pQueueCreateInfos = infos_.data();
+        if (native_.ppEnabledExtensionNames != nullptr)
+            native_.ppEnabledExtensionNames = extensions_.data();
     }
 
     VkDeviceCreateInfo                   native_{};
     VkPhysicalDeviceFeatures             features_{};
     std::vector<VkDeviceQueueCreateInfo> infos_;
+    std::vector<const char*>             extensions_;
 };
 
 using device = VkDevice_T;
