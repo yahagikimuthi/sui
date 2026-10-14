@@ -100,14 +100,14 @@ class error final {
     friend auto operator<<(std::basic_ostream<E, T>& os, const error& self) noexcept
         -> std::basic_ostream<E, T>& {
         for (const auto [i, code] : std::views::enumerate(self.codes_)) {
-            if (i != 0) {
-                os << " -> ";
-            }
-            if (code.type == logic_error) {
-                os << "[Logic Error]: " << code.message_to_view() << '\n';
-            } else {
-                os << "[Runtimer Error]: " << code.message_to_view() << '\n';
-            }
+            if (i != 0) os << " -> ";
+
+            if (code.type == logic_error)
+                os << "[Logic Error]: ";
+            else
+                os << "[Runtimer Error]: ";
+
+            os << code.message_to_view() << '\n';
         }
 
         return os;
