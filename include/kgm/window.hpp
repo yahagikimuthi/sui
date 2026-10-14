@@ -23,8 +23,8 @@ enum class window_hint_v : std::int32_t { no_api = GLFW_NO_API };  // NOLINT
 using window_hint_t::client_api;
 using window_hint_v::no_api;
 
-inline void window_hint(const window_hint_t hint1, const window_hint_v hint2) noexcept {
-    glfwWindowHint(static_cast<std::int32_t>(hint1), static_cast<std::int32_t>(hint2));
+inline void window_hint(const window_hint_t hint, const window_hint_v value) noexcept {
+    glfwWindowHint(static_cast<std::int32_t>(hint), static_cast<std::int32_t>(value));
 }
 
 inline void default_window_hints() noexcept {
