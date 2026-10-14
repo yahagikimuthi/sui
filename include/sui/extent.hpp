@@ -10,6 +10,9 @@ struct extent final {
     [[nodiscard]] constexpr auto square() const noexcept -> float { return width * height; }
 
     [[nodiscard]] constexpr auto operator+() const noexcept -> extent { return *this; }
+    [[nodiscard]] constexpr auto operator-() const noexcept -> extent {
+        return {.width = -width, .height = -height};
+    }
 
     [[nodiscard]] constexpr auto operator<=>(const extent other) const noexcept -> auto {
         return square() <=> other.square();
