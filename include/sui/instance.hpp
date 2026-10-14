@@ -2,6 +2,7 @@
 
 #include <expected>
 #include <optional>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -58,7 +59,7 @@ class instance final {
   private:
     explicit instance(hgn::instance& native) : native_{native} {}
 
-    [[nodiscard]] static auto required_extensions() noexcept -> std::vector<const char*> {
+    [[nodiscard]] static auto required_extensions() noexcept -> std::vector<std::string_view> {
         auto extensions = kgm::get_required_instance_extensions();
 
 #ifndef NDEBUG
