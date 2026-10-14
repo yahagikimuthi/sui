@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <expected>
+#include <utility>
 
 #include <vulkan/vulkan.h>
 
@@ -17,16 +18,16 @@ inline constexpr auto queue_graphics_bit = queue_flag_bits::graphics;
 
 [[nodiscard]] constexpr auto operator&(const queue_flag_bits a, const queue_flag_bits b) noexcept
     -> queue_flag_bits {
-    const auto casted_a = static_cast<std::int32_t>(a);
-    const auto casted_b = static_cast<std::int32_t>(b);
+    const auto casted_a = std::to_underlying(a);
+    const auto casted_b = std::to_underlying(b);
     const auto out      = casted_a & casted_b;
     return static_cast<queue_flag_bits>(out);
 }
 
 [[nodiscard]] constexpr auto operator|(const queue_flag_bits a, const queue_flag_bits b) noexcept
     -> queue_flag_bits {
-    const auto casted_a = static_cast<std::int32_t>(a);
-    const auto casted_b = static_cast<std::int32_t>(b);
+    const auto casted_a = std::to_underlying(a);
+    const auto casted_b = std::to_underlying(b);
     const auto out      = casted_a | casted_b;
     return static_cast<queue_flag_bits>(out);
 }

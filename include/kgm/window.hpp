@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 
 #include <vulkan/vulkan.h>
 #include <hgn/instance.hpp>
@@ -24,7 +25,7 @@ using window_hint_t::client_api;
 using window_hint_v::no_api;
 
 inline void window_hint(const window_hint_t hint, const window_hint_v value) noexcept {
-    glfwWindowHint(static_cast<std::int32_t>(hint), static_cast<std::int32_t>(value));
+    glfwWindowHint(std::to_underlying(hint), std::to_underlying(value));
 }
 
 inline void default_window_hints() noexcept {
