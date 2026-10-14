@@ -13,13 +13,13 @@
 #include "sui/detail/others.hpp"
 
 namespace sui {
-enum class error_type : std::uint8_t { logic, runtime };
+enum class error_type : std::uint8_t { logic, runtime, count };
 
 inline constexpr auto logic_error   = error_type::logic;
 inline constexpr auto runtime_error = error_type::runtime;
 
 class error final {
-    struct error_code final {  // NOLINT
+    struct error_code final {
         using str_t = std::variant<std::string_view, std::string>;
 
         [[nodiscard]] auto message_to_str() const noexcept -> std::string {
@@ -31,7 +31,7 @@ class error final {
             return message.visit([](auto&& str) noexcept -> std::string_view { return str; });
         }
 
-        error_type type;
+        error_type type{error_type::count};
         str_t      message;
     };
 
