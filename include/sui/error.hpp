@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <expected>
 #include <iostream>
+#include <ostream>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -95,18 +96,24 @@ class error final {
         return out;
     }
 
-    void cerr() const noexcept {
-        for (const auto [i, code] : std::views::enumerate(codes_)) {
+    template <typename E, typename T>
+    friend auto operator<<(std::basic_ostream<E, T>& os, const error& self) noexcept
+        -> std::basic_ostream<E, T>& {
+        for (const auto [i, code] : std::views::enumerate(self.codes_)) {
             if (i != 0) {
-                std::cerr << " -> ";
+                os << " -> ";
             }
             if (code.type == logic_error) {
-                std::cerr << "[Logic Error]: " << code.message_to_view() << '\n';
+                os << "[Logic Error]: " << code.message_to_view() << '\n';
             } else {
-                std::cerr << "[Runtime Error]: " << code.message_to_view() << '\n';
+                os << "[Runtimer Error]: " << code.message_to_view() << '\n';
             }
         }
+
+        return os;
     }
+
+    void cerr() const noexcept { std::cerr << *this; }
 
     [[noreturn]] void panic() const noexcept {
         cerr();
