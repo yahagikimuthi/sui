@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
@@ -152,17 +153,25 @@ class instance_create_info final {
         return *this;
     }
 
-    auto layers(const std::span<const char* const> vec) noexcept -> instance_create_info& {
+    auto layers(const std::span<const std::string_view> vec) noexcept -> instance_create_info& {
         layers_.reserve(vec.size());
-        layers_.assign_range(vec);
+        layers_.assign_range(
+            vec | std::views::transform([](const std::string_view view) noexcept -> const char* {
+                return view.data();
+            })
+        );
         native_.enabledLayerCount   = static_cast<std::uint32_t>(layers_.size());
         native_.ppEnabledLayerNames = layers_.data();
         return *this;
     }
 
-    auto extensions(const std::span<const char* const> vec) noexcept -> instance_create_info& {
+    auto extensions(const std::span<const std::string_view> vec) noexcept -> instance_create_info& {
         extensions_.reserve(vec.size());
-        extensions_.assign_range(vec);
+        extensions_.assign_range(
+            vec | std::views::transform([](const std::string_view view) noexcept -> const char* {
+                return view.data();
+            })
+        );
         native_.enabledExtensionCount   = static_cast<std::uint32_t>(extensions_.size());
         native_.ppEnabledExtensionNames = extensions_.data();
         return *this;
