@@ -4,6 +4,7 @@
 #include <cassert>
 #include <expected>
 #include <functional>
+#include <inplace_vector>
 #include <limits>
 #include <span>
 
@@ -73,10 +74,13 @@ template <std::size_t N>
     const bool                                  is_wait_all = true,
     std::uint64_t                               timeout = std::numeric_limits<std::uint64_t>::max()
 ) noexcept -> std::expected<void, result> {
-    auto native_fences = std::array<fence*, N>{};
-    for (const auto i : std::views::indices(N)) {
-        native_fences[i] = &fences[i].get();
-    }
+    auto native_fences = std::inplace_vector<fence*, N>{};
+    native_fences.assign_range(
+        fences | std::views::transform([](std::reference_wrapper<fence> ref) noexcept -> fence* {
+            return &ref.get();
+        })
+    );
+
     const auto res = vkWaitForFences(
         &dev,
         static_cast<std::uint32_t>(N),
