@@ -49,7 +49,10 @@ inline constexpr auto khr_swapchain_extention_name =
 
 enum class surface_transform_flag_bits_khr : std::int32_t {};
 
-enum class result : std::int32_t {};
+enum class result : std::int32_t {
+    error_out_of_date_khr = VK_ERROR_OUT_OF_DATE_KHR,
+    suboptimal_khr        = VK_SUBOPTIMAL_KHR
+};
 
 enum class image_view_type : std::int32_t { type_2d = VK_IMAGE_VIEW_TYPE_2D };  // NOLINT
 
@@ -58,16 +61,22 @@ enum class image_usage_flags : std::int32_t {  // NOLINT
 };
 
 enum class sharing_mode : std::int32_t {  // NOLINT
-    concurrent,
-    exclusive
+    concurrent = VK_SHARING_MODE_CONCURRENT,
+    exclusive  = VK_SHARING_MODE_EXCLUSIVE
 };
 
 enum class composite_alpha_flag_bits_khr : std::int32_t {  // NOLINT
-    opaque
+    opaque = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
 };
 
 enum class command_buffer_level : std::int32_t {  // NOLINT
     primary = VK_COMMAND_BUFFER_LEVEL_PRIMARY
+};
+
+enum class image_layout : std::int32_t {  // NOLINT
+    undefined                = VK_IMAGE_LAYOUT_UNDEFINED,
+    color_attachment_optimal = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    present_src_khr          = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 };
 
 [[nodiscard]] constexpr auto make_result(const VkResult res) noexcept -> std::unexpected<result> {
