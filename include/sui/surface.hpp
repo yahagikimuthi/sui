@@ -1,17 +1,25 @@
 #pragma once
 
 #include <cassert>
+#include <expected>
 #include <optional>
 #include <utility>
 
 #include <hgn/instance.hpp>
 #include <hgn/surface.hpp>
+#include <kgm/window.hpp>
+
+#include "sui/error.hpp"
 
 namespace sui {
 class surface final {
   public:
-    explicit surface(hgn::surface_khr& native, hgn::instance& inst) noexcept
-        : native_{native}, instance_{inst} {}
+    [[nodiscard]] static auto try_make(kgm::window& win, hgn::instance& inst) noexcept
+        -> std::expected<surface, error> {
+        auto native = kgm::try_make_window_surface(inst, win);
+        if (not native) return make_error(runtime_error, "Failed to make window surface");
+        return surface{native->get(), inst};
+    }
 
     surface(const surface&) noexcept = delete;
 
@@ -32,11 +40,14 @@ class surface final {
         return *this;
     }
 
-    ~surface() noexcept { destroy(); }
+    ~surface() noexcept = default;
 
     [[nodiscard]] auto native() noexcept -> hgn::surface_khr& { return native_.value(); }
 
   private:
+    explicit surface(hgn::surface_khr& native, hgn::instance& inst) noexcept
+        : native_{native}, instance_{inst} {}
+
     void destroy() noexcept {
         if (not native_) return;
         assert(instance_);
