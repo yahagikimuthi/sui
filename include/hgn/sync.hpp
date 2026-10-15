@@ -93,6 +93,14 @@ template <std::size_t N>
     return {};
 }
 
+[[nodiscard]] inline auto try_reset_fence(device& dev, fence& fen) noexcept
+    -> std::expected<void, result> {
+    auto*      ptr = &fen;
+    const auto res = vkResetFences(&dev, 1, &ptr);
+    if (res != VK_SUCCESS) return make_result(res);
+    return {};
+}
+
 inline void destroy_fence(device& dev, fence& target) noexcept {
     vkDestroyFence(&dev, &target, nullptr);
 }
