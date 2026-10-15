@@ -5,10 +5,9 @@
 #include <optional>
 #include <utility>
 
+#include <hgn/device.hpp>
 #include <hgn/sync.hpp>
 
-#include "hgn/device.hpp"
-#include "sui/device.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
@@ -45,7 +44,8 @@ class semaphore final {
     [[nodiscard]] auto native() noexcept -> hgn::semaphore& { return native_.value(); }
 
   private:
-    explicit semaphore(hgn::semaphore& native, hgn::device& dev) : native_{native}, dev_{dev} {}
+    explicit semaphore(hgn::semaphore& native, hgn::device& dev) noexcept
+        : native_{native}, dev_{dev} {}
 
     void destroy() noexcept {
         if (not native_) return;
@@ -87,8 +87,10 @@ class fence final {
 
     ~fence() noexcept = default;
 
+    [[nodiscard]] auto native() noexcept -> hgn::fence& { return native_.value(); }
+
   private:
-    explicit fence(hgn::fence& native, hgn::device& dev) : native_{native}, dev_{dev} {}
+    explicit fence(hgn::fence& native, hgn::device& dev) noexcept : native_{native}, dev_{dev} {}
 
     void destroy() noexcept {
         if (not native_) return;
@@ -102,9 +104,36 @@ class fence final {
 
 class sync final {
   public:
+    [[nodiscard]] static auto try_make(hgn::device& dev) noexcept -> std::expected<sync, error> {
+        auto sem1 = semaphore::try_make(dev);
+        auto sem2 = semaphore::try_make(dev);
+        auto fen  = fence::try_make(dev);
+
+        if (not sem1) return make_error(runtime_error, "Failed to make image available semaphore.");
+        if (not sem2) return make_error(runtime_error, "Failed to make render finished semaphore.");
+        if (not fen) return make_error(runtime_error, "Failed to make fence.");
+
+        return sync{std::move(*sem1), std::move(*sem2), std::move(*fen)};
+    }
+
+    [[nodiscard]] auto image_available_semaphore() noexcept -> hgn::semaphore& {
+        return image_available_.native();
+    }
+
+    [[nodiscard]] auto render_finished_semaphore() noexcept -> hgn::semaphore& {
+        return render_finished_.native();
+    }
+
+    [[nodiscard]] auto in_flight_fence() noexcept -> hgn::fence& { return fence_.native(); }
+
   private:
-    std::optional<hgn::semaphore&> image_available_;
-    std::optional<hgn::semaphore&> render_finished_;
-    std::optional<hgn::fence&>     fence_;
+    explicit sync(semaphore&& image, semaphore&& render, fence&& fen) noexcept
+        : image_available_{std::move(image)},
+          render_finished_{std::move(render)},
+          fence_{std::move(fen)} {}
+
+    semaphore image_available_;
+    semaphore render_finished_;
+    fence     fence_;
 };
 }  // namespace sui
