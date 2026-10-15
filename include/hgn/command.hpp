@@ -112,8 +112,10 @@ class command_buffer_begin_info final {
 class image_memory_barrier final {
   public:
     explicit image_memory_barrier() noexcept {
-        native_.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        native_.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        native_.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+
+        native_.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        native_.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     }
 
     [[nodiscard]] auto native() const noexcept -> const VkImageMemoryBarrier& { return native_; }
