@@ -87,14 +87,17 @@ class surface_format_khr final {
     VkSurfaceFormatKHR native_{};
 };
 
-[[nodiscard]] inline auto get_physical_device_surface_formats_khr(
+[[nodiscard]] inline auto try_get_physical_device_surface_formats_khr(
     physical_device& physical, surface_khr& surface
-) noexcept -> std::vector<surface_format_khr> {
-    auto count = std::uint32_t{};
-    vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, nullptr);
+) noexcept -> std::expected<std::vector<surface_format_khr>, result> {
+    auto       count = std::uint32_t{};
+    const auto res1  = vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, nullptr);
+    if (res1 != VK_SUCCESS) return make_result(res1);
 
-    auto formats = std::vector<VkSurfaceFormatKHR>(count);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.data());
+    auto       formats = std::vector<VkSurfaceFormatKHR>(count);
+    const auto res2 =
+        vkGetPhysicalDeviceSurfaceFormatsKHR(&physical, &surface, &count, formats.data());
+    if (res2 != VK_SUCCESS) return make_result(res2);
 
     auto out = std::vector<surface_format_khr>{};
     out.reserve(count);
@@ -108,7 +111,7 @@ class surface_format_khr final {
     return out;
 }
 
-[[nodiscard]] inline auto get_physical_device_surface_present_modes_khr(
+[[nodiscard]] inline auto try_get_physical_device_surface_present_modes_khr(
     physical_device& physical, surface_khr& surface
 ) noexcept -> std::expected<std::vector<present_mode_khr>, result> {
     auto       count = std::uint32_t{};
