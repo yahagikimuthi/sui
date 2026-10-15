@@ -92,6 +92,21 @@ class physical_device_features final {
     VkPhysicalDeviceFeatures native_{};
 };
 
+class physical_device_dynamic_rendering_features final {
+  public:
+    explicit physical_device_dynamic_rendering_features() noexcept {
+        native_.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+        native_.dynamicRendering = VK_TRUE;
+    }
+
+    [[nodiscard]] auto native() const noexcept -> const VkPhysicalDeviceDynamicRenderingFeatures& {
+        return native_;
+    }
+
+  private:
+    VkPhysicalDeviceDynamicRenderingFeatures native_{};
+};
+
 class device_create_info final {
   public:
     explicit device_create_info() noexcept { native_.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO; }
@@ -128,6 +143,14 @@ class device_create_info final {
     }
 
     ~device_create_info() noexcept = default;
+
+    auto dynamic_rendering_features(
+        const physical_device_dynamic_rendering_features& features
+    ) noexcept -> device_create_info& {
+        dynamic_features_ = features.native();
+        native_.pNext     = &dynamic_features_;
+        return *this;
+    }
 
     auto queue_create_infos(const std::span<const device_queue_create_info> infos) noexcept
         -> device_create_info& {
@@ -171,12 +194,14 @@ class device_create_info final {
         if (native_.pQueueCreateInfos != nullptr) native_.pQueueCreateInfos = infos_.data();
         if (native_.ppEnabledExtensionNames != nullptr)
             native_.ppEnabledExtensionNames = extensions_.data();
+        if (native_.pNext != nullptr) native_.pNext = &dynamic_features_;
     }
 
-    VkDeviceCreateInfo                   native_{};
-    VkPhysicalDeviceFeatures             features_{};
-    std::vector<VkDeviceQueueCreateInfo> infos_;
-    std::vector<const char*>             extensions_;
+    VkDeviceCreateInfo                       native_{};
+    VkPhysicalDeviceFeatures                 features_{};
+    VkPhysicalDeviceDynamicRenderingFeatures dynamic_features_{};
+    std::vector<VkDeviceQueueCreateInfo>     infos_;
+    std::vector<const char*>                 extensions_;
 };
 
 using device = VkDevice_T;
