@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstdint>
 #include <optional>
+#include <string>
 
 #include <hgn/physical_device.hpp>
 #include <hgn/surface.hpp>
@@ -21,6 +23,11 @@ class physical_device final {
     }
     [[nodiscard]] auto present_family() const noexcept -> std::uint32_t {
         return present_family_.value();
+    }
+
+    [[nodiscard]] auto name() noexcept -> std::string {
+        const auto prop = hgn::get_physical_device_properties(native());
+        return std::string{prop.name()};
     }
 
   private:
