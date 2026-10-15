@@ -5,11 +5,13 @@
 #include <cstdint>
 #include <expected>
 #include <functional>
+#include <iostream>
 
 #include <vulkan/vulkan.h>
 
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
+#include "hgn/image.hpp"
 
 namespace hgn {
 using command_pool   = VkCommandPool_T;
@@ -116,19 +118,64 @@ class image_memory_barrier final {
 
         native_.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         native_.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+        native_.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+        native_.subresourceRange.baseMipLevel   = 0;
+        native_.subresourceRange.levelCount     = 1;
+        native_.subresourceRange.baseArrayLayer = 0;
+        native_.subresourceRange.layerCount     = 1;
+    }
+
+    auto layout(const image_layout old_layout, const image_layout new_layout) noexcept
+        -> image_memory_barrier& {
+        native_.oldLayout = static_cast<VkImageLayout>(old_layout);
+        native_.newLayout = static_cast<VkImageLayout>(new_layout);
+
+        if (old_layout == image_layout::undefined and
+            new_layout == image_layout::color_attachment_optimal) {
+            native_.srcAccessMask = 0;
+            native_.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            source_               = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destination_          = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            return *this;
+        }
+        if (old_layout == image_layout::color_attachment_optimal and
+            new_layout == image_layout::present_src_khr) {
+            native_.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            native_.dstAccessMask = 0;
+            source_               = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            destination_          = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            return *this;
+        }
+
+        std::cerr << "We don't expect this pattern. please setting using native method\n";
+        return *this;
+    }
+
+    auto setting_image(image& image_ref) noexcept -> image_memory_barrier& {
+        native_.image = &image_ref;
+        return *this;
+    }
+
+    [[nodiscard]] auto source_state() const noexcept -> VkPipelineStageFlagBits { return source_; }
+
+    [[nodiscard]] auto destination_state() const noexcept -> VkPipelineStageFlagBits {
+        return destination_;
     }
 
     [[nodiscard]] auto native() const noexcept -> const VkImageMemoryBarrier& { return native_; }
 
   private:
-    VkImageMemoryBarrier native_{};
+    VkImageMemoryBarrier    native_{};
+    VkPipelineStageFlagBits source_{};
+    VkPipelineStageFlagBits destination_{};
 };
 
 inline void command_pipeline_barrier(command_buffer& buffer, image_memory_barrier& barrier) {
     vkCmdPipelineBarrier(
         &buffer,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        barrier.source_state(),
+        barrier.destination_state(),
         0,
         0,
         nullptr,
