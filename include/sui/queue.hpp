@@ -1,12 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include <expected>
 #include <functional>
 
 #include <hgn/device.hpp>
 
 #include "sui/error.hpp"
-#include "sui/physical_device.hpp"
 
 namespace sui {
 class queue final {
