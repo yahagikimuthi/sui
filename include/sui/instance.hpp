@@ -53,7 +53,7 @@ class instance final {
         return *this;
     }
 
-    ~instance() noexcept = default;
+    ~instance() noexcept { destroy(); }
 
     [[nodiscard]] auto try_enumerate_physical_devices() noexcept
         -> std::optional<std::vector<std::reference_wrapper<hgn::physical_device>>> {

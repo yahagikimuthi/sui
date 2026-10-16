@@ -40,7 +40,7 @@ class surface final {
         return *this;
     }
 
-    ~surface() noexcept = default;
+    ~surface() noexcept { destroy(); }
 
     [[nodiscard]] auto native() noexcept -> hgn::surface_khr& { return native_.value(); }
 

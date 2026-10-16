@@ -41,7 +41,7 @@ class semaphore final {
         return *this;
     }
 
-    ~semaphore() noexcept = default;
+    ~semaphore() noexcept { destroy(); }
 
     [[nodiscard]] auto native() noexcept -> hgn::semaphore& { return native_.value(); }
 
@@ -85,7 +85,7 @@ class fence final {
         return *this;
     }
 
-    ~fence() noexcept = default;
+    ~fence() noexcept { destroy(); }
 
     [[nodiscard]] auto native() noexcept -> hgn::fence& { return native_.value(); }
 

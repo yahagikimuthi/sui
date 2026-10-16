@@ -71,7 +71,7 @@ class image_view_container final {
 
     auto operator=(image_view_container&& other) noexcept -> image_view_container& = default;
 
-    ~image_view_container() noexcept = default;
+    ~image_view_container() noexcept { destroy(); }
 
     [[nodiscard]] auto size() const noexcept -> std::size_t { return views_.size(); }
 

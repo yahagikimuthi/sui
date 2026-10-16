@@ -125,7 +125,7 @@ class swapchain final {
         return *this;
     }
 
-    ~swapchain() noexcept = default;
+    ~swapchain() noexcept { destroy(); }
 
     [[nodiscard]] auto setting_format() const noexcept -> hgn::format { return setting_format_; }
 

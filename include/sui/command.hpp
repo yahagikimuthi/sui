@@ -46,7 +46,7 @@ class command_pool final {
         return *this;
     }
 
-    ~command_pool() noexcept = default;
+    ~command_pool() noexcept { destroy(); }
 
     [[nodiscard]] auto native() noexcept -> hgn::command_pool& { return native_.value(); }
 

@@ -51,7 +51,7 @@ class device final {
         return *this;
     }
 
-    ~device() noexcept = default;
+    ~device() noexcept { destroy(); }
 
     [[nodiscard]] auto native() noexcept -> hgn::device& { return native_.value(); }
 
