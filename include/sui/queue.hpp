@@ -34,8 +34,6 @@ class queue final {
         return res;
     }
 
-    [[nodiscard]] auto native() noexcept -> hgn::queue& { return native_.get(); }
-
   private:
     explicit queue(hgn::queue& native) : native_{native} {}
 
