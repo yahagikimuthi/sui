@@ -53,7 +53,12 @@ class device final {
 
     ~device() noexcept { destroy(); }
 
-    [[nodiscard]] auto native() noexcept -> hgn::device& { return native_.value(); }
+    [[nodiscard]] auto try_wait_idle() noexcept -> bool {
+        const auto res = hgn::try_device_wait_idle(*native_);
+        return res.has_value();
+    }
+
+    [[nodiscard]] auto native() noexcept -> hgn::device& { return *native_; }
 
   private:
     void destroy() noexcept {
