@@ -52,7 +52,7 @@ class submit_info final {
 [[nodiscard]] inline auto try_queue_submit(queue& que, const submit_info& info, fence& fen) noexcept
     -> std::expected<void, result> {
     const auto res = vkQueueSubmit(&que, 1, &info.native(), &fen);
-    if (res != VK_TRUE) return make_result(res);
+    if (res != VK_SUCCESS) return make_result(res);
     return {};
 }
 
