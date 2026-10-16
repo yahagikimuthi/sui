@@ -2,6 +2,7 @@
 
 #include <bit>
 #include <cassert>
+#include <cstdint>
 #include <expected>
 #include <functional>
 #include <inplace_vector>
@@ -72,7 +73,7 @@ template <std::size_t N>
     device&                                           dev,
     const std::span<std::reference_wrapper<fence>, N> fences,
     const bool                                        is_wait_all = true,
-    std::uint64_t timeout = std::numeric_limits<std::uint64_t>::max()
+    std::uint32_t timeout = std::numeric_limits<std::uint32_t>::max()
 ) noexcept -> std::expected<void, result> {
     auto native_fences = std::inplace_vector<fence*, N>{};
     native_fences.assign_range(
@@ -88,6 +89,20 @@ template <std::size_t N>
         static_cast<VkBool32>(is_wait_all),
         timeout
     );
+
+    if (res != VK_SUCCESS) return make_result(res);
+    return {};
+}
+
+[[nodiscard]] inline auto try_wait_for_fence(
+    device&             dev,
+    fence&              fen,
+    const bool          is_wait_all = true,
+    const std::uint32_t timeout     = std::numeric_limits<std::uint32_t>::max()
+) noexcept -> std::expected<void, result> {
+    auto*      fen_ptr = &fen;
+    const auto res =
+        vkWaitForFences(&dev, 1, &fen_ptr, static_cast<VkBool32>(is_wait_all), timeout);
 
     if (res != VK_SUCCESS) return make_result(res);
     return {};
