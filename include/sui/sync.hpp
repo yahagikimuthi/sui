@@ -1,9 +1,11 @@
 #pragma once
 
+#include <array>
 #include <cassert>
 #include <expected>
 #include <functional>
 #include <optional>
+#include <span>
 #include <utility>
 
 #include <hgn/device.hpp>
@@ -111,6 +113,17 @@ class sync final {
         if (not fen) return make_error(runtime_error, "Failed to make fence.");
 
         return sync{std::move(*sem1), std::move(*sem2), std::move(*fen)};
+    }
+
+    [[nodiscard]] auto try_wait_fence(hgn::device& dev) noexcept -> bool {
+        auto fences = std::array{std::ref(in_flight_fence())};
+        auto res    = hgn::try_wait_for_fence(dev, std::span{fences});
+        return res.has_value();
+    }
+
+    [[nodiscard]] auto try_reset_fence(hgn::device& dev) noexcept -> bool {
+        auto res = hgn::try_reset_fence(dev, in_flight_fence());
+        return res.has_value();
     }
 
     [[nodiscard]] auto image_available_semaphore() noexcept -> hgn::semaphore& {
