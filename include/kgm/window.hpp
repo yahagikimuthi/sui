@@ -17,14 +17,14 @@
 #include <GLFW/glfw3.h>
 
 namespace kgm {
-enum class window_hint_t : std::int32_t { client_api = GLFW_CLIENT_API };
+enum class window_hint : std::int32_t { client_api = GLFW_CLIENT_API };
 
-enum class window_hint_v : std::int32_t { no_api = GLFW_NO_API };  // NOLINT
+enum class window_value : std::int32_t { no_api = GLFW_NO_API };  // NOLINT
 
-using window_hint_t::client_api;
-using window_hint_v::no_api;
+using window_hint::client_api;
+using window_value::no_api;
 
-inline void window_hint(const window_hint_t hint, const window_hint_v value) noexcept {
+inline void set_window_hint(const window_hint hint, const window_value value) noexcept {
     glfwWindowHint(std::to_underlying(hint), std::to_underlying(value));
 }
 
