@@ -9,9 +9,11 @@
 
 #include "sui/device.hpp"
 #include "sui/error.hpp"
+#include "sui/images.hpp"
 #include "sui/instance.hpp"
 #include "sui/physical_device.hpp"
 #include "sui/queue.hpp"
+#include "sui/render_ctx.hpp"
 #include "sui/surface.hpp"
 
 namespace sui {
@@ -76,6 +78,21 @@ class hardware final {
             *graphics_queue,
             *present_queue
         };
+    }
+
+    [[nodiscard]] auto try_make_render_context() noexcept -> std::expected<render_context, error> {
+        auto chain = swapchain::try_make(physical_, surface_.native(), device_.native());
+        if (not chain) return make_error(runtime_error, "Failed to make swapchain.", chain.error());
+
+        auto images = image_container::try_make(device_.native(), chain->native());
+        if (not images) return make_error(runtime_error, "Failed to make image container.");
+
+        auto views =
+            image_view_container::try_make(*images, device_.native(), chain->setting_format());
+        if (not views)
+            return make_error(runtime_error, "Failed to make image view container.", views.error());
+
+        return render_context{std::move(*chain), std::move(*images), std::move(*views)};
     }
 
   private:
