@@ -5,6 +5,9 @@
 #include <functional>
 
 #include <hgn/device.hpp>
+#include <hgn/enums.hpp>
+#include <hgn/submit.hpp>
+#include <hgn/sync.hpp>
 
 #include "sui/error.hpp"
 
@@ -18,6 +21,17 @@ class queue final {
         if (not res) return make_error(runtime_error, "Failed to make queue.");
 
         return queue{*res};
+    }
+
+    [[nodiscard]] auto try_submit(hgn::submit_info& info, hgn::fence& fen) noexcept -> bool {
+        const auto res = hgn::try_queue_submit(native_.get(), info, fen);
+        return res.has_value();
+    }
+
+    [[nodiscard]] auto try_present(hgn::present_info_khr& info) noexcept
+        -> std::expected<void, hgn::result> {
+        const auto res = hgn::try_queue_present_khr(native_.get(), info);
+        if (not res) return res;
     }
 
     [[nodiscard]] auto native() noexcept -> hgn::queue& { return native_.get(); }
