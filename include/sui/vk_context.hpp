@@ -1,5 +1,6 @@
 #pragma once
 
+#include <exception>
 #include <expected>
 #include <iostream>
 #include <utility>
@@ -38,6 +39,34 @@ class vk_context final {
 
         return vk_context{std::move(*hard_res), std::move(*render_res), std::move(*protocol_res)};
     }
+
+    vk_context(const vk_context&) noexcept = delete;
+
+    auto operator=(const vk_context&) noexcept -> vk_context& = delete;
+
+    vk_context(vk_context&& other) noexcept
+        : hard_{std::move(other.hard_)},
+          render_{std::move(other.render_)},
+          protocol_{std::move(other.protocol_)},
+          image_index_{other.image_index_},
+          is_valid_{std::exchange(other.is_valid_, false)} {}
+
+    auto operator=(vk_context&& other) noexcept -> vk_context& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        hard_        = std::move(other.hard_);
+        render_      = std::move(other.render_);
+        protocol_    = std::move(other.protocol_);
+        image_index_ = other.image_index_;
+
+        is_valid_ = std::exchange(other.is_valid_, false);
+
+        return *this;
+    }
+
+    ~vk_context() { destroy(); }
 
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool {
         if (not protocol_.try_wait(hard_.native_device())) return false;
@@ -82,9 +111,19 @@ class vk_context final {
     explicit vk_context(hardware&& hard, render_context&& render, protocol&& prot) noexcept
         : hard_{std::move(hard)}, render_{std::move(render)}, protocol_{std::move(prot)} {}
 
+    void destroy() noexcept {
+        if (not is_valid_) return;
+
+        if (not hard_.try_device_wait_idle()) {
+            std::cerr << "Failed to wait device\n";
+            std::terminate();
+        }
+    }
+
     hardware       hard_;
     render_context render_;
     protocol       protocol_;
     std::uint32_t  image_index_{};
+    bool           is_valid_{true};
 };
 }  // namespace sui
