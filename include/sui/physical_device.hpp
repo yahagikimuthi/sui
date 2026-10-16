@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <optional>
+#include <functional>
 #include <string>
 
 #include <hgn/physical_device.hpp>
@@ -17,13 +17,11 @@ class physical_device final {
     ) noexcept
         : native_{native}, graphics_family_{graphics_family}, present_family_{present_family} {}
 
-    [[nodiscard]] auto native() noexcept -> hgn::physical_device& { return native_.value(); }
+    [[nodiscard]] auto native() noexcept -> hgn::physical_device& { return native_.get(); }
     [[nodiscard]] auto graphics_family() const noexcept -> std::uint32_t {
-        return graphics_family_.value();
+        return graphics_family_;
     }
-    [[nodiscard]] auto present_family() const noexcept -> std::uint32_t {
-        return present_family_.value();
-    }
+    [[nodiscard]] auto present_family() const noexcept -> std::uint32_t { return present_family_; }
 
     [[nodiscard]] auto name() noexcept -> std::string {
         const auto prop = hgn::get_physical_device_properties(native());
@@ -31,8 +29,8 @@ class physical_device final {
     }
 
   private:
-    std::optional<hgn::physical_device&> native_;
-    std::optional<std::uint32_t>         graphics_family_;
-    std::optional<std::uint32_t>         present_family_;
+    std::reference_wrapper<hgn::physical_device> native_;
+    std::uint32_t                                graphics_family_;
+    std::uint32_t                                present_family_;
 };
 }  // namespace sui
