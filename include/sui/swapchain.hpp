@@ -9,35 +9,34 @@
 #include <ranges>
 #include <utility>
 
+#include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/surface.hpp>
 #include <hgn/swapchain.hpp>
 
-#include "sui/device.hpp"
 #include "sui/error.hpp"
 #include "sui/physical_device.hpp"
-#include "sui/surface.hpp"
 
 namespace sui {
 class swapchain final {
   public:
     [[nodiscard]] static auto try_make(
-        physical_device& physical, surface& sur, device& dev
+        physical_device& physical, hgn::surface_khr& sur, hgn::device& dev
     ) noexcept -> std::expected<swapchain, error> {
         const auto capabilities_res =
-            hgn::try_get_physical_device_surface_capabilities_khr(physical.native(), sur.native());
+            hgn::try_get_physical_device_surface_capabilities_khr(physical.native(), sur);
         if (not capabilities_res)
             return make_error(runtime_error, "Failed to get physical device surface capabilities.");
         const auto capabilities = *capabilities_res;
 
         const auto formats_res =
-            hgn::try_get_physical_device_surface_formats_khr(physical.native(), sur.native());
+            hgn::try_get_physical_device_surface_formats_khr(physical.native(), sur);
         if (not formats_res)
             return make_error(runtime_error, "Failed to get physical device surface formats.");
         const auto& formats = *formats_res;
 
         const auto present_modes_res =
-            hgn::try_get_physical_device_surface_present_modes_khr(physical.native(), sur.native());
+            hgn::try_get_physical_device_surface_present_modes_khr(physical.native(), sur);
         if (not present_modes_res)
             return make_error(
                 runtime_error, "Failed to get physical device surface present modes."
@@ -73,7 +72,7 @@ class swapchain final {
         }
 
         auto info = hgn::swapchain_create_info_khr{};
-        info.surface(sur.native())
+        info.surface(sur)
             .min_image_count(image_count)
             .image_format(surface_format.setting_format())
             .image_color_space(surface_format.color_space())
@@ -94,10 +93,10 @@ class swapchain final {
             .present_mode(present_mode)
             .clipped(true);
 
-        auto res = hgn::try_make_swapchain(dev.native(), info);
+        auto res = hgn::try_make_swapchain(dev, info);
         if (not res) return make_error(runtime_error, "Failed to make swapchain");
 
-        return swapchain{res->get(), dev.native(), surface_format.setting_format()};
+        return swapchain{res->get(), dev, surface_format.setting_format()};
     }
 
     explicit swapchain(
