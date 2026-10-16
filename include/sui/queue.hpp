@@ -31,7 +31,7 @@ class queue final {
     [[nodiscard]] auto try_present(hgn::present_info_khr& info) noexcept
         -> std::expected<void, hgn::result> {
         const auto res = hgn::try_queue_present_khr(native_.get(), info);
-        if (not res) return res;
+        return res;
     }
 
     [[nodiscard]] auto native() noexcept -> hgn::queue& { return native_.get(); }
