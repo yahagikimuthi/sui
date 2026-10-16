@@ -7,6 +7,9 @@
 #include <hgn/physical_device.hpp>
 #include <kgm/window.hpp>
 
+#include "hgn/submit.hpp"
+#include "hgn/surface.hpp"
+#include "hgn/sync.hpp"
 #include "sui/device.hpp"
 #include "sui/error.hpp"
 #include "sui/images.hpp"
@@ -93,6 +96,23 @@ class hardware final {
             return make_error(runtime_error, "Failed to make image view container.", views.error());
 
         return render_context{std::move(*chain), std::move(*images), std::move(*views)};
+    }
+
+    [[nodiscard]] auto native_surface() noexcept -> hgn::surface_khr& { return surface_.native(); }
+
+    [[nodiscard]] auto get_physical_device() noexcept -> hgn::physical_device& {
+        return physical_.native();
+    }
+
+    [[nodiscard]] auto get_device() noexcept -> hgn::device& { return device_.native(); }
+
+    [[nodiscard]] auto try_submit(const hgn::submit_info& info, hgn::fence& fence) noexcept
+        -> bool {
+        return graphics_.try_submit(info, fence);
+    }
+
+    [[nodiscard]] auto try_present(const hgn::present_info_khr& info) noexcept {
+        return present_.try_present(info);
     }
 
   private:
