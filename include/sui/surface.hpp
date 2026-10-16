@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <expected>
+#include <functional>
 #include <optional>
 #include <utility>
 
@@ -26,8 +27,7 @@ class surface final {
     auto operator=(const surface&) noexcept -> surface& = delete;
 
     surface(surface&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)},
-          instance_{std::exchange(other.instance_, std::nullopt)} {}
+        : native_{std::exchange(other.native_, std::nullopt)}, instance_{other.instance_} {}
 
     auto operator=(surface&& other) noexcept -> surface& {
         if (this == &other) return *this;
@@ -35,7 +35,7 @@ class surface final {
         destroy();
 
         native_   = std::exchange(other.native_, std::nullopt);
-        instance_ = std::exchange(other.instance_, std::nullopt);
+        instance_ = other.instance_;
 
         return *this;
     }
@@ -50,11 +50,10 @@ class surface final {
 
     void destroy() noexcept {
         if (not native_) return;
-        assert(instance_);
-        hgn::destroy_surface_khr(*instance_, *native_);
+        hgn::destroy_surface_khr(instance_.get(), *native_);
     }
 
-    std::optional<hgn::surface_khr&> native_;
-    std::optional<hgn::instance&>    instance_;
+    std::optional<hgn::surface_khr&>      native_;
+    std::reference_wrapper<hgn::instance> instance_;
 };
 }  // namespace sui

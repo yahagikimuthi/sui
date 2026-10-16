@@ -10,9 +10,6 @@
 
 namespace sui {
 class queue final {
-    template <typename T>
-    using ref_w = std::reference_wrapper<T>;
-
   public:
     [[nodiscard]] static auto try_make(
         hgn::device& dev, const std::uint32_t family_indices
@@ -28,6 +25,6 @@ class queue final {
   private:
     explicit queue(hgn::queue& native) : native_{native} {}
 
-    ref_w<hgn::queue> native_;
+    std::reference_wrapper<hgn::queue> native_;
 };
 }  // namespace sui

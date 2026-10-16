@@ -14,9 +14,6 @@
 
 namespace sui {
 class command_pool final {
-    template <typename T>
-    using ref_w = std::reference_wrapper<T>;
-
   public:
     [[nodiscard]] static auto try_make(
         hgn::device& dev, const std::uint32_t queue_family_indices
@@ -60,8 +57,8 @@ class command_pool final {
         if (native_) hgn::destroy_command_pool(dev_.get(), *native_);
     }
 
-    std::optional<hgn::command_pool&> native_;
-    ref_w<hgn::device>                dev_;
+    std::optional<hgn::command_pool&>   native_;
+    std::reference_wrapper<hgn::device> dev_;
 };
 
 class command_buffer final {

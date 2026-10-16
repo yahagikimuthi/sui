@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <expected>
+#include <functional>
 #include <optional>
 #include <utility>
 
@@ -25,8 +26,7 @@ class semaphore final {
     auto operator=(const semaphore&) noexcept -> semaphore& = delete;
 
     semaphore(semaphore&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)},
-          dev_{std::exchange(other.dev_, std::nullopt)} {}
+        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
     auto operator=(semaphore&& other) noexcept -> semaphore& {
         if (this == &other) return *this;
@@ -34,7 +34,7 @@ class semaphore final {
         destroy();
 
         native_ = std::exchange(other.native_, std::nullopt);
-        dev_    = std::exchange(other.dev_, std::nullopt);
+        dev_    = other.dev_;
 
         return *this;
     }
@@ -49,12 +49,11 @@ class semaphore final {
 
     void destroy() noexcept {
         if (not native_) return;
-        assert(dev_);
-        hgn::destroy_semaphore(*dev_, *native_);
+        hgn::destroy_semaphore(dev_.get(), *native_);
     }
 
-    std::optional<hgn::semaphore&> native_;
-    std::optional<hgn::device&>    dev_;
+    std::optional<hgn::semaphore&>      native_;
+    std::reference_wrapper<hgn::device> dev_;
 };
 
 class fence final {
@@ -71,8 +70,7 @@ class fence final {
     auto operator=(const fence&) noexcept -> fence& = delete;
 
     fence(fence&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)},
-          dev_{std::exchange(other.dev_, std::nullopt)} {}
+        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
     auto operator=(fence&& other) noexcept -> fence& {
         if (this == &other) return *this;
@@ -80,7 +78,7 @@ class fence final {
         destroy();
 
         native_ = std::exchange(other.native_, std::nullopt);
-        dev_    = std::exchange(other.dev_, std::nullopt);
+        dev_    = other.dev_;
 
         return *this;
     }
@@ -94,12 +92,11 @@ class fence final {
 
     void destroy() noexcept {
         if (not native_) return;
-        assert(dev_);
-        hgn::destroy_fence(*dev_, *native_);
+        hgn::destroy_fence(dev_.get(), *native_);
     }
 
-    std::optional<hgn::fence&>  native_;
-    std::optional<hgn::device&> dev_;
+    std::optional<hgn::fence&>          native_;
+    std::reference_wrapper<hgn::device> dev_;
 };
 
 class sync final {

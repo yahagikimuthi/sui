@@ -3,6 +3,7 @@
 #include <array>
 #include <cassert>
 #include <expected>
+#include <functional>
 #include <limits>
 #include <optional>
 #include <ranges>
@@ -110,7 +111,7 @@ class swapchain final {
 
     swapchain(swapchain&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)},
-          device_{std::exchange(other.device_, std::nullopt)},
+          device_{other.device_},
           setting_format_{other.setting_format_} {}
 
     auto operator=(swapchain&& other) noexcept -> swapchain& {
@@ -119,7 +120,7 @@ class swapchain final {
         destroy();
 
         native_         = std::exchange(other.native_, std::nullopt);
-        device_         = std::exchange(other.device_, std::nullopt);
+        device_         = other.device_;
         setting_format_ = other.setting_format_;
 
         return *this;
@@ -134,12 +135,11 @@ class swapchain final {
   private:
     void destroy() noexcept {
         if (not native_) return;
-        assert(device_);
-        hgn::destroy_swapchain_khr(*device_, *native_);
+        hgn::destroy_swapchain_khr(device_.get(), *native_);
     }
 
-    std::optional<hgn::swapchain&> native_;
-    std::optional<hgn::device&>    device_;
-    hgn::format                    setting_format_;
+    std::optional<hgn::swapchain&>      native_;
+    std::reference_wrapper<hgn::device> device_;
+    hgn::format                         setting_format_;
 };
 }  // namespace sui
