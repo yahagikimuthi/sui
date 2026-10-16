@@ -1,11 +1,11 @@
 #pragma once
 
-#include <array>
 #include <cassert>
+#include <exception>
 #include <expected>
 #include <functional>
+#include <iostream>
 #include <optional>
-#include <span>
 #include <utility>
 
 #include <hgn/device.hpp>
@@ -94,6 +94,10 @@ class fence final {
 
     void destroy() noexcept {
         if (not native_) return;
+        if (not hgn::try_wait_for_fence(dev_.get(), *native_)) {
+            std::cerr << "Failed to wait fence\n";
+            std::terminate();
+        }
         hgn::destroy_fence(dev_.get(), *native_);
     }
 
@@ -116,8 +120,7 @@ class sync final {
     }
 
     [[nodiscard]] auto try_wait_fence(hgn::device& dev) noexcept -> bool {
-        auto fences   = std::array{std::ref(in_flight_fence())};
-        auto wait_res = hgn::try_wait_for_fence(dev, std::span{fences});
+        auto wait_res = hgn::try_wait_for_fence(dev, in_flight_fence());
         if (not wait_res) return false;
 
         auto reset_res = hgn::try_reset_fence(dev, in_flight_fence());
