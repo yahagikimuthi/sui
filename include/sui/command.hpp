@@ -6,10 +6,10 @@
 #include <utility>
 
 #include <hgn/command.hpp>
+#include <hgn/enums.hpp>
+#include <hgn/image.hpp>
+#include <hgn/render.hpp>
 
-#include "hgn/enums.hpp"
-#include "hgn/image.hpp"
-#include "hgn/render.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
