@@ -161,7 +161,6 @@ class hardware final {
         return indices.is_complete();
     }
 
-  public:
     instance        instance_;
     surface         surface_;
     physical_device physical_;
