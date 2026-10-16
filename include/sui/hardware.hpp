@@ -81,6 +81,8 @@ class hardware final {
         };
     }
 
+    [[nodiscard]] auto try_device_wait_idle() noexcept -> bool { return device_.try_wait_idle(); }
+
     [[nodiscard]] auto native_surface() noexcept -> hgn::surface_khr& { return surface_.native(); }
 
     [[nodiscard]] auto get_physical_device() noexcept -> sui::physical_device& { return physical_; }
