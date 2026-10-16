@@ -7,6 +7,9 @@
 
 #include <hgn/command.hpp>
 
+#include "hgn/enums.hpp"
+#include "hgn/image.hpp"
+#include "hgn/render.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
@@ -59,5 +62,63 @@ class command_pool final {
 
     std::optional<hgn::command_pool&> native_;
     ref_w<hgn::device>                dev_;
+};
+
+class command_buffer final {
+  public:
+    [[nodiscard]] static auto try_make(hgn::device& dev, hgn::command_pool& pool) noexcept
+        -> std::expected<command_buffer, error> {
+        auto alloc_info = hgn::command_buffer_allocate_info{};
+        alloc_info.level(hgn::command_buffer_level::primary)
+            .command_buffer_count(1)
+            .command_pool(pool);
+        auto res = hgn::try_allocate_command_buffers(dev, alloc_info);
+
+        if (not res) return make_error(runtime_error, "Failed to make command buffer.");
+
+        return command_buffer{*res};
+    }
+
+    [[nodiscard]] auto try_begin_rendering(hgn::image& im, hgn::image_view& view) noexcept -> bool {
+        auto begin_info = hgn::command_buffer_begin_info{};
+        auto res        = hgn::try_begin_command_buffer(native_.get(), begin_info);
+        if (not res) return false;
+
+        auto barrier = hgn::image_memory_barrier{};
+        barrier.layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
+            .setting_image(im);
+
+        hgn::command_pipeline_barrier(native_.get(), barrier);
+
+        auto color_attachment = hgn::rendering_attachment_info{};
+        color_attachment.setting_image_view(view).clear_color(0.1f, 0.2f, 0.4f, 1.f);
+
+        auto render_info = hgn::rendering_info{};
+        render_info.extent(800, 600).color_attachment(color_attachment);
+
+        hgn::command_begin_rendering(native_.get(), render_info);
+        return true;
+    }
+
+    [[nodiscard]] auto try_end_rendering(hgn::image& im) noexcept -> bool {
+        hgn::command_end_rendering(native_.get());
+
+        auto barrier = hgn::image_memory_barrier{};
+        barrier
+            .layout(hgn::image_layout::color_attachment_optimal, hgn::image_layout::present_src_khr)
+            .setting_image(im);
+
+        hgn::command_pipeline_barrier(native_.get(), barrier);
+
+        auto res = hgn::try_end_command_buffer(native_.get());
+        return res.has_value();
+    }
+
+    [[nodiscard]] auto native() noexcept -> hgn::command_buffer& { return native_.get(); }
+
+  private:
+    explicit command_buffer(hgn::command_buffer& native) : native_{native} {}
+
+    std::reference_wrapper<hgn::command_buffer> native_;
 };
 }  // namespace sui
