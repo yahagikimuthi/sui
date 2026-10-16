@@ -6,6 +6,7 @@
 #include <utility>
 
 #include <hgn/command.hpp>
+#include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/image.hpp>
 #include <hgn/render.hpp>
@@ -76,14 +77,15 @@ class command_buffer final {
         return command_buffer{*res};
     }
 
-    [[nodiscard]] auto try_begin_rendering(hgn::image& im, hgn::image_view& view) noexcept -> bool {
+    [[nodiscard]] auto try_begin_rendering(hgn::image& image, hgn::image_view& view) noexcept
+        -> bool {
         auto begin_info = hgn::command_buffer_begin_info{};
         auto res        = hgn::try_begin_command_buffer(native_.get(), begin_info);
         if (not res) return false;
 
         auto barrier = hgn::image_memory_barrier{};
         barrier.layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
-            .setting_image(im);
+            .setting_image(image);
 
         hgn::command_pipeline_barrier(native_.get(), barrier);
 
@@ -97,13 +99,13 @@ class command_buffer final {
         return true;
     }
 
-    [[nodiscard]] auto try_end_rendering(hgn::image& im) noexcept -> bool {
+    [[nodiscard]] auto try_end_rendering(hgn::image& image) noexcept -> bool {
         hgn::command_end_rendering(native_.get());
 
         auto barrier = hgn::image_memory_barrier{};
         barrier
             .layout(hgn::image_layout::color_attachment_optimal, hgn::image_layout::present_src_khr)
-            .setting_image(im);
+            .setting_image(image);
 
         hgn::command_pipeline_barrier(native_.get(), barrier);
 
@@ -117,5 +119,40 @@ class command_buffer final {
     explicit command_buffer(hgn::command_buffer& native) : native_{native} {}
 
     std::reference_wrapper<hgn::command_buffer> native_;
+};
+
+class command final {
+  public:
+    [[nodiscard]] static auto try_make(
+        hgn::device& dev, const std::uint32_t queue_family_indices
+    ) noexcept -> std::expected<command, error> {
+        auto pool = command_pool::try_make(dev, queue_family_indices);
+        if (not pool) return make_error(runtime_error, "Failed to make command pool.");
+
+        auto buffer = command_buffer::try_make(dev, pool->native());
+        if (not buffer) return make_error(runtime_error, "Failed to make command buffer.");
+
+        return command{std::move(*pool), *buffer};
+    }
+
+    [[nodiscard]] auto try_begin_rendering(hgn::image& image, hgn::image_view& view) noexcept
+        -> bool {
+        return buffer_.try_begin_rendering(image, view);
+    }
+
+    [[nodiscard]] auto try_end_rendering(hgn::image& image) noexcept -> bool {
+        return buffer_.try_end_rendering(image);
+    }
+
+    [[nodiscard]] auto cmd_pool() noexcept -> hgn::command_pool& { return pool_.native(); }
+
+    [[nodiscard]] auto buffer() noexcept -> hgn::command_buffer& { return buffer_.native(); }
+
+  private:
+    explicit command(command_pool&& pool, const command_buffer& buffer) noexcept
+        : pool_{std::move(pool)}, buffer_{buffer} {}
+
+    command_pool   pool_;
+    command_buffer buffer_;
 };
 }  // namespace sui
