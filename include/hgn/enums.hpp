@@ -8,7 +8,8 @@
 #include <vulkan/vulkan.h>
 
 namespace hgn {
-inline constexpr auto* ext_debug_utils_extension_name = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+inline constexpr auto ext_debug_utils_extension_name =
+    std::string_view{VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
 
 enum class queue_flag_bits : std::int32_t {  // NOLINT
     none     = 0,
