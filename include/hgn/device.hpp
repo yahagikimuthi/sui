@@ -221,6 +221,12 @@ inline void destroy_device(device& dev) noexcept {
     vkDestroyDevice(&dev, nullptr);
 }
 
+[[nodiscard]] inline auto device_wait_idle(device& dev) noexcept -> std::expected<void, result> {
+    const auto res = vkDeviceWaitIdle(&dev);
+    if (res != VK_SUCCESS) return make_result(res);
+    return {};
+}
+
 using queue = VkQueue_T;
 
 [[nodiscard]] inline auto try_get_device_queue(
