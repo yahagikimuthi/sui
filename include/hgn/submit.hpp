@@ -3,7 +3,6 @@
 #include <expected>
 
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 #include "hgn/command.hpp"
 #include "hgn/device.hpp"
