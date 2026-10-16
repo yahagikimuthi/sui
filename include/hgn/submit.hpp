@@ -89,7 +89,7 @@ class present_info_khr final {
     std::uint32_t    index_{};
 };
 
-[[nodiscard]] inline auto queue_present_khr(queue& que, const present_info_khr& info) noexcept
+[[nodiscard]] inline auto try_queue_present_khr(queue& que, const present_info_khr& info) noexcept
     -> std::expected<void, result> {
     const auto res = vkQueuePresentKHR(&que, &info.native());
     if (res != VK_SUCCESS) return make_result(res);
