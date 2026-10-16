@@ -100,11 +100,9 @@ class hardware final {
 
     [[nodiscard]] auto native_surface() noexcept -> hgn::surface_khr& { return surface_.native(); }
 
-    [[nodiscard]] auto get_physical_device() noexcept -> hgn::physical_device& {
-        return physical_.native();
-    }
+    [[nodiscard]] auto get_physical_device() noexcept -> sui::physical_device& { return physical_; }
 
-    [[nodiscard]] auto get_device() noexcept -> hgn::device& { return device_.native(); }
+    [[nodiscard]] auto native_device() noexcept -> hgn::device& { return device_.native(); }
 
     [[nodiscard]] auto try_submit(const hgn::submit_info& info, hgn::fence& fence) noexcept
         -> bool {
