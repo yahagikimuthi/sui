@@ -36,7 +36,7 @@ enum class format : std::int32_t { b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB };  /
 
 enum class color_space_khr : std::int32_t {  // NOLINT
     srgb_nonlinear = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-};  // NOLINT
+};
 
 enum class present_mode_khr : std::int32_t {  // NOLINT
     mailbox = VK_PRESENT_MODE_MAILBOX_KHR,
