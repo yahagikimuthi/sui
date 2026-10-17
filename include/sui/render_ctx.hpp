@@ -20,7 +20,8 @@ class render_context final {
         if (not chain) return make_error(runtime_error, "Failed to make swapchain.", chain.error());
 
         auto images = image_container::try_make(hard.native_device(), chain->native());
-        if (not images) return make_error(runtime_error, "Failed to make image container.");
+        if (not images)
+            return make_error(runtime_error, "Failed to make image container.", images.error());
 
         auto views =
             image_view_container::try_make(*images, hard.native_device(), chain->setting_format());

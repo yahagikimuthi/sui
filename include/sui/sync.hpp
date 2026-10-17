@@ -112,9 +112,15 @@ class sync final {
         auto sem2 = semaphore::try_make(dev);
         auto fen  = fence::try_make(dev);
 
-        if (not sem1) return make_error(runtime_error, "Failed to make image available semaphore.");
-        if (not sem2) return make_error(runtime_error, "Failed to make render finished semaphore.");
-        if (not fen) return make_error(runtime_error, "Failed to make fence.");
+        if (not sem1)
+            return make_error(
+                runtime_error, "Failed to make image available semaphore.", sem1.error()
+            );
+        if (not sem2)
+            return make_error(
+                runtime_error, "Failed to make render finished semaphore.", sem2.error()
+            );
+        if (not fen) return make_error(runtime_error, "Failed to make fence.", fen.error());
 
         return sync{std::move(*sem1), std::move(*sem2), std::move(*fen)};
     }
