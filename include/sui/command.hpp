@@ -48,7 +48,7 @@ class command_pool final {
 
     ~command_pool() noexcept { destroy(); }
 
-    [[nodiscard]] auto native() noexcept -> hgn::command_pool& { return native_.value(); }
+    [[nodiscard]] auto native() noexcept -> hgn::command_pool& { return *native_; }
 
   private:
     explicit command_pool(hgn::command_pool& native, hgn::device& dev) noexcept
@@ -143,8 +143,6 @@ class command final {
     [[nodiscard]] auto try_end_rendering(hgn::image& image) noexcept -> bool {
         return buffer_.try_end_rendering(image);
     }
-
-    [[nodiscard]] auto cmd_pool() noexcept -> hgn::command_pool& { return pool_.native(); }
 
     [[nodiscard]] auto buffer() noexcept -> hgn::command_buffer& { return buffer_.native(); }
 

@@ -129,7 +129,7 @@ class swapchain final {
 
     [[nodiscard]] auto setting_format() const noexcept -> hgn::format { return setting_format_; }
 
-    [[nodiscard]] auto native() noexcept -> hgn::swapchain& { return native_.value(); }
+    [[nodiscard]] auto native() noexcept -> hgn::swapchain& { return *native_; }
 
   private:
     void destroy() noexcept {

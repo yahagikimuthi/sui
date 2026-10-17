@@ -42,7 +42,7 @@ class surface final {
 
     ~surface() noexcept { destroy(); }
 
-    [[nodiscard]] auto native() noexcept -> hgn::surface_khr& { return native_.value(); }
+    [[nodiscard]] auto native() noexcept -> hgn::surface_khr& { return *native_; }
 
   private:
     explicit surface(hgn::surface_khr& native, hgn::instance& inst) noexcept

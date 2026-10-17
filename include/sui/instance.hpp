@@ -63,7 +63,7 @@ class instance final {
         return *res;
     }
 
-    [[nodiscard]] auto native() noexcept -> hgn::instance& { return native_.value(); }
+    [[nodiscard]] auto native() noexcept -> hgn::instance& { return *native_; }
 
   private:
     explicit instance(hgn::instance& native) : native_{native} {}
