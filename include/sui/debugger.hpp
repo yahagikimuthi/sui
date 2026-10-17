@@ -13,7 +13,8 @@ class debugger final {
     }
 
   private:
-    static inline constinit std::optional<void (&)(const std::string_view)> func{std::nullopt};
+    static inline constinit auto func =
+        std::optional<void (&)(const std::string_view)>{std::nullopt};
 };
 
 inline void set_debug_function(void (&set_func)(const std::string_view)) noexcept {
