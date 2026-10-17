@@ -25,7 +25,7 @@ inline void set_window_hint(const window_hint hint, const window_value value) no
     glfwWindowHint(std::to_underlying(hint), std::to_underlying(value));
 }
 
-inline void default_window_hints() noexcept {
+inline void set_default_window_hints() noexcept {
     glfwDefaultWindowHints();
 }
 
