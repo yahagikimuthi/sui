@@ -35,7 +35,7 @@ class queue final {
     }
 
   private:
-    explicit queue(hgn::queue& native) : native_{native} {}
+    explicit queue(hgn::queue& native) noexcept : native_{native} {}
 
     std::reference_wrapper<hgn::queue> native_;
 };

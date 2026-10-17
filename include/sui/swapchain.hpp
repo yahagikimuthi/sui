@@ -101,7 +101,7 @@ class swapchain final {
 
     explicit swapchain(
         hgn::swapchain& native, hgn::device& device, const hgn::format setting_format
-    )
+    ) noexcept
         : native_{native}, device_{device}, setting_format_{setting_format} {}
 
     swapchain(const swapchain&) noexcept = delete;

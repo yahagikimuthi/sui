@@ -66,7 +66,7 @@ class vk_context final {
         return *this;
     }
 
-    ~vk_context() { destroy(); }
+    ~vk_context() noexcept { destroy(); }
 
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool {
         if (not protocol_.try_wait(hard_.native_device())) return false;

@@ -55,7 +55,7 @@ class native_window final {
     [[nodiscard]] auto native() noexcept -> kgm::window& { return *native_; }
 
   private:
-    explicit native_window(kgm::window& native) : native_{native} {
+    explicit native_window(kgm::window& native) noexcept : native_{native} {
         kgm::set_window_user(native, *this);
     }
 
