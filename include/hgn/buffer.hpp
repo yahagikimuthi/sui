@@ -62,6 +62,10 @@ class memory_requirements final {
   public:
     [[nodiscard]] auto size() const noexcept -> std::uint64_t { return native_.size; }
 
+    [[nodiscard]] auto memory_type_bits() const noexcept -> std::uint32_t {
+        return native_.memoryTypeBits;
+    }
+
   private:
     VkMemoryRequirements native_;
 };
