@@ -84,7 +84,28 @@ enum class image_layout : std::int32_t {  // NOLINT
     present_src_khr          = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 };
 
-enum class memory_property_flags : std::int32_t {};
+enum class memory_property_flags : std::int32_t {  // NOLINT
+    host_visible  = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+    host_coherent = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+};
+
+[[nodiscard]] constexpr auto operator&(
+    const memory_property_flags a, const memory_property_flags b
+) noexcept -> memory_property_flags {
+    const auto casted_a = std::to_underlying(a);
+    const auto casted_b = std::to_underlying(b);
+    const auto out      = casted_a & casted_b;
+    return static_cast<memory_property_flags>(out);
+}
+
+[[nodiscard]] constexpr auto operator|(
+    const memory_property_flags a, const memory_property_flags b
+) noexcept -> memory_property_flags {
+    const auto casted_a = std::to_underlying(a);
+    const auto casted_b = std::to_underlying(b);
+    const auto out      = casted_a | casted_b;
+    return static_cast<memory_property_flags>(out);
+}
 
 enum class buffer_usage_flag_bits : std::int32_t {  // NOLINT
     vertex_buffer = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
