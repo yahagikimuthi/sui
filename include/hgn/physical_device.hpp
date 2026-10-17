@@ -1,6 +1,8 @@
 #pragma once
 
+#include <bit>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <expected>
 #include <functional>
@@ -93,5 +95,33 @@ class queue_family_properties final {
     );
 
     return out;
+}
+
+class memory_type final {
+  public:
+    [[nodiscard]] auto property_flags() const noexcept -> memory_property_flags {
+        return static_cast<memory_property_flags>(native_.propertyFlags);
+    }
+
+  private:
+    VkMemoryType native_;
+};
+
+class physical_device_memory_properties final {
+  public:
+    [[nodiscard]] auto setting_memory_types(const std::size_t i) noexcept {
+        const auto span = std::span<VkMemoryType>{native_.memoryTypes};
+        return std::bit_cast<memory_type>(span[i]);
+    }
+
+  private:
+    VkPhysicalDeviceMemoryProperties native_{};
+};
+
+[[nodiscard]] inline auto get_physical_device_memory_properties(physical_device& physical) noexcept
+    -> physical_device_memory_properties {
+    auto native = VkPhysicalDeviceMemoryProperties{};
+    vkGetPhysicalDeviceMemoryProperties(&physical, &native);
+    return std::bit_cast<physical_device_memory_properties>(native);
 }
 }  // namespace hgn
