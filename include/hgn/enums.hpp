@@ -55,6 +55,10 @@ enum class result : std::int32_t {
     suboptimal_khr        = VK_SUBOPTIMAL_KHR
 };
 
+[[nodiscard]] constexpr auto make_result(const VkResult res) noexcept -> std::unexpected<result> {
+    return std::unexpected{static_cast<result>(res)};
+}
+
 enum class image_view_type : std::int32_t { type_2d = VK_IMAGE_VIEW_TYPE_2D };  // NOLINT
 
 enum class image_usage_flags : std::int32_t {  // NOLINT
@@ -80,7 +84,5 @@ enum class image_layout : std::int32_t {  // NOLINT
     present_src_khr          = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 };
 
-[[nodiscard]] constexpr auto make_result(const VkResult res) noexcept -> std::unexpected<result> {
-    return std::unexpected{static_cast<result>(res)};
-}
+enum class memory_property_flags : std::int32_t {};
 }  // namespace hgn
