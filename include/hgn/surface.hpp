@@ -6,7 +6,7 @@
 #include <ranges>
 #include <vector>
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 #include "hgn/enums.hpp"
 #include "hgn/instance.hpp"
