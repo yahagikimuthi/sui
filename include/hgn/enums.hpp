@@ -85,4 +85,8 @@ enum class image_layout : std::int32_t {  // NOLINT
 };
 
 enum class memory_property_flags : std::int32_t {};
+
+enum class buffer_usage_flag_bits : std::int32_t {  // NOLINT
+    vertex_buffer = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+};
 }  // namespace hgn
