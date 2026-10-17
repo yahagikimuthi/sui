@@ -18,7 +18,7 @@ class native_window final {
     ) noexcept -> std::expected<native_window, error> {
         if (not kgm::try_init()) return make_error(runtime_error, "Failed to initialize Kagami");
 
-        kgm::set_window_hint(kgm::client_api, kgm::no_api);
+        kgm::set_window_hint(kgm::window_hint::client_api, kgm::window_value::no_api);
         auto win = kgm::try_make_window(width, height, title);
         if (not win) return make_error(runtime_error, "Failed to make window");
 
