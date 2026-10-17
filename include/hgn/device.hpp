@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bit>
 #include <cassert>
 #include <cstdint>
 #include <expected>
@@ -84,12 +85,10 @@ class device_queue_create_info final {
 
 class physical_device_features final {
   public:
-    [[nodiscard]] auto native() const noexcept -> const VkPhysicalDeviceFeatures& {
-        return native_;
-    }
+    explicit physical_device_features() noexcept = default;
 
   private:
-    VkPhysicalDeviceFeatures native_{};
+    [[maybe_unused]] VkPhysicalDeviceFeatures native_{};
 };
 
 class physical_device_dynamic_rendering_features final {
@@ -169,7 +168,7 @@ class device_create_info final {
     }
 
     auto features(const physical_device_features& features) noexcept -> device_create_info& {
-        features_                = features.native();
+        features_                = std::bit_cast<VkPhysicalDeviceFeatures>(features);
         native_.pEnabledFeatures = &features_;
         return *this;
     }
