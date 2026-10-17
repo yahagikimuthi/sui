@@ -25,7 +25,7 @@ class error final {
 
         [[nodiscard]] auto message_to_str() const noexcept -> std::string {
             return message.visit([](auto&& str) noexcept -> std::string {
-                return static_cast<std::string>(str);
+                return std::string{str};
             });
         }
         [[nodiscard]] auto message_to_view() const noexcept -> std::string_view {
