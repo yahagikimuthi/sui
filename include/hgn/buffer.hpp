@@ -123,4 +123,8 @@ class memory_allocate_info final {
 inline void unmap_memory(device& dev, device_memory& dev_mem) noexcept {
     vkUnmapMemory(&dev, &dev_mem);
 }
+
+inline void free_memory(device& dev, device_memory& target) noexcept {
+    vkFreeMemory(&dev, &target, nullptr);
+}
 }  // namespace hgn
