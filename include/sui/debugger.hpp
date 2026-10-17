@@ -30,7 +30,7 @@ class debugger final {
         []([[maybe_unused]] const std::string_view message) constexpr noexcept -> void {}
     );
 
-    static inline constinit auto fn_ = fn_t{default_fn_};  // NOLINT
+    static inline constinit auto fn_ = fn_t{&default_fn_};  // NOLINT
 };
 
 inline void set_debug_function(void (&fn)(const std::string_view)) noexcept {
