@@ -29,8 +29,6 @@ inline void destroy_surface_khr(instance& ins, surface_khr& target) noexcept {
 
 class surface_capabilities_khr final {
   public:
-    explicit surface_capabilities_khr() noexcept = default;
-
     [[nodiscard]] auto current_extent() const noexcept -> extent2d { return native_.currentExtent; }
 
     [[nodiscard]] auto min_image_count() const noexcept -> std::uint32_t {
