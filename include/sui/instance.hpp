@@ -66,7 +66,7 @@ class instance final {
     [[nodiscard]] auto native() noexcept -> hgn::instance& { return *native_; }
 
   private:
-    explicit instance(hgn::instance& native) : native_{native} {}
+    explicit instance(hgn::instance& native) noexcept : native_{native} {}
 
     [[nodiscard]] static auto required_extensions() noexcept -> std::vector<std::string_view> {
         auto extensions = kgm::get_required_instance_extensions();
