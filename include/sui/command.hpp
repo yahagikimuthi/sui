@@ -116,7 +116,7 @@ class command_buffer final {
     [[nodiscard]] auto native() noexcept -> hgn::command_buffer& { return native_.get(); }
 
   private:
-    explicit command_buffer(hgn::command_buffer& native) : native_{native} {}
+    explicit command_buffer(hgn::command_buffer& native) noexcept : native_{native} {}
 
     std::reference_wrapper<hgn::command_buffer> native_;
 };
@@ -127,10 +127,12 @@ class command final {
         hgn::device& dev, const std::uint32_t queue_family_indices
     ) noexcept -> std::expected<command, error> {
         auto pool = command_pool::try_make(dev, queue_family_indices);
-        if (not pool) return make_error(runtime_error, "Failed to make command pool.");
+        if (not pool)
+            return make_error(runtime_error, "Failed to make command pool.", pool.error());
 
         auto buffer = command_buffer::try_make(dev, pool->native());
-        if (not buffer) return make_error(runtime_error, "Failed to make command buffer.");
+        if (not buffer)
+            return make_error(runtime_error, "Failed to make command buffer.", buffer.error());
 
         return command{std::move(*pool), *buffer};
     }
