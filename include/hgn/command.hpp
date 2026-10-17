@@ -186,7 +186,8 @@ inline void command_pipeline_barrier(command_buffer& buffer, image_memory_barrie
     );
 }
 
-inline auto try_end_command_buffer(command_buffer& buffer) noexcept -> std::expected<void, result> {
+[[nodiscard]] inline auto try_end_command_buffer(command_buffer& buffer) noexcept
+    -> std::expected<void, result> {
     const auto res = vkEndCommandBuffer(&buffer);
     if (res != VK_SUCCESS) return make_result(res);
     return {};
