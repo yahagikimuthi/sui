@@ -49,6 +49,10 @@ class buffer_create_info final {
     return std::ref(*ptr);
 }
 
+inline void destroy_buffer(device& dev, buffer& target) noexcept {
+    vkDestroyBuffer(&dev, &target, nullptr);
+}
+
 class memory_requirements final {
   public:
     [[nodiscard]] auto size() const noexcept -> std::uint64_t { return native_.size; }
