@@ -33,6 +33,11 @@ class buffer_create_info final {
         return *this;
     }
 
+    auto setting_sharing_mode(const sharing_mode mode) noexcept -> buffer_create_info& {
+        native_.sharingMode = static_cast<VkSharingMode>(mode);
+        return *this;
+    }
+
     [[nodiscard]] auto native() const noexcept -> const VkBufferCreateInfo& { return native_; }
 
   private:
