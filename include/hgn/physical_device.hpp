@@ -114,6 +114,10 @@ class physical_device_memory_properties final {
         return std::bit_cast<memory_type>(span[i]);
     }
 
+    [[nodiscard]] auto memory_type_count() const noexcept -> std::uint32_t {
+        return native_.memoryTypeCount;
+    }
+
   private:
     VkPhysicalDeviceMemoryProperties native_{};
 };
