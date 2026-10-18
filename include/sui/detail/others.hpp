@@ -30,17 +30,9 @@ class scope_exit final {
 
     constexpr auto operator=(const scope_exit&) noexcept -> scope_exit& = delete;
 
-    constexpr scope_exit(scope_exit&& other) noexcept
-        : f_{std::move(other.f_)}, is_valid_{std::exchange(other.is_valid_, false)} {}
+    constexpr scope_exit(scope_exit&& other) noexcept = delete;
 
-    constexpr auto operator=(scope_exit&& other) noexcept -> scope_exit& {
-        if (this == &other) return *this;
-
-        f_        = std::move(other.f_);
-        is_valid_ = std::exchange(other.is_valid_, false);
-
-        return *this;
-    }
+    constexpr auto operator=(scope_exit&& other) noexcept -> scope_exit& = delete;
 
     constexpr ~scope_exit() noexcept {
         if (is_valid_) std::invoke(f_);
