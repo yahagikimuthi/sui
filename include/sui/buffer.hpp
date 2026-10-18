@@ -1,9 +1,11 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
 #include <expected>
 #include <functional>
 #include <optional>
+#include <span>
 #include <utility>
 
 #include <hgn/buffer.hpp>
@@ -121,7 +123,9 @@ class buffer final {
         return buffer{native_buffer{buf->get(), dev}, device_memory{dev_mem->get(), dev}, *data};
     }
 
-    void update() noexcept;
+    void update(const std::span<const float> vertices) noexcept {
+        std::memcpy(mapped_data_, vertices.data(), sizeof(float) * vertices.size());
+    }
 
   private:
     explicit buffer(native_buffer&& native, device_memory&& mem, void* mapped_data) noexcept
