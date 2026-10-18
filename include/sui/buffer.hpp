@@ -15,8 +15,8 @@
 namespace sui {
 class device_memory final {
   public:
-    [[nodiscard]] static auto try_make(hgn::device& dev) noexcept
-        -> std::expected<device_memory, error>;
+    explicit device_memory(hgn::device_memory& native, hgn::device& dev) noexcept
+        : native_{native}, dev_{dev} {}
 
     device_memory(const device_memory&) noexcept = delete;
 
@@ -39,9 +39,6 @@ class device_memory final {
     ~device_memory() noexcept { destroy(); }
 
   private:
-    explicit device_memory(hgn::device_memory& native, hgn::device& dev) noexcept
-        : native_{native}, dev_{dev} {}
-
     void destroy() noexcept {
         if (native_) hgn::free_memory(dev_.get(), *native_);
     }
@@ -50,11 +47,44 @@ class device_memory final {
     std::reference_wrapper<hgn::device> dev_;
 };
 
+class native_buffer final {
+  public:
+    explicit native_buffer(hgn::buffer& native, hgn::device& dev) noexcept
+        : native_{native}, dev_{dev} {}
+
+    native_buffer(const native_buffer&) noexcept = delete;
+
+    auto operator=(const native_buffer&) noexcept -> native_buffer& = delete;
+
+    native_buffer(native_buffer&& other) noexcept
+        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
+
+    auto operator=(native_buffer&& other) noexcept -> native_buffer& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        native_ = std::exchange(other.native_, std::nullopt);
+        dev_    = other.dev_;
+
+        return *this;
+    }
+
+    ~native_buffer() noexcept { destroy(); }
+
+  private:
+    void destroy() noexcept {
+        if (native_) hgn::destroy_buffer(dev_.get(), *native_);
+    }
+
+    std::optional<hgn::buffer&>         native_;
+    std::reference_wrapper<hgn::device> dev_;
+};
+
 class buffer final {
   public:
-    [[nodiscard]] static auto try_make(
-        hgn::device& dev, hgn::physical_device& physical, hgn::device_memory& dev_mem
-    ) noexcept -> std::expected<buffer, error> {
+    [[nodiscard]] static auto try_make(hgn::device& dev, hgn::physical_device& physical) noexcept
+        -> std::expected<buffer, error> {
         constexpr auto max_buffer_size = std::uint64_t{sizeof(float) * 5000};
 
         auto info = hgn::buffer_create_info{};
@@ -62,10 +92,10 @@ class buffer final {
             .usage(hgn::buffer_usage_flag_bits::vertex_buffer)
             .setting_sharing_mode(hgn::sharing_mode::exclusive);
 
-        auto native = hgn::try_make_buffer(dev, info);
-        if (not native) return make_error(runtime_error, "Failed to make buffer.");
+        auto buf = hgn::try_make_buffer(dev, info);
+        if (not buf) return make_error(runtime_error, "Failed to make buffer.");
 
-        auto mem_requirements = hgn::get_buffer_memory_requirements(dev, *native);
+        auto mem_requirements = hgn::get_buffer_memory_requirements(dev, *buf);
 
         auto alloc_info = hgn::memory_allocate_info{};
         alloc_info.allocation_size(mem_requirements.size());
@@ -79,32 +109,23 @@ class buffer final {
 
         alloc_info.memory_type_index(*memory_type);
 
-        if (not hgn::try_allocate_memory(dev, alloc_info, dev_mem))
-            return make_error(runtime_error, "Failed to allocate memory.");
+        auto dev_mem = hgn::try_allocate_memory(dev, alloc_info);
+        if (not dev_mem) return make_error(runtime_error, "Failed to allocate device memory.");
+
+        if (not hgn::try_bind_buffer_memory(dev, buf->get(), dev_mem->get()))
+            return make_error(runtime_error, "Failed to bind buffer and device memory.");
+
+        auto data = hgn::try_map_memory(dev, dev_mem->get(), max_buffer_size);
+        if (not data) return make_error(runtime_error, "Failed to map device memory.");
+
+        return buffer{native_buffer{buf->get(), dev}, device_memory{dev_mem->get(), dev}, *data};
     }
 
-    buffer(const buffer&) noexcept = delete;
-
-    auto operator=(const buffer&) noexcept -> buffer& = delete;
-
-    buffer(buffer&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
-
-    auto operator=(buffer&& other) noexcept -> buffer& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        native_ = std::exchange(other.native_, std::nullopt);
-        dev_    = other.dev_;
-
-        return *this;
-    }
-
-    ~buffer() noexcept { destroy(); }
+    void update() noexcept;
 
   private:
-    explicit buffer(hgn::buffer& native, hgn::device& dev) noexcept : native_{native}, dev_{dev} {}
+    explicit buffer(native_buffer&& native, device_memory&& mem, void* mapped_data) noexcept
+        : memory_{std::move(mem)}, buffer_{std::move(native)}, mapped_data_{mapped_data} {}
 
     [[nodiscard]] static auto find_memory_type(
         hgn::physical_device&            physical,
@@ -124,11 +145,8 @@ class buffer final {
         return std::nullopt;
     }
 
-    void destroy() noexcept {
-        if (native_) hgn::destroy_buffer(dev_.get(), *native_);
-    }
-
-    std::optional<hgn::buffer&>         native_;
-    std::reference_wrapper<hgn::device> dev_;
+    device_memory memory_;
+    native_buffer buffer_;
+    void*         mapped_data_;
 };
 }  // namespace sui
