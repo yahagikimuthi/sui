@@ -133,7 +133,7 @@ class buffer final {
     [[nodiscard]] auto get_native_buffer() noexcept -> hgn::buffer& { return buffer_.native(); }
 
   private:
-    explicit buffer(native_buffer&& native, device_memory&& mem, void* mapped_data) noexcept
+    explicit buffer(native_buffer&& native, device_memory&& mem, std::byte* mapped_data) noexcept
         : memory_{std::move(mem)}, buffer_{std::move(native)}, mapped_data_{mapped_data} {}
 
     [[nodiscard]] static auto find_memory_type(
@@ -156,6 +156,6 @@ class buffer final {
 
     device_memory memory_;
     native_buffer buffer_;
-    void*         mapped_data_;
+    std::byte*    mapped_data_;
 };
 }  // namespace sui
