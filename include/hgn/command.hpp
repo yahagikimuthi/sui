@@ -9,6 +9,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/buffer.hpp"
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/image.hpp"
@@ -104,9 +105,9 @@ class command_buffer_begin_info final {
 };
 
 [[nodiscard]] inline auto try_begin_command_buffer(
-    command_buffer& buffer, const command_buffer_begin_info& info
+    command_buffer& cmd_buf, const command_buffer_begin_info& info
 ) noexcept -> std::expected<void, result> {
-    const auto res = vkBeginCommandBuffer(&buffer, &info.native());
+    const auto res = vkBeginCommandBuffer(&cmd_buf, &info.native());
     if (res != VK_SUCCESS) return make_result(res);
     return {};
 }
@@ -171,9 +172,9 @@ class image_memory_barrier final {
     VkPipelineStageFlagBits destination_{};
 };
 
-inline void command_pipeline_barrier(command_buffer& buffer, image_memory_barrier& barrier) {
+inline void command_pipeline_barrier(command_buffer& cmd_buf, image_memory_barrier& barrier) {
     vkCmdPipelineBarrier(
-        &buffer,
+        &cmd_buf,
         barrier.source_state(),
         barrier.destination_state(),
         0,
@@ -186,10 +187,22 @@ inline void command_pipeline_barrier(command_buffer& buffer, image_memory_barrie
     );
 }
 
-[[nodiscard]] inline auto try_end_command_buffer(command_buffer& buffer) noexcept
+[[nodiscard]] inline auto try_end_command_buffer(command_buffer& cmd_buf) noexcept
     -> std::expected<void, result> {
-    const auto res = vkEndCommandBuffer(&buffer);
+    const auto res = vkEndCommandBuffer(&cmd_buf);
     if (res != VK_SUCCESS) return make_result(res);
     return {};
+}
+
+inline void command_bind_vertex_buffers(command_buffer& cmd_buf, buffer& buf) noexcept {
+    constexpr auto offsets = std::array<std::uint64_t, 1>{0};
+    auto*          buf_ptr = &buf;
+    vkCmdBindVertexBuffers(&cmd_buf, 0, 1, &buf_ptr, offsets.data());
+}
+
+inline void command_draw(
+    command_buffer& cmd_buf, const std::uint32_t vertex_count, const std::uint32_t instance_count
+) noexcept {
+    vkCmdDraw(&cmd_buf, vertex_count, instance_count, 0, 0);
 }
 }  // namespace hgn
