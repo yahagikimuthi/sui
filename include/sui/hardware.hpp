@@ -5,11 +5,11 @@
 #include <utility>
 
 #include <hgn/physical_device.hpp>
+#include <hgn/submit.hpp>
+#include <hgn/surface.hpp>
+#include <hgn/sync.hpp>
 #include <kgm/window.hpp>
 
-#include "hgn/submit.hpp"
-#include "hgn/surface.hpp"
-#include "hgn/sync.hpp"
 #include "sui/device.hpp"
 #include "sui/error.hpp"
 #include "sui/instance.hpp"
