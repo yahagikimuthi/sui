@@ -74,6 +74,8 @@ class native_buffer final {
 
     ~native_buffer() noexcept { destroy(); }
 
+    [[nodiscard]] auto native() noexcept -> hgn::buffer& { return *native_; }
+
   private:
     void destroy() noexcept {
         if (native_) hgn::destroy_buffer(dev_.get(), *native_);
@@ -127,6 +129,8 @@ class buffer final {
         assert(vertices.size() <= 5000);
         std::memcpy(mapped_data_, vertices.data(), sizeof(float) * vertices.size());
     }
+
+    [[nodiscard]] auto get_native_buffer() noexcept -> hgn::buffer& { return buffer_.native(); }
 
   private:
     explicit buffer(native_buffer&& native, device_memory&& mem, void* mapped_data) noexcept
