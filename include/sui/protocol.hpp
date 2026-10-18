@@ -31,7 +31,12 @@ class protocol final {
     }
 
     [[nodiscard]] auto try_wait(hgn::device& dev) noexcept -> bool {
-        return sync_.try_wait_fence(dev);
+        const auto res = sync_.try_wait_fence(dev);
+        if (not res) {
+            debugger::notify("Therefore, Failed to sync.");
+            return false;
+        }
+        return true;
     }
 
     [[nodiscard]] auto image_available_semaphore() noexcept -> hgn::semaphore& {

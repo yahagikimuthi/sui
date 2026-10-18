@@ -11,6 +11,7 @@
 #include <hgn/device.hpp>
 #include <hgn/sync.hpp>
 
+#include "sui/debugger.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
@@ -127,10 +128,17 @@ class sync final {
 
     [[nodiscard]] auto try_wait_fence(hgn::device& dev) noexcept -> bool {
         auto wait_res = hgn::try_wait_for_fence(dev, in_flight_fence());
-        if (not wait_res) return false;
+        if (not wait_res) {
+            debugger::notify("Failed to wait for fence.");
+            return false;
+        }
 
         auto reset_res = hgn::try_reset_fence(dev, in_flight_fence());
-        return reset_res.has_value();
+        if (not reset_res) {
+            debugger::notify("Failed to reset fence.");
+        }
+
+        return true;
     }
 
     [[nodiscard]] auto image_available_semaphore() noexcept -> hgn::semaphore& {
