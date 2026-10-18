@@ -156,6 +156,6 @@ class buffer final {
 
     device_memory memory_;
     native_buffer buffer_;
-    std::byte*    mapped_data_;
+    std::byte*    mapped_data_;  // delete の必要はない
 };
 }  // namespace sui
