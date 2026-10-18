@@ -100,13 +100,14 @@ class memory_allocate_info final {
 };
 
 [[nodiscard]] inline auto try_allocate_memory(
-    device& dev, const memory_allocate_info& info, device_memory& dev_mem
-) noexcept -> std::expected<void, result> {
-    auto*      dev_mem_ptr = &dev_mem;
-    const auto res         = vkAllocateMemory(&dev, &info.native(), nullptr, &dev_mem_ptr);
+    device& dev, const memory_allocate_info& info
+) noexcept -> std::expected<std::reference_wrapper<device_memory>, result> {
+    auto*      dev_mem = static_cast<device_memory*>(nullptr);
+    const auto res     = vkAllocateMemory(&dev, &info.native(), nullptr, &dev_mem);
     if (res != VK_SUCCESS) return make_result(res);
 
-    return {};
+    assert(dev_mem != nullptr);
+    return std::ref(*dev_mem);
 }
 
 [[nodiscard]] inline auto try_bind_buffer_memory(
