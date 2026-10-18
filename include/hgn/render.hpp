@@ -62,11 +62,11 @@ class rendering_info final {
     VkRenderingInfo native_{};
 };
 
-inline void command_begin_rendering(command_buffer& buffer, rendering_info& info) noexcept {
-    vkCmdBeginRendering(&buffer, &info.native());
+inline void command_begin_rendering(command_buffer& cmd_buf, rendering_info& info) noexcept {
+    vkCmdBeginRendering(&cmd_buf, &info.native());
 }
 
-inline void command_end_rendering(command_buffer& buffer) noexcept {
-    vkCmdEndRendering(&buffer);
+inline void command_end_rendering(command_buffer& cmd_buf) noexcept {
+    vkCmdEndRendering(&cmd_buf);
 }
 }  // namespace hgn

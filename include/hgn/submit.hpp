@@ -25,8 +25,8 @@ class submit_info final {
         return *this;
     }
 
-    auto setting_command_buffer(command_buffer& buffer) noexcept -> submit_info& {
-        buffer_                    = &buffer;
+    auto setting_command_buffer(command_buffer& cmd_buf) noexcept -> submit_info& {
+        buffer_                    = &cmd_buf;
         native_.pCommandBuffers    = &buffer_;
         native_.commandBufferCount = 1;
         return *this;
