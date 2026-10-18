@@ -124,6 +124,7 @@ class buffer final {
     }
 
     void update(const std::span<const float> vertices) noexcept {
+        assert(vertices.size() <= 5000);
         std::memcpy(mapped_data_, vertices.data(), sizeof(float) * vertices.size());
     }
 
