@@ -19,7 +19,7 @@ class debugger final {
         fn_ = std::forward<F>(f);
     }
 
-    static void reset() noexcept { set(default_fn); }
+    static void reset() noexcept { set(default_fn_); }
 
     static void notify(const std::string_view message) noexcept {
         fn_.visit([message](auto&& fn) noexcept -> void { fn(message); });
@@ -28,9 +28,9 @@ class debugger final {
   private:
     static constexpr auto default_lambda =
         []([[maybe_unused]] std::string_view message) constexpr noexcept -> void {};
-    static constexpr auto* const default_fn_ptr = static_cast<r_arg_t*>(default_lambda);
-    static constexpr auto&       default_fn     = *default_fn_ptr;
-    static inline constinit auto fn_            = fn_t{std::ref(default_fn)};  // NOLINT
+    static constexpr auto* const default_fn_ptr_ = static_cast<r_arg_t*>(default_lambda);
+    static constexpr auto&       default_fn_     = *default_fn_ptr_;
+    static inline constinit auto fn_             = fn_t{std::ref(default_fn_)};  // NOLINT
 };
 
 inline void set_debug_function(void (&fn)(const std::string_view)) noexcept {
