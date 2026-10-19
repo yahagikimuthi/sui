@@ -122,19 +122,25 @@ class buffer final {
         auto data = hgn::try_map_memory(dev, dev_mem->get(), max_buffer_size);
         if (not data) return make_error(runtime_error, "Failed to map device memory.");
 
-        return buffer{native_buffer{buf->get(), dev}, device_memory{dev_mem->get(), dev}, *data};
+        return buffer{
+            native_buffer{buf->get(), dev},
+            device_memory{dev_mem->get(), dev},
+            std::span{*data, 5000}
+        };
     }
 
     void update(const std::span<const float> vertices) noexcept {
         assert(vertices.size() <= 5000);
-        std::memcpy(mapped_data_, vertices.data(), sizeof(float) * vertices.size());
+        std::memcpy(data_.data(), vertices.data(), sizeof(float) * vertices.size());
     }
 
     [[nodiscard]] auto get_native_buffer() noexcept -> hgn::buffer& { return buffer_.native(); }
 
   private:
-    explicit buffer(native_buffer&& native, device_memory&& mem, std::byte* mapped_data) noexcept
-        : memory_{std::move(mem)}, buffer_{std::move(native)}, mapped_data_{mapped_data} {}
+    explicit buffer(
+        native_buffer&& native, device_memory&& mem, std::span<std::byte> data_
+    ) noexcept
+        : memory_{std::move(mem)}, buffer_{std::move(native)}, data_{data_} {}
 
     [[nodiscard]] static auto find_memory_type(
         hgn::physical_device&            physical,
@@ -154,8 +160,8 @@ class buffer final {
         return std::nullopt;
     }
 
-    device_memory memory_;
-    native_buffer buffer_;
-    std::byte*    mapped_data_;  // delete の必要はない
+    device_memory        memory_;
+    native_buffer        buffer_;
+    std::span<std::byte> data_;
 };
 }  // namespace sui
