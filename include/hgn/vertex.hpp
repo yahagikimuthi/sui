@@ -382,10 +382,6 @@ class pipeline_layout_create_info final {
         native_.pushConstantRangeCount = 0;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkPipelineLayoutCreateInfo& {
-        return native_;
-    }
-
   private:
     VkPipelineLayoutCreateInfo native_{};
 };
@@ -393,8 +389,9 @@ class pipeline_layout_create_info final {
 [[nodiscard]] inline auto try_make_pipeline_layout(
     device& dev, const pipeline_layout_create_info& info
 ) noexcept -> std::expected<std::reference_wrapper<pipeline_layout>, result> {
-    auto*      layout_ptr = static_cast<pipeline_layout*>(nullptr);
-    const auto res        = vkCreatePipelineLayout(&dev, &info.native(), nullptr, &layout_ptr);
+    auto*      layout_ptr  = static_cast<pipeline_layout*>(nullptr);
+    auto       native_info = std::bit_cast<VkPipelineLayoutCreateInfo>(info);
+    const auto res         = vkCreatePipelineLayout(&dev, &native_info, nullptr, &layout_ptr);
 
     if (res != VK_SUCCESS) return make_result(res);
 
