@@ -466,9 +466,44 @@ class graphics_pipeline_create_info final {
         native_.subpass = 0;
     }
 
-    auto next(const pipeline_rendering_create_info& info) noexcept
+    graphics_pipeline_create_info(const graphics_pipeline_create_info& other)
+        : native_{other.native_}, rendering_info_{other.rendering_info_} {
+        reset();
+    }
+
+    auto operator=(const graphics_pipeline_create_info& other) noexcept
         -> graphics_pipeline_create_info& {
-        native_.pNext = &info.native();
+        if (this == &other) return *this;
+
+        native_         = other.native_;
+        rendering_info_ = other.rendering_info_;
+
+        reset();
+        return *this;
+    }
+
+    graphics_pipeline_create_info(graphics_pipeline_create_info&& other) noexcept
+        : native_{other.native_}, rendering_info_{other.rendering_info_} {
+        reset();
+    }
+
+    auto operator=(graphics_pipeline_create_info&& other) noexcept
+        -> graphics_pipeline_create_info& {
+        if (this == &other) return *this;
+
+        native_         = other.native_;
+        rendering_info_ = other.rendering_info_;
+
+        reset();
+        return *this;
+    }
+
+    ~graphics_pipeline_create_info() noexcept = default;
+
+    auto rendering_info(const pipeline_rendering_create_info& info) noexcept
+        -> graphics_pipeline_create_info& {
+        rendering_info_ = info.native();
+        native_.pNext   = &rendering_info_;
         return *this;
     }
 
@@ -477,7 +512,12 @@ class graphics_pipeline_create_info final {
     }
 
   private:
-    VkGraphicsPipelineCreateInfo native_{};
+    void reset() noexcept {
+        if (native_.pNext != nullptr) native_.pNext = &rendering_info_;
+    }
+
+    VkGraphicsPipelineCreateInfo  native_{};
+    VkPipelineRenderingCreateInfo rendering_info_{};
 };
 
 using pipeline = VkPipeline_T;
