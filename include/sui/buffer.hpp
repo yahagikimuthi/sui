@@ -86,10 +86,12 @@ class native_buffer final {
 };
 
 class buffer final {
+    static constexpr auto max_vertices = 5000;
+
   public:
     [[nodiscard]] static auto try_make(hgn::device& dev, hgn::physical_device& physical) noexcept
         -> std::expected<buffer, error> {
-        constexpr auto max_buffer_size = std::uint64_t{sizeof(float) * 5000};
+        constexpr auto max_buffer_size = std::uint64_t{sizeof(float) * max_vertices};
 
         auto info = hgn::buffer_create_info{};
         info.size(max_buffer_size)
@@ -125,12 +127,12 @@ class buffer final {
         return buffer{
             native_buffer{buf->get(), dev},
             device_memory{dev_mem->get(), dev},
-            std::span{*data, 5000}
+            std::span{*data, max_vertices}
         };
     }
 
     void update(const std::span<const float> vertices) noexcept {
-        assert(vertices.size() <= 5000);
+        assert(vertices.size() <= max_vertices);
         std::memcpy(data_.data(), vertices.data(), sizeof(float) * vertices.size());
     }
 
