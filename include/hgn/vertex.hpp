@@ -325,7 +325,26 @@ class graphics_pipeline_create_info final {
         return *this;
     }
 
+    [[nodiscard]] auto native() const noexcept -> const VkGraphicsPipelineCreateInfo& {
+        return native_;
+    }
+
   private:
     VkGraphicsPipelineCreateInfo native_{};
 };
+
+using pipeline = VkPipeline_T;
+
+[[nodiscard]] inline auto try_make_graphics_pipeline(
+    device& dev, const graphics_pipeline_create_info& info
+) noexcept -> std::expected<std::reference_wrapper<pipeline>, result> {
+    auto* pipe_ptr = static_cast<pipeline*>(nullptr);
+
+    const auto res =
+        vkCreateGraphicsPipelines(&dev, nullptr, 1, &info.native(), nullptr, &pipe_ptr);
+    if (res != VK_SUCCESS) return make_result(res);
+
+    assert(pipe_ptr != nullptr);
+    return std::ref(*pipe_ptr);
+}
 }  // namespace hgn
