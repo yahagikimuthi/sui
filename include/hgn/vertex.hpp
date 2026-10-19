@@ -2,12 +2,13 @@
 
 #include <bit>
 #include <cassert>
-#include <cstddef>
 #include <cstdint>
 #include <expected>
 #include <functional>
 #include <ranges>
 #include <span>
+#include <utility>
+#include <vector>
 
 #include <vulkan/vulkan_core.h>
 
@@ -71,7 +72,6 @@ class vertex_input_attribute_description final {
     VkVertexInputAttributeDescription native_{};
 };
 
-template <std::size_t Uniform>
 class pipeline_vertex_input_state_create_info final {
   public:
     explicit pipeline_vertex_input_state_create_info() noexcept {
@@ -79,47 +79,85 @@ class pipeline_vertex_input_state_create_info final {
     }
 
     pipeline_vertex_input_state_create_info(
-        const pipeline_vertex_input_state_create_info&
-    ) noexcept = delete;
+        const pipeline_vertex_input_state_create_info& other
+    ) noexcept
+        : native_{other.native_}, attributes_{other.attributes_}, binding_{other.binding_} {
+        reset();
+    }
 
-    auto operator=(const pipeline_vertex_input_state_create_info&) noexcept
-        -> pipeline_vertex_input_state_create_info& = delete;
+    auto operator=(const pipeline_vertex_input_state_create_info& other) noexcept
+        -> pipeline_vertex_input_state_create_info& {
+        if (this == &other) return *this;
 
-    pipeline_vertex_input_state_create_info(pipeline_vertex_input_state_create_info&&) noexcept =
-        delete;
+        native_     = other.native_;
+        attributes_ = other.attributes_;
+        binding_    = other.binding_;
 
-    auto operator=(pipeline_vertex_input_state_create_info&&) noexcept
-        -> pipeline_vertex_input_state_create_info& = delete;
+        reset();
+        return *this;
+    }
+
+    pipeline_vertex_input_state_create_info(
+        pipeline_vertex_input_state_create_info&& other
+    ) noexcept
+        : native_{other.native_},
+          attributes_{std::move(other.attributes_)},
+          binding_{other.binding_} {
+        reset();
+    }
+
+    auto operator=(pipeline_vertex_input_state_create_info&& other) noexcept
+        -> pipeline_vertex_input_state_create_info& {
+        if (this == &other) return *this;
+
+        native_     = other.native_;
+        attributes_ = std::move(other.attributes_);
+        binding_    = other.binding_;
+
+        reset();
+        return *this;
+    }
 
     ~pipeline_vertex_input_state_create_info() noexcept = default;
 
-    auto vertex_binding_descriptions(
+    auto vertex_attribute_descriptions(
         const std::span<vertex_input_attribute_description> descriptions
     ) noexcept -> pipeline_vertex_input_state_create_info& {
-        descriptions_ =
+        attributes_.reserve(descriptions.size());
+        attributes_.assign_range(
             descriptions |
             std::views::transform(
-                [](
-                    const vertex_input_attribute_description& description
-                ) noexcept -> VkVertexInputAttributeDescription {
+                [](const vertex_input_attribute_description& description) noexcept
+                    -> VkVertexInputAttributeDescription {
                     return std::bit_cast<VkVertexInputAttributeDescription>(description);
                 }
-            );
+            )
+        );
 
-        native_.vertexAttributeDescriptionCount = descriptions_.size();
-        native_.pVertexAttributeDescriptions    = descriptions_.data();
+        native_.vertexAttributeDescriptionCount = static_cast<std::uint32_t>(attributes_.size());
+        native_.pVertexAttributeDescriptions    = attributes_.data();
         return *this;
     }
 
     auto vertex_binding_description(const vertex_input_binding_description& description) noexcept
         -> pipeline_vertex_input_state_create_info& {
+        binding_                              = description.native();
         native_.vertexBindingDescriptionCount = 1;
-        native_.pVertexBindingDescriptions    = &description.native();
+        native_.pVertexBindingDescriptions    = &binding_;
+        return *this;
     }
 
   private:
-    VkPipelineVertexInputStateCreateInfo                   native_{};
-    std::array<VkVertexInputAttributeDescription, Uniform> descriptions_{};
+    void reset() noexcept {
+        if (native_.pVertexAttributeDescriptions != nullptr)
+            native_.pVertexAttributeDescriptions = attributes_.data();
+        if (native_.pVertexBindingDescriptions != nullptr)
+            native_.pVertexBindingDescriptions = &binding_;
+    }
+
+    VkPipelineVertexInputStateCreateInfo           native_{};
+    std::vector<VkVertexInputAttributeDescription> attributes_;
+    VkVertexInputBindingDescription                binding_{};
 };
 
 class pipeline_input_assembly_state_create_info final {
