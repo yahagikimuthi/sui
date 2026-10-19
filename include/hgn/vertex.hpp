@@ -141,7 +141,7 @@ class pipeline_vertex_input_state_create_info final {
 
     auto vertex_binding_description(const vertex_input_binding_description& description) noexcept
         -> pipeline_vertex_input_state_create_info& {
-        binding_                              = description.native();
+        binding_ = std::bit_cast<VkVertexInputBindingDescription>(description);
         native_.vertexBindingDescriptionCount = 1;
         native_.pVertexBindingDescriptions    = &binding_;
         return *this;
