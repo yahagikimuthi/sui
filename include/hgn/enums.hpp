@@ -115,4 +115,10 @@ enum class buffer_usage_flag_bits : std::int32_t {  // NOLINT
 };
 
 enum class vertex_input_rate : std::int32_t { vertex = VK_VERTEX_INPUT_RATE_VERTEX };  // NOLINT
+
+enum class primitive_topology : std::int32_t {  // NOLINT
+    triangle_list = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+};
+
+enum class shader_stage_flag_bits : std::int32_t { vertex = VK_SHADER_STAGE_VERTEX_BIT };  // NOLINT
 }  // namespace hgn
