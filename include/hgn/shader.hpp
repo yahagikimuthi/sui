@@ -1,12 +1,18 @@
 #pragma once
 
+#include <cassert>
 #include <cstdint>
+#include <expected>
+#include <functional>
 #include <span>
 #include <utility>
 #include <vector>
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
+
+#include "hgn/device.hpp"
+#include "hgn/enums.hpp"
 
 namespace hgn {
 using shader_module = VkShaderModule_T;
@@ -74,4 +80,16 @@ class shader_module_create_info final {
     VkShaderModuleCreateInfo native_{};
     std::vector<char>        code_;
 };
+
+[[nodiscard]] inline auto try_make_shader_module(
+    device& dev, const shader_module_create_info& info
+) noexcept -> std::expected<std::reference_wrapper<shader_module>, result> {
+    auto* shader_ptr = static_cast<shader_module*>(nullptr);
+
+    const auto res = vkCreateShaderModule(&dev, &info.native(), nullptr, &shader_ptr);
+    if (res != VK_SUCCESS) return make_result(res);
+
+    assert(shader_ptr != nullptr);
+    return std::ref(*shader_ptr);
+}
 }  // namespace hgn
