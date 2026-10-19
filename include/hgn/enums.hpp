@@ -32,7 +32,10 @@ enum class queue_flag_bits : std::int32_t {  // NOLINT
     return static_cast<queue_flag_bits>(out);
 }
 
-enum class format : std::int32_t { b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB };  // NOLINT
+enum class format : std::int32_t {  // NOLINT
+    b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB,
+    r32g32_sfloat = VK_FORMAT_R32G32_SFLOAT
+};
 
 enum class color_space_khr : std::int32_t {  // NOLINT
     srgb_nonlinear = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
@@ -110,4 +113,6 @@ enum class memory_property_flags : std::int32_t {  // NOLINT
 enum class buffer_usage_flag_bits : std::int32_t {  // NOLINT
     vertex_buffer = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
 };
+
+enum class vertex_input_rate : std::int32_t { vertex = VK_VERTEX_INPUT_RATE_VERTEX };  // NOLINT
 }  // namespace hgn
