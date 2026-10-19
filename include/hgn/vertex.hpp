@@ -287,14 +287,6 @@ class pipeline_color_blend_attachment_state final {
         native_.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                  VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         native_.blendEnable    = VK_FALSE;
-
-        auto x = std::vector<bool>();
-        auto i = x.front();
-        i.flip();
-    }
-
-    [[nodiscard]] auto native() const noexcept -> const VkPipelineColorBlendAttachmentState& {
-        return native_;
     }
 
   private:
@@ -308,15 +300,55 @@ class pipeline_color_blend_state_create_info final {
         native_.logicOpEnable = VK_FALSE;
     }
 
+    pipeline_color_blend_state_create_info(
+        const pipeline_color_blend_state_create_info& other
+    ) noexcept
+        : native_{other.native_}, attachment_{other.attachment_} {
+        reset();
+    }
+
+    auto operator=(const pipeline_color_blend_state_create_info& other) noexcept
+        -> pipeline_color_blend_state_create_info& {
+        if (this == &other) return *this;
+
+        native_     = other.native_;
+        attachment_ = other.attachment_;
+
+        reset();
+        return *this;
+    }
+
+    pipeline_color_blend_state_create_info(pipeline_color_blend_state_create_info&& other) noexcept
+        : native_{other.native_}, attachment_{other.attachment_} {}
+
+    auto operator=(pipeline_color_blend_state_create_info&& other) noexcept
+        -> pipeline_color_blend_state_create_info& {
+        if (this == &other) return *this;
+
+        native_     = other.native_;
+        attachment_ = other.attachment_;
+
+        reset();
+        return *this;
+    }
+
+    ~pipeline_color_blend_state_create_info() noexcept = default;
+
     auto attachment(const pipeline_color_blend_attachment_state& state) noexcept
         -> pipeline_color_blend_state_create_info& {
+        attachment_             = std::bit_cast<VkPipelineColorBlendAttachmentState>(state);
         native_.attachmentCount = 1;
-        native_.pAttachments    = &state.native();
+        native_.pAttachments    = &attachment_;
         return *this;
     }
 
   private:
+    void reset() noexcept {
+        if (native_.pAttachments != nullptr) native_.pAttachments = &attachment_;
+    }
+
     VkPipelineColorBlendStateCreateInfo native_{};
+    VkPipelineColorBlendAttachmentState attachment_{};
 };
 
 class pipeline_shader_stage_create_info final {
