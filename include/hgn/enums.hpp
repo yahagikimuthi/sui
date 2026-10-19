@@ -121,4 +121,6 @@ enum class primitive_topology : std::int32_t {  // NOLINT
 };
 
 enum class shader_stage_flag_bits : std::int32_t { vertex = VK_SHADER_STAGE_VERTEX_BIT };  // NOLINT
+
+enum class dynamic_state : std::int32_t {};
 }  // namespace hgn
