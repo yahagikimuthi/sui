@@ -3,12 +3,15 @@
 #include <exception>
 #include <expected>
 #include <iostream>
+#include <span>
 #include <utility>
 
 #include <hgn/image.hpp>
 #include <hgn/submit.hpp>
 #include <kgm/window.hpp>
 
+#include "hgn/command.hpp"
+#include "sui/buffer.hpp"
 #include "sui/error.hpp"
 #include "sui/hardware.hpp"
 #include "sui/protocol.hpp"
@@ -37,7 +40,17 @@ class vk_context final {
                 runtime_error, "Failed to make protocol object.", protocol_res.error()
             );
 
-        return vk_context{std::move(*hard_res), std::move(*render_res), std::move(*protocol_res)};
+        auto buffer_res =
+            buffer::try_make(hard_res->native_device(), hard_res->get_physical_device().native());
+        if (not buffer_res)
+            return make_error(runtime_error, "Failed to make buffer.", buffer_res.error());
+
+        return vk_context{
+            std::move(*hard_res),
+            std::move(*render_res),
+            std::move(*protocol_res),
+            std::move(*buffer_res)
+        };
     }
 
     vk_context(const vk_context&) noexcept = delete;
@@ -48,6 +61,7 @@ class vk_context final {
         : hard_{std::move(other.hard_)},
           render_{std::move(other.render_)},
           protocol_{std::move(other.protocol_)},
+          buffer_{std::move(other.buffer_)},
           image_index_{other.image_index_},
           is_valid_{std::exchange(other.is_valid_, false)} {}
 
@@ -59,6 +73,7 @@ class vk_context final {
         hard_        = std::move(other.hard_);
         render_      = std::move(other.render_);
         protocol_    = std::move(other.protocol_);
+        buffer_      = std::move(other.buffer_);
         image_index_ = other.image_index_;
 
         is_valid_ = std::exchange(other.is_valid_, false);
@@ -81,6 +96,15 @@ class vk_context final {
         return protocol_.try_begin_rendering(
             render_.native_image(image_index_), render_.native_image_view(image_index_)
         );
+    }
+
+    void try_rendering(const std::span<const float> vertices) noexcept {
+        buffer_.update(vertices);
+        hgn::command_bind_vertex_buffers(
+            protocol_.get_command_buffer(), buffer_.get_native_buffer()
+        );
+        const auto vertex_count = static_cast<std::uint32_t>(vertices.size());
+        hgn::command_draw(protocol_.get_command_buffer(), vertex_count, 1);
     }
 
     [[nodiscard]] auto try_end_rendering() noexcept -> bool {
@@ -108,8 +132,13 @@ class vk_context final {
     }
 
   private:
-    explicit vk_context(hardware&& hard, render_context&& render, protocol&& prot) noexcept
-        : hard_{std::move(hard)}, render_{std::move(render)}, protocol_{std::move(prot)} {}
+    explicit vk_context(
+        hardware&& hard, render_context&& render, protocol&& prot, buffer&& buf
+    ) noexcept
+        : hard_{std::move(hard)},
+          render_{std::move(render)},
+          protocol_{std::move(prot)},
+          buffer_{std::move(buf)} {}
 
     void destroy() noexcept {
         if (not is_valid_) return;
@@ -123,6 +152,7 @@ class vk_context final {
     hardware       hard_;
     render_context render_;
     protocol       protocol_;
+    buffer         buffer_;
     std::uint32_t  image_index_{};
     bool           is_valid_{true};
 };

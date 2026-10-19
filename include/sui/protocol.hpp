@@ -9,6 +9,7 @@
 #include <hgn/submit.hpp>
 #include <hgn/sync.hpp>
 
+#include "hgn/command.hpp"
 #include "sui/command.hpp"
 #include "sui/error.hpp"
 #include "sui/sync.hpp"
@@ -64,6 +65,10 @@ class protocol final {
             .wait_semaphore(sync_.image_available_semaphore())
             .signal_semaphore(sync_.render_finished_semaphore());
         return info;
+    }
+
+    [[nodiscard]] auto get_command_buffer() noexcept -> hgn::command_buffer& {
+        return command_.buffer();
     }
 
   private:
