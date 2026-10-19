@@ -36,10 +36,6 @@ class vertex_input_binding_description final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkVertexInputBindingDescription& {
-        return native_;
-    }
-
   private:
     VkVertexInputBindingDescription native_{};
 };
