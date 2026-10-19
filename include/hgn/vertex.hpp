@@ -179,15 +179,61 @@ class pipeline_dynamic_state_create_info final {
         native_.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     }
 
-    auto dynamic_states(const std::span<const VkDynamicState> states) noexcept
+    pipeline_dynamic_state_create_info(const pipeline_dynamic_state_create_info& other) noexcept
+        : native_{other.native_}, states_{other.states_} {
+        reset();
+    }
+
+    auto operator=(const pipeline_dynamic_state_create_info& other) noexcept
         -> pipeline_dynamic_state_create_info& {
-        native_.dynamicStateCount = static_cast<std::uint32_t>(states.size());
-        native_.pDynamicStates    = states.data();
+        if (this == &other) return *this;
+
+        native_ = other.native_;
+        states_ = other.states_;
+
+        reset();
+        return *this;
+    }
+
+    pipeline_dynamic_state_create_info(pipeline_dynamic_state_create_info&& other) noexcept
+        : native_{other.native_}, states_{std::move(other.states_)} {
+        reset();
+    }
+
+    auto operator=(pipeline_dynamic_state_create_info&& other) noexcept
+        -> pipeline_dynamic_state_create_info& {
+        if (this == &other) return *this;
+
+        native_ = other.native_;
+        states_ = std::move(other.states_);
+
+        reset();
+        return *this;
+    }
+
+    ~pipeline_dynamic_state_create_info() noexcept = default;
+
+    auto dynamic_states(const std::span<const dynamic_state> states) noexcept
+        -> pipeline_dynamic_state_create_info& {
+        states_.reserve(states.size());
+        states_.assign_range(
+            states | std::views::transform([](dynamic_state state) noexcept -> VkDynamicState {
+                return static_cast<VkDynamicState>(state);
+            })
+        );
+
+        native_.dynamicStateCount = static_cast<std::uint32_t>(states_.size());
+        native_.pDynamicStates    = states_.data();
         return *this;
     }
 
   private:
+    void reset() noexcept {
+        if (native_.pDynamicStates != nullptr) native_.pDynamicStates = states_.data();
+    }
+
     VkPipelineDynamicStateCreateInfo native_{};
+    std::vector<VkDynamicState>      states_;
 };
 
 class pipeline_viewport_state_create_info final {
