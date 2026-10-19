@@ -405,6 +405,40 @@ class pipeline_rendering_create_info final {
         native_.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
     }
 
+    pipeline_rendering_create_info(const pipeline_rendering_create_info& other) noexcept
+        : native_{other.native_}, format_{other.format_} {
+        reset();
+    }
+
+    auto operator=(const pipeline_rendering_create_info& other) noexcept
+        -> pipeline_rendering_create_info& {
+        if (this == &other) return *this;
+
+        native_ = other.native_;
+        format_ = other.format_;
+
+        reset();
+        return *this;
+    }
+
+    pipeline_rendering_create_info(pipeline_rendering_create_info&& other) noexcept
+        : native_{other.native_}, format_{other.format_} {
+        reset();
+    }
+
+    auto operator=(pipeline_rendering_create_info&& other) noexcept
+        -> pipeline_rendering_create_info& {
+        if (this == &other) return *this;
+
+        native_ = other.native_;
+        format_ = other.format_;
+
+        reset();
+        return *this;
+    }
+
+    ~pipeline_rendering_create_info() noexcept = default;
+
     auto color_attachment_format(const format f) noexcept -> pipeline_rendering_create_info& {
         format_                         = static_cast<VkFormat>(f);
         native_.colorAttachmentCount    = 1;
@@ -417,6 +451,10 @@ class pipeline_rendering_create_info final {
     }
 
   private:
+    void reset() noexcept {
+        if (native_.pColorAttachmentFormats != nullptr) native_.pColorAttachmentFormats = &format_;
+    }
+
     VkPipelineRenderingCreateInfo native_{};
     VkFormat                      format_{static_cast<VkFormat>(0)};
 };
