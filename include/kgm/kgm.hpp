@@ -22,7 +22,7 @@ namespace kgm {
         return std::vector<std::string_view>{};
     }
 
-    auto extensions = std::span<const char*>{extensions_ptr, count};
+    const auto extensions = std::span<const char* const>{extensions_ptr, count};
 
     return extensions | std::views::transform([](const char* ptr) noexcept -> std::string_view {
                return std::string_view{ptr};
