@@ -82,7 +82,7 @@ class image_view_container final {
     explicit image_view_container(
         std::vector<ref_w<hgn::image_view>>&& views, hgn::device& dev
     ) noexcept
-        : views_{std::move(views)}, dev_{dev} {}
+        : views_{std::move(views)}, dev_{std::ref(dev)} {}
 
   private:
     void destroy() noexcept {

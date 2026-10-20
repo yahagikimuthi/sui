@@ -48,7 +48,7 @@ class semaphore final {
 
   private:
     explicit semaphore(hgn::semaphore& native, hgn::device& dev) noexcept
-        : native_{native}, dev_{dev} {}
+        : native_{native}, dev_{std::ref(dev)} {}
 
     void destroy() noexcept {
         if (not native_) return;
@@ -91,7 +91,8 @@ class fence final {
     [[nodiscard]] auto get() noexcept -> hgn::fence& { return native_.value(); }
 
   private:
-    explicit fence(hgn::fence& native, hgn::device& dev) noexcept : native_{native}, dev_{dev} {}
+    explicit fence(hgn::fence& native, hgn::device& dev) noexcept
+        : native_{native}, dev_{std::ref(dev)} {}
 
     void destroy() noexcept {
         if (not native_) return;

@@ -52,7 +52,7 @@ class command_pool final {
 
   private:
     explicit command_pool(hgn::command_pool& native, hgn::device& dev) noexcept
-        : native_{native}, dev_{dev} {}
+        : native_{native}, dev_{std::ref(dev)} {}
 
     void destroy() noexcept {
         if (native_) hgn::destroy_command_pool(dev_.get(), *native_);

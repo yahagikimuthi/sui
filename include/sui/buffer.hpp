@@ -18,7 +18,7 @@ namespace sui {
 class device_memory final {
   public:
     explicit device_memory(hgn::device_memory& native, hgn::device& dev) noexcept
-        : native_{native}, dev_{dev} {}
+        : native_{native}, dev_{std::ref(dev)} {}
 
     device_memory(const device_memory&) noexcept = delete;
 
@@ -52,7 +52,7 @@ class device_memory final {
 class native_buffer final {
   public:
     explicit native_buffer(hgn::buffer& native, hgn::device& dev) noexcept
-        : native_{native}, dev_{dev} {}
+        : native_{native}, dev_{std::ref(dev)} {}
 
     native_buffer(const native_buffer&) noexcept = delete;
 

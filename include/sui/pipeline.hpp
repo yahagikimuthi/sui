@@ -119,7 +119,7 @@ class pipeline final {
 
   private:
     explicit pipeline(hgn::pipeline& native, hgn::device& dev) noexcept
-        : native_{native}, dev_{dev} {}
+        : native_{native}, dev_{std::ref(dev)} {}
 
     void destroy() noexcept {
         if (native_) hgn::destroy_pipeline(dev_.get(), *native_);
