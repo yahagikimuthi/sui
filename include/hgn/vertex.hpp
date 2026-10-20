@@ -607,4 +607,8 @@ using pipeline = VkPipeline_T;
     assert(pipe_ptr != nullptr);
     return std::ref(*pipe_ptr);
 }
+
+inline void destroy_pipeline(device& dev, pipeline& target) noexcept {
+    vkDestroyPipeline(&dev, &target, nullptr);
+}
 }  // namespace hgn
