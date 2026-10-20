@@ -19,13 +19,13 @@ class [[deprecated]] callback_manager final {
         key_ = callback;
         glfwSetKeyCallback(
             &win,
-            [](GLFWwindow*          win,
+            [](GLFWwindow*          win_ptr,
                int                  button,
                [[maybe_unused]] int scancode,
                int                  act,
                [[maybe_unused]] int mods) noexcept -> void {
-                if (win == nullptr or key_ == nullptr) return;
-                key_(*win, static_cast<key>(button), static_cast<action>(act));
+                if (win_ptr == nullptr or key_ == nullptr) return;
+                key_(*win_ptr, static_cast<key>(button), static_cast<action>(act));
             }
         );
     }
@@ -33,9 +33,9 @@ class [[deprecated]] callback_manager final {
     static void set(window& win, cursor_pos_fn* callback) noexcept {
         cursor_pos_ = callback;
         glfwSetCursorPosCallback(
-            &win, [](GLFWwindow* win, double xpos, double ypos) noexcept -> void {
-                if (win == nullptr or cursor_pos_ == nullptr) return;
-                cursor_pos_(*win, static_cast<float>(xpos), static_cast<float>(ypos));
+            &win, [](GLFWwindow* win_ptr, double xpos, double ypos) noexcept -> void {
+                if (win_ptr == nullptr or cursor_pos_ == nullptr) return;
+                cursor_pos_(*win_ptr, static_cast<float>(xpos), static_cast<float>(ypos));
             }
         );
     }
@@ -44,9 +44,13 @@ class [[deprecated]] callback_manager final {
         mouse_button_ = callback;
         glfwSetMouseButtonCallback(
             &win,
-            [](GLFWwindow* win, int button, int act, [[maybe_unused]] int mods) noexcept -> void {
-                if (win == nullptr or mouse_button_ == nullptr) return;
-                mouse_button_(*win, static_cast<mouse_button>(button), static_cast<action>(act));
+            [](
+                GLFWwindow* win_ptr, int button, int act, [[maybe_unused]] int mods
+            ) noexcept -> void {
+                if (win_ptr == nullptr or mouse_button_ == nullptr) return;
+                mouse_button_(
+                    *win_ptr, static_cast<mouse_button>(button), static_cast<action>(act)
+                );
             }
         );
     }
@@ -65,12 +69,12 @@ inline void set_key_callback(window& win, void (*callback)(window&, key, action)
 
     glfwSetKeyCallback(
         &win,
-        [](window*              win,
+        [](window*              win_ptr,
            int                  button,
            [[maybe_unused]] int scancode,
            int                  act,
            [[maybe_unused]] int mods) noexcept -> void {
-            if (fn != nullptr) fn(*win, static_cast<key>(button), static_cast<action>(act));
+            if (fn != nullptr) fn(*win_ptr, static_cast<key>(button), static_cast<action>(act));
         }
     );
 }
@@ -78,8 +82,8 @@ inline void set_key_callback(window& win, void (*callback)(window&, key, action)
 inline void set_cursor_pos_callback(window& win, void (*callback)(window&, float, float)) noexcept {
     static thread_local constinit auto* fn = static_cast<void (*)(window&, float, float)>(nullptr);
     fn                                     = callback;
-    glfwSetCursorPosCallback(&win, [](window* win, double xpos, double ypos) noexcept -> void {
-        if (fn != nullptr) fn(*win, static_cast<float>(xpos), static_cast<float>(ypos));
+    glfwSetCursorPosCallback(&win, [](window* win_ptr, double xpos, double ypos) noexcept -> void {
+        if (fn != nullptr) fn(*win_ptr, static_cast<float>(xpos), static_cast<float>(ypos));
     });
 }
 
@@ -91,10 +95,23 @@ inline void set_mouse_button_callback(
     fn = callback;
 
     glfwSetMouseButtonCallback(
-        &win, [](window* win, int button, int act, [[maybe_unused]] int mods) noexcept -> void {
+        &win, [](window* win_ptr, int button, int act, [[maybe_unused]] int mods) noexcept -> void {
             if (fn != nullptr)
-                fn(*win, static_cast<mouse_button>(button), static_cast<action>(act));
+                fn(*win_ptr, static_cast<mouse_button>(button), static_cast<action>(act));
         }
     );
+}
+
+inline void set_window_size_callback(
+    window& win, void (*callback)(window&, std::uint32_t, std::uint32_t)
+) noexcept {
+    static thread_local auto* fn =
+        static_cast<void (*)(window&, std::uint32_t, std::uint32_t)>(nullptr);
+    fn = callback;
+
+    glfwSetWindowSizeCallback(&win, [](window* win_ptr, int width, int height) noexcept -> void {
+        if (fn != nullptr)
+            fn(*win_ptr, static_cast<std::uint32_t>(width), static_cast<std::uint32_t>(height));
+    });
 }
 }  // namespace kgm
