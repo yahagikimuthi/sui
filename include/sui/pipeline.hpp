@@ -2,7 +2,9 @@
 
 #include <array>
 #include <expected>
+#include <functional>
 #include <optional>
+#include <utility>
 
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
@@ -92,12 +94,38 @@ class pipeline final {
         const auto res = hgn::try_make_graphics_pipeline(dev, pipeline_info);
         if (not res) return make_error(runtime_error, "Failed to make graphics pipeline.");
 
-        return pipeline{res->get()};
+        return pipeline{res->get(), dev};
     }
 
-  private:
-    explicit pipeline(hgn::pipeline& native) noexcept : native_{native} {}
+    pipeline(const pipeline&) noexcept = delete;
 
-    std::optional<hgn::pipeline&> native_;
+    auto operator=(const pipeline&) noexcept -> pipeline& = delete;
+
+    pipeline(pipeline&& other) noexcept
+        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
+
+    auto operator=(pipeline&& other) noexcept -> pipeline& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        native_ = std::exchange(other.native_, std::nullopt);
+        dev_    = other.dev_;
+
+        return *this;
+    }
+
+    ~pipeline() noexcept { destroy(); }
+
+  private:
+    explicit pipeline(hgn::pipeline& native, hgn::device& dev) noexcept
+        : native_{native}, dev_{dev} {}
+
+    void destroy() noexcept {
+        if (native_) hgn::destroy_pipeline(dev_.get(), *native_);
+    }
+
+    std::optional<hgn::pipeline&>       native_;
+    std::reference_wrapper<hgn::device> dev_;
 };
 }  // namespace sui
