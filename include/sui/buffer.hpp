@@ -86,13 +86,12 @@ class native_buffer final {
 };
 
 class buffer final {
-    static constexpr auto max_vertices = 5000;
+    static constexpr auto max_vertices    = 5000;
+    static constexpr auto max_buffer_size = sizeof(float) * max_vertices;
 
   public:
     [[nodiscard]] static auto try_make(hgn::device& dev, hgn::physical_device& physical) noexcept
         -> std::expected<buffer, error> {
-        constexpr auto max_buffer_size = std::uint64_t{sizeof(float) * max_vertices};
-
         auto info = hgn::buffer_create_info{};
         info.size(max_buffer_size)
             .usage(hgn::buffer_usage_flag_bits::vertex_buffer)
@@ -135,7 +134,9 @@ class buffer final {
     [[nodiscard]] auto get_native_buffer() noexcept -> hgn::buffer& { return buffer_.native(); }
 
   private:
-    explicit buffer(native_buffer&& native, device_memory&& mem, std::span<std::byte> data) noexcept
+    explicit buffer(
+        native_buffer&& native, device_memory&& mem, std::span<std::byte, max_buffer_size> data
+    ) noexcept
         : memory_{std::move(mem)}, buffer_{std::move(native)}, data_{data} {}
 
     [[nodiscard]] static auto find_memory_type(
@@ -156,8 +157,8 @@ class buffer final {
         return std::nullopt;
     }
 
-    device_memory        memory_;
-    native_buffer        buffer_;
-    std::span<std::byte> data_;
+    device_memory                         memory_;
+    native_buffer                         buffer_;
+    std::span<std::byte, max_buffer_size> data_;
 };
 }  // namespace sui
