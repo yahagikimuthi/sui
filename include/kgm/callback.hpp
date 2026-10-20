@@ -71,8 +71,7 @@ inline void set_key_callback(window& win, void (*callback)(window&, key, action)
            [[maybe_unused]] int scancode,
            int                  act,
            [[maybe_unused]] int mods) noexcept -> void {
-            if (fn != nullptr) return;
-            fn(*win, static_cast<key>(button), static_cast<action>(act));
+            if (fn != nullptr) fn(*win, static_cast<key>(button), static_cast<action>(act));
         }
     );
 }
