@@ -28,6 +28,8 @@ class window_impl final {
         return window_impl{std::move(*win_res), std::move(*ctx_res)};
     }
 
+    [[nodiscard]] auto is_open() const noexcept -> bool { return win_.is_open(); }
+
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool { return ctx_.try_begin_rendering(); }
 
     void rendering(const std::span<const float> vertices) noexcept { ctx_.try_rendering(vertices); }

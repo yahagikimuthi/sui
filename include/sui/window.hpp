@@ -17,6 +17,8 @@ class window final {
         const std::string_view title = "No Title"
     ) noexcept -> std::expected<window, error>;
 
+    [[nodiscard]] auto is_open() const noexcept -> bool;
+
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool;
 
     void rendering(const std::span<const float> vertices) noexcept;
@@ -45,6 +47,10 @@ namespace sui {
     auto res = detail::window_impl::try_make(width, height, title);
     if (not res) return std::unexpected{res.error()};
     return window{std::move(*res)};
+}
+
+[[nodiscard]] inline auto window::is_open() const noexcept -> bool {
+    return impl_.is_open();
 }
 
 [[nodiscard]] inline auto window::try_begin_rendering() noexcept -> bool {
