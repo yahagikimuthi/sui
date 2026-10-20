@@ -61,8 +61,8 @@ class scope_exit final {
 
     if (not file.is_open()) return std::nullopt;
 
-    auto size   = static_cast<std::int64_t>(file.tellg());
-    auto buffer = std::vector<char>(static_cast<std::size_t>(size));
+    const auto size   = static_cast<std::int64_t>(file.tellg());
+    auto       buffer = std::vector<char>(static_cast<std::size_t>(size));
 
     file.seekg(0);
     file.read(buffer.data(), size);
