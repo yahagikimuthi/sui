@@ -74,6 +74,7 @@ class native_window final {
 
     void destroy() noexcept {
         if (not native_) return;
+        kgm::reset_window_user(*native_);
         kgm::destroy_window(*native_);
         kgm::terminate();
     }
