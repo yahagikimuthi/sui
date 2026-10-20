@@ -89,4 +89,8 @@ class shader_module_create_info final {
     assert(shader_ptr != nullptr);
     return std::ref(*shader_ptr);
 }
+
+inline void destroy_shader_module(device& dev, shader_module& target) noexcept {
+    vkDestroyShaderModule(&dev, &target, nullptr);
+}
 }  // namespace hgn
