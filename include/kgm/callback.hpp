@@ -71,7 +71,7 @@ inline void set_key_callback(window& win, void (*callback)(window&, key, action)
            [[maybe_unused]] int scancode,
            int                  act,
            [[maybe_unused]] int mods) noexcept -> void {
-            if (win == nullptr or fn == nullptr) return;
+            if (fn != nullptr) return;
             fn(*win, static_cast<key>(button), static_cast<action>(act));
         }
     );
@@ -81,8 +81,7 @@ inline void set_cursor_pos_callback(window& win, void (*callback)(window&, float
     static thread_local constinit auto* fn = static_cast<void (*)(window&, float, float)>(nullptr);
     fn                                     = callback;
     glfwSetCursorPosCallback(&win, [](window* win, double xpos, double ypos) noexcept -> void {
-        if (win == nullptr or fn == nullptr) return;
-        fn(*win, static_cast<float>(xpos), static_cast<float>(ypos));
+        if (fn != nullptr) fn(*win, static_cast<float>(xpos), static_cast<float>(ypos));
     });
 }
 
@@ -95,7 +94,7 @@ inline void set_mouse_button_callback(
 
     glfwSetMouseButtonCallback(
         &win, [](window* win, int button, int act, [[maybe_unused]] int mods) noexcept -> void {
-            if (win != nullptr and fn != nullptr)
+            if (fn != nullptr)
                 fn(*win, static_cast<mouse_button>(button), static_cast<action>(act));
         }
     );
