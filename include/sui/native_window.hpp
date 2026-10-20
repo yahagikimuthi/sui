@@ -14,7 +14,7 @@ namespace sui {
 class native_window final {
   public:
     [[nodiscard]] static auto try_make(
-        const std::uint32_t width, const std::uint32_t height, std::string_view title = "No Title"
+        const std::uint32_t width, const std::uint32_t height, std::string_view title
     ) noexcept -> std::expected<native_window, error> {
         if (not kgm::try_init()) return make_error(runtime_error, "Failed to initialize Kagami");
 
