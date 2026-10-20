@@ -28,6 +28,10 @@ class window final {
 
     detail::window_impl impl_;
 };
+
+[[nodiscard]] inline auto try_make_window(
+    const std::uint32_t width, const std::uint32_t height, const std::string_view title = "No Title"
+) noexcept -> std::expected<window, error>;
 }  // namespace sui
 
 // ==================================================
@@ -56,4 +60,10 @@ inline void window::rendering(const std::span<const float> vertices) noexcept {
 }
 
 inline window::window(detail::window_impl&& impl) noexcept : impl_{std::move(impl)} {}
+
+[[nodiscard]] inline auto try_make_window(
+    const std::uint32_t width, const std::uint32_t height, const std::string_view title
+) noexcept -> std::expected<window, error> {
+    return window::try_make(width, height, title);
+}
 }  // namespace sui
