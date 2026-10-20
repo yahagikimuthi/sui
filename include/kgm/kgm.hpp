@@ -16,15 +16,13 @@ namespace kgm {
 [[nodiscard]] inline auto get_required_instance_extensions() noexcept
     -> std::vector<std::string_view> {
     auto         count          = std::uint32_t{};
-    auto         extensions     = std::vector<const char*>{};
     const auto** extensions_ptr = glfwGetRequiredInstanceExtensions(&count);
 
     if (extensions_ptr == nullptr or count == 0) {
         return std::vector<std::string_view>{};
     }
 
-    // ポインタ範囲指定コンストラクタで vector にまとめる
-    extensions = std::vector<const char*>(extensions_ptr, extensions_ptr + count);  // NOLINT
+    auto extensions = std::span<const char*>{extensions_ptr, count};
 
     return extensions | std::views::transform([](const char* ptr) noexcept -> std::string_view {
                return std::string_view{ptr};
