@@ -10,7 +10,7 @@
 // TODO ヌルである場合はoptional<T&>の利用、ヌルでない場合は参照を受ける関数を扱うものとする
 // TODO 関数ポインタをスレッドローカル指定した場合の安全性, テスト追加
 namespace kgm::detail {
-class callback_manager final {
+class [[deprecated]] callback_manager final {
     using key_fn          = void(window&, key, action);
     using cursor_pos_fn   = void(window&, float, float);
     using mouse_button_fn = void(window&, mouse_button, action);
@@ -57,7 +57,6 @@ class callback_manager final {
     static inline constinit auto* cursor_pos_   = static_cast<cursor_pos_fn*>(nullptr);
     static inline constinit auto* mouse_button_ = static_cast<mouse_button_fn*>(nullptr);
 };
-
 }  // namespace kgm::detail
 
 namespace kgm {
@@ -90,6 +89,15 @@ inline void set_cursor_pos_callback(window& win, void (*callback)(window&, float
 inline void set_mouse_button_callback(
     window& win, void (*callback)(window&, mouse_button, action)
 ) noexcept {
-    detail::callback_manager::set(win, callback);
+    static thread_local constinit auto* fn =
+        static_cast<void (*)(window&, mouse_button, action)>(nullptr);
+    fn = callback;
+
+    glfwSetMouseButtonCallback(
+        &win, [](window* win, int button, int act, [[maybe_unused]] int mods) noexcept -> void {
+            if (win != nullptr and fn != nullptr)
+                fn(*win, static_cast<mouse_button>(button), static_cast<action>(act));
+        }
+    );
 }
 }  // namespace kgm
