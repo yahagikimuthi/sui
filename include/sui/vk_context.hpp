@@ -1,16 +1,18 @@
 #pragma once
 
+#include <cstdint>
 #include <exception>
 #include <expected>
 #include <iostream>
 #include <span>
 #include <utility>
 
+#include <hgn/command.hpp>
+#include <hgn/enums.hpp>
 #include <hgn/image.hpp>
 #include <hgn/submit.hpp>
 #include <kgm/window.hpp>
 
-#include "hgn/command.hpp"
 #include "sui/buffer.hpp"
 #include "sui/error.hpp"
 #include "sui/hardware.hpp"
