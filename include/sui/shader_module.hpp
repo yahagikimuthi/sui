@@ -44,7 +44,7 @@ class shader_module final {
     ~shader_module() noexcept { destroy(); }
 
   private:
-    explicit shader_module(hgn::shader_module& native, hgn::device& dev)
+    explicit shader_module(hgn::shader_module& native, hgn::device& dev) noexcept
         : native_{native}, dev_{dev} {}
 
     void destroy() noexcept {
