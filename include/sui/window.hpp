@@ -4,6 +4,7 @@
 #include <expected>
 #include <span>
 #include <string_view>
+#include <utility>
 
 #include "sui/detail/window_impl.hpp"
 #include "sui/error.hpp"
