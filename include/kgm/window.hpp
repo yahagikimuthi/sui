@@ -50,7 +50,7 @@ inline void destroy_window(window& target) noexcept {
     return *ptr;
 }
 
-[[nodiscard]] inline auto window_should_close(window& win) noexcept -> bool {
+[[nodiscard]] inline auto should_window_close(window& win) noexcept -> bool {
     return glfwWindowShouldClose(&win) != 0;
 }
 
