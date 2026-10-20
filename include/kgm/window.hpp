@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <expected>
+#include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -79,6 +80,6 @@ template <typename T>
 
     assert(surface != nullptr);
 
-    return *surface;
+    return std::ref(*surface);
 }
 }  // namespace kgm
