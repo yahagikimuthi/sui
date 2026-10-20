@@ -143,6 +143,10 @@ class pipeline_vertex_input_state_create_info final {
         return *this;
     }
 
+    [[nodiscard]] auto native() const noexcept -> const VkPipelineVertexInputStateCreateInfo& {
+        return native_;
+    }
+
   private:
     void reset() noexcept {
         if (native_.pVertexAttributeDescriptions != nullptr)
@@ -225,6 +229,10 @@ class pipeline_dynamic_state_create_info final {
         native_.dynamicStateCount = static_cast<std::uint32_t>(states_.size());
         native_.pDynamicStates    = states_.data();
         return *this;
+    }
+
+    [[nodiscard]] auto native() const noexcept -> const VkPipelineDynamicStateCreateInfo& {
+        return native_;
     }
 
   private:
@@ -340,6 +348,10 @@ class pipeline_color_blend_state_create_info final {
         native_.attachmentCount = 1;
         native_.pAttachments    = &attachment_;
         return *this;
+    }
+
+    [[nodiscard]] auto native() const noexcept -> const VkPipelineColorBlendStateCreateInfo& {
+        return native_;
     }
 
   private:
@@ -462,8 +474,9 @@ class pipeline_rendering_create_info final {
 class graphics_pipeline_create_info final {
   public:
     explicit graphics_pipeline_create_info() noexcept {
-        native_.sType   = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        native_.subpass = 0;
+        native_.sType      = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        native_.renderPass = nullptr;
+        native_.subpass    = 0;
     }
 
     graphics_pipeline_create_info(const graphics_pipeline_create_info& other)
@@ -507,6 +520,77 @@ class graphics_pipeline_create_info final {
         return *this;
     }
 
+    auto stages(const std::span<const pipeline_shader_stage_create_info> stage_infos) noexcept
+        -> graphics_pipeline_create_info& {
+        shader_stages_.reserve(stage_infos.size());
+        shader_stages_.assign_range(
+            stage_infos | std::views::transform(
+                              [](const pipeline_shader_stage_create_info& info) noexcept
+                                  -> VkPipelineShaderStageCreateInfo {
+                                  return std::bit_cast<VkPipelineShaderStageCreateInfo>(info);
+                              }
+                          )
+        );
+
+        native_.stageCount = static_cast<std::uint32_t>(shader_stages_.size());
+        native_.pStages    = shader_stages_.data();
+        return *this;
+    }
+
+    auto vertex_input_state(const pipeline_vertex_input_state_create_info& info) noexcept
+        -> graphics_pipeline_create_info& {
+        vertex_input_info_        = info.native();
+        native_.pVertexInputState = &vertex_input_info_;
+        return *this;
+    }
+
+    auto input_assembly_state(const pipeline_input_assembly_state_create_info& info) noexcept
+        -> graphics_pipeline_create_info& {
+        input_assembly_             = std::bit_cast<VkPipelineInputAssemblyStateCreateInfo>(info);
+        native_.pInputAssemblyState = &input_assembly_;
+        return *this;
+    }
+
+    auto viewport_state(const pipeline_viewport_state_create_info& info) noexcept
+        -> graphics_pipeline_create_info& {
+        viewport_state_        = std::bit_cast<VkPipelineViewportStateCreateInfo>(info);
+        native_.pViewportState = &viewport_state_;
+        return *this;
+    }
+
+    auto rasterization_state(const pipeline_rasterization_state_create_info& info) noexcept
+        -> graphics_pipeline_create_info& {
+        rasterizer_                 = std::bit_cast<VkPipelineRasterizationStateCreateInfo>(info);
+        native_.pRasterizationState = &rasterizer_;
+        return *this;
+    }
+
+    auto multisample_state(const pipeline_multisample_state_create_info& info) noexcept
+        -> graphics_pipeline_create_info& {
+        multisampling_            = std::bit_cast<VkPipelineMultisampleStateCreateInfo>(info);
+        native_.pMultisampleState = &multisampling_;
+        return *this;
+    }
+
+    auto color_blend_state(const pipeline_color_blend_state_create_info& info) noexcept
+        -> graphics_pipeline_create_info& {
+        color_blend_             = info.native();
+        native_.pColorBlendState = &color_blend_;
+        return *this;
+    }
+
+    auto dynamic_states(const pipeline_dynamic_state_create_info& info) noexcept
+        -> graphics_pipeline_create_info& {
+        dynamic_state_        = info.native();
+        native_.pDynamicState = &dynamic_state_;
+        return *this;
+    }
+
+    auto layout(pipeline_layout& ref) noexcept -> graphics_pipeline_create_info& {
+        native_.layout = &ref;
+        return *this;
+    }
+
     [[nodiscard]] auto native() const noexcept -> const VkGraphicsPipelineCreateInfo& {
         return native_;
     }
@@ -514,10 +598,21 @@ class graphics_pipeline_create_info final {
   private:
     void reset() noexcept {
         if (native_.pNext != nullptr) native_.pNext = &rendering_info_;
+        if (native_.pStages != nullptr) native_.pStages = shader_stages_.data();
+        if (native_.pVertexInputState != nullptr) native_.pVertexInputState = &vertex_input_info_;
+        if (native_.pInputAssemblyState != nullptr) native_.pInputAssemblyState = &input_assembly_;
     }
 
-    VkGraphicsPipelineCreateInfo  native_{};
-    VkPipelineRenderingCreateInfo rendering_info_{};
+    VkGraphicsPipelineCreateInfo                 native_{};
+    VkPipelineRenderingCreateInfo                rendering_info_{};
+    std::vector<VkPipelineShaderStageCreateInfo> shader_stages_;
+    VkPipelineVertexInputStateCreateInfo         vertex_input_info_{};
+    VkPipelineInputAssemblyStateCreateInfo       input_assembly_{};
+    VkPipelineViewportStateCreateInfo            viewport_state_{};
+    VkPipelineRasterizationStateCreateInfo       rasterizer_{};
+    VkPipelineMultisampleStateCreateInfo         multisampling_{};
+    VkPipelineColorBlendStateCreateInfo          color_blend_{};
+    VkPipelineDynamicStateCreateInfo             dynamic_state_{};
 };
 
 using pipeline = VkPipeline_T;
