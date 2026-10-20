@@ -49,7 +49,7 @@ class native_window final {
 
     [[nodiscard]] auto is_open() const noexcept -> bool {
         if (not native_) return false;
-        return not kgm::window_should_close(*native_);
+        return not kgm::should_window_close(*native_);
     }
 
     [[nodiscard]] auto native() noexcept -> kgm::window& { return *native_; }
