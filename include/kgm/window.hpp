@@ -14,7 +14,9 @@
 #include <hgn/instance.hpp>
 #include <hgn/surface.hpp>
 
+#ifndef GLFW_INCLUDE_VULKAN
 #define GLFW_INCLUDE_VULKAN
+#endif
 #include <GLFW/glfw3.h>
 
 namespace kgm {
