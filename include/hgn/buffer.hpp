@@ -134,12 +134,9 @@ class memory_allocate_info final {
 template <std::uint64_t BufferSize>
 [[nodiscard]] inline auto try_map_memory(device& dev, device_memory& dev_mem) noexcept
     -> std::expected<std::span<std::byte, BufferSize>, result> {
-    auto*      data = static_cast<void*>(nullptr);
-    const auto res  = vkMapMemory(&dev, &dev_mem, 0, BufferSize, 0, &data);
-    if (res != VK_SUCCESS) return make_result(res);
-
-    assert(data != nullptr);
-    return std::span<std::byte, BufferSize>{static_cast<std::byte*>(data), BufferSize};
+    auto res = try_map_memory(dev, dev_mem, BufferSize);
+    if (not res) return std::unexpected{res.error()};
+    return std::span<std::byte, BufferSize>{*res};
 }
 
 inline void unmap_memory(device& dev, device_memory& dev_mem) noexcept {
