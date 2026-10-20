@@ -13,7 +13,6 @@
 #include "sui/vk_context.hpp"
 
 namespace sui::detail {
-
 class window_impl final {
   public:
     [[nodiscard]] static auto try_make(
