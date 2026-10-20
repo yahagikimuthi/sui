@@ -11,6 +11,8 @@
 #include <hgn/instance.hpp>
 
 namespace kng {
+using hgn::try_enumerate_instance_layer_properties;
+
 class instance final {
   public:
     explicit instance(hgn::instance& native) noexcept : native_{native} {}
