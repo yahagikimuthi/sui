@@ -7,11 +7,11 @@
 
 namespace sui {
 class debugger final {
-    using r_arg_t = void(const std::string_view);
+    using r_arg_t = void(std::string_view);
     using fn_t    = std::variant<std::reference_wrapper<r_arg_t>, std::function<r_arg_t>>;
 
   public:
-    static void set(void (&fn)(const std::string_view)) noexcept { fn_ = std::ref(fn); }
+    static void set(void (&fn)(std::string_view)) noexcept { fn_ = std::ref(fn); }
 
     template <typename F>
         requires std::is_invocable_r_v<void, F, const std::string_view>
@@ -33,7 +33,7 @@ class debugger final {
     static inline constinit auto fn_             = fn_t{std::ref(default_fn_)};  // NOLINT
 };
 
-inline void set_debug_function(void (&fn)(const std::string_view)) noexcept {
+inline void set_debug_function(void (&fn)(std::string_view)) noexcept {
     debugger::set(fn);
 }
 
