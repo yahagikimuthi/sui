@@ -50,4 +50,10 @@ inline void set_key_callback(
 ) noexcept {
     detail::callback_manager::set_keys(win, callback);
 }
+
+inline void set_cursor_pos_callback(
+    window& win, void (&callback)(window&, const float, const float)
+) noexcept {
+    detail::callback_manager::set_cursor_pos(win, callback);
+}
 }  // namespace kgm
