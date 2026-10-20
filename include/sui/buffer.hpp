@@ -121,7 +121,7 @@ class buffer final {
         if (not hgn::try_bind_buffer_memory(dev, buf->get(), dev_mem->get()))
             return make_error(runtime_error, "Failed to bind buffer and device memory.");
 
-        auto data = hgn::try_map_memory(dev, dev_mem->get(), max_buffer_size);
+        auto data = hgn::try_map_memory<max_buffer_size>(dev, dev_mem->get());
         if (not data) return make_error(runtime_error, "Failed to map device memory.");
 
         return buffer{native_buffer{buf->get(), dev}, device_memory{dev_mem->get(), dev}, *data};

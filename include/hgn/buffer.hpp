@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <expected>
 #include <functional>
+#include <span>
 
 #include <vulkan/vulkan.h>
 
@@ -128,6 +129,17 @@ class memory_allocate_info final {
 
     assert(data != nullptr);
     return std::span{static_cast<std::byte*>(data), buffer_size};
+}
+
+template <std::uint64_t BufferSize>
+[[nodiscard]] inline auto try_map_memory(device& dev, device_memory& dev_mem) noexcept
+    -> std::expected<std::span<std::byte>, result> {
+    auto*      data = static_cast<void*>(nullptr);
+    const auto res  = vkMapMemory(&dev, &dev_mem, 0, BufferSize, 0, &data);
+    if (res != VK_SUCCESS) return make_result(res);
+
+    assert(data != nullptr);
+    return std::span{static_cast<std::byte*>(data), BufferSize};
 }
 
 inline void unmap_memory(device& dev, device_memory& dev_mem) noexcept {
