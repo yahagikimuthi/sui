@@ -148,7 +148,7 @@ class buffer final {
 
         for (const auto i : std::views::indices(mem_properties.memory_type_count())) {
             if ((type_filter & (1 << i)) != 0 and
-                (mem_properties.setting_memory_types(i).property_flags() & properties) ==
+                (mem_properties.setting_memory_type(i).property_flags() & properties) ==
                     properties) {
                 return i;
             }

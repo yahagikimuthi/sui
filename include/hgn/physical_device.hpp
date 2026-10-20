@@ -109,7 +109,7 @@ class memory_type final {
 
 class physical_device_memory_properties final {
   public:
-    [[nodiscard]] auto setting_memory_types(const std::size_t i) noexcept {
+    [[nodiscard]] auto setting_memory_type(const std::size_t i) noexcept -> memory_type {
         const auto span = std::span<VkMemoryType>{native_.memoryTypes};
         return std::bit_cast<memory_type>(span[i]);
     }
