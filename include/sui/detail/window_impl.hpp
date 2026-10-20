@@ -6,6 +6,8 @@
 #include <string_view>
 #include <utility>
 
+#include <kgm/kgm.hpp>
+
 #include "sui/error.hpp"
 #include "sui/native_window.hpp"
 #include "sui/vk_context.hpp"
@@ -29,6 +31,8 @@ class window_impl final {
     }
 
     [[nodiscard]] auto is_open() const noexcept -> bool { return win_.is_open(); }
+
+    void pool_events() const noexcept { kgm::poll_events(); }  // NOLINT
 
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool { return ctx_.try_begin_rendering(); }
 

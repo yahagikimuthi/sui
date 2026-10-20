@@ -19,6 +19,8 @@ class window final {
 
     [[nodiscard]] auto is_open() const noexcept -> bool;
 
+    void pool_events() const noexcept;
+
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool;
 
     void rendering(const std::span<const float> vertices) noexcept;
@@ -51,6 +53,10 @@ namespace sui {
 
 [[nodiscard]] inline auto window::is_open() const noexcept -> bool {
     return impl_.is_open();
+}
+
+inline void window::pool_events() const noexcept {
+    impl_.pool_events();
 }
 
 [[nodiscard]] inline auto window::try_begin_rendering() noexcept -> bool {
