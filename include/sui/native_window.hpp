@@ -5,10 +5,12 @@
 #include <string_view>
 #include <utility>
 
+#include <kgm/callback.hpp>
 #include <kgm/kgm.hpp>
 #include <kgm/window.hpp>
 
 #include "sui/error.hpp"
+#include "sui/extent.hpp"
 
 namespace sui {
 class native_window final {
@@ -30,7 +32,7 @@ class native_window final {
     auto operator=(const native_window&) noexcept -> native_window& = delete;
 
     native_window(native_window&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)} {
+        : native_{std::exchange(other.native_, std::nullopt)}, size_{other.size_} {
         if (native_) kgm::set_window_user(*native_, *this);
     }
 
@@ -40,6 +42,7 @@ class native_window final {
         destroy();
 
         native_ = std::exchange(other.native_, std::nullopt);
+        size_   = other.size_;
         if (native_) kgm::set_window_user(*native_, *this);
 
         return *this;
@@ -57,6 +60,16 @@ class native_window final {
   private:
     explicit native_window(kgm::window& native) noexcept : native_{native} {
         kgm::set_window_user(native, *this);
+        kgm::set_window_size_callback(
+            native,
+            [](kgm::window& win, std::uint32_t width, std::uint32_t height) noexcept -> void {
+                auto user = kgm::try_get_window_user<native_window>(win);
+                if (not user) return;
+                user->size_ = extent{
+                    .width = static_cast<float>(width), .height = static_cast<float>(height)
+                };
+            }
+        );
     }
 
     void destroy() noexcept {
@@ -66,5 +79,6 @@ class native_window final {
     }
 
     std::optional<kgm::window&> native_;
+    extent                      size_{};
 };
 }  // namespace sui
