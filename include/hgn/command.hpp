@@ -96,9 +96,7 @@ class command_buffer_begin_info final {
         native_.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkCommandBufferBeginInfo& {
-        return native_;
-    }
+    [[nodiscard]] auto get() const noexcept -> const VkCommandBufferBeginInfo& { return native_; }
 
   private:
     VkCommandBufferBeginInfo native_{};
@@ -107,7 +105,7 @@ class command_buffer_begin_info final {
 [[nodiscard]] inline auto try_begin_command_buffer(
     command_buffer& cmd_buf, const command_buffer_begin_info& info
 ) noexcept -> std::expected<void, result> {
-    const auto res = vkBeginCommandBuffer(&cmd_buf, &info.native());
+    const auto res = vkBeginCommandBuffer(&cmd_buf, &info.get());
     if (res != VK_SUCCESS) return make_result(res);
     return {};
 }
@@ -164,7 +162,7 @@ class image_memory_barrier final {
         return destination_;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkImageMemoryBarrier& { return native_; }
+    [[nodiscard]] auto get() const noexcept -> const VkImageMemoryBarrier& { return native_; }
 
   private:
     VkImageMemoryBarrier    native_{};
@@ -183,7 +181,7 @@ inline void command_pipeline_barrier(command_buffer& cmd_buf, image_memory_barri
         0,
         nullptr,
         1,
-        &barrier.native()
+        &barrier.get()
     );
 }
 

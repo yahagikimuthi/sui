@@ -66,9 +66,7 @@ class shader_module_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkShaderModuleCreateInfo& {
-        return native_;
-    }
+    [[nodiscard]] auto get() const noexcept -> const VkShaderModuleCreateInfo& { return native_; }
 
   private:
     void reset() noexcept {
@@ -85,7 +83,7 @@ class shader_module_create_info final {
 ) noexcept -> std::expected<std::reference_wrapper<shader_module>, result> {
     auto* shader_ptr = static_cast<shader_module*>(nullptr);
 
-    const auto res = vkCreateShaderModule(&dev, &info.native(), nullptr, &shader_ptr);
+    const auto res = vkCreateShaderModule(&dev, &info.get(), nullptr, &shader_ptr);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(shader_ptr != nullptr);

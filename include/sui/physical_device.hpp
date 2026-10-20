@@ -17,14 +17,14 @@ class physical_device final {
     ) noexcept
         : native_{native}, graphics_family_{graphics_family}, present_family_{present_family} {}
 
-    [[nodiscard]] auto native() noexcept -> hgn::physical_device& { return native_.get(); }
+    [[nodiscard]] auto get() noexcept -> hgn::physical_device& { return native_.get(); }
     [[nodiscard]] auto graphics_family() const noexcept -> std::uint32_t {
         return graphics_family_;
     }
     [[nodiscard]] auto present_family() const noexcept -> std::uint32_t { return present_family_; }
 
     [[nodiscard]] auto name() noexcept -> std::string {
-        const auto prop = hgn::get_physical_device_properties(native());
+        const auto prop = hgn::get_physical_device_properties(get());
         return std::string{prop.name()};
     }
 

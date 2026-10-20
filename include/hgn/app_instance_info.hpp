@@ -86,7 +86,7 @@ class application_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkApplicationInfo& { return native_; }
+    [[nodiscard]] auto get() const noexcept -> const VkApplicationInfo& { return native_; }
 
   private:
     void reset() noexcept {
@@ -149,7 +149,7 @@ class instance_create_info final {
 
     auto app_info(const application_info& app) noexcept -> instance_create_info& {
         app_info_                = app;
-        native_.pApplicationInfo = &app_info_.native();
+        native_.pApplicationInfo = &app_info_.get();
         return *this;
     }
 
@@ -177,11 +177,11 @@ class instance_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkInstanceCreateInfo& { return native_; }
+    [[nodiscard]] auto get() const noexcept -> const VkInstanceCreateInfo& { return native_; }
 
   private:
     void reset() noexcept {
-        if (native_.pApplicationInfo != nullptr) native_.pApplicationInfo = &app_info_.native();
+        if (native_.pApplicationInfo != nullptr) native_.pApplicationInfo = &app_info_.get();
         if (native_.ppEnabledLayerNames != nullptr) native_.ppEnabledLayerNames = layers_.data();
         if (native_.ppEnabledExtensionNames != nullptr)
             native_.ppEnabledExtensionNames = extensions_.data();

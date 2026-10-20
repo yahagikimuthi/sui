@@ -39,7 +39,7 @@ class buffer_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkBufferCreateInfo& { return native_; }
+    [[nodiscard]] auto get() const noexcept -> const VkBufferCreateInfo& { return native_; }
 
   private:
     VkBufferCreateInfo native_{};
@@ -48,7 +48,7 @@ class buffer_create_info final {
 [[nodiscard]] inline auto try_make_buffer(device& dev, const buffer_create_info& info) noexcept
     -> std::expected<std::reference_wrapper<buffer>, result> {
     auto*      ptr = static_cast<buffer*>(nullptr);
-    const auto res = vkCreateBuffer(&dev, &info.native(), nullptr, &ptr);
+    const auto res = vkCreateBuffer(&dev, &info.get(), nullptr, &ptr);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(ptr != nullptr);
@@ -94,7 +94,7 @@ class memory_allocate_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkMemoryAllocateInfo& { return native_; }
+    [[nodiscard]] auto get() const noexcept -> const VkMemoryAllocateInfo& { return native_; }
 
   private:
     VkMemoryAllocateInfo native_{};
@@ -104,7 +104,7 @@ class memory_allocate_info final {
     device& dev, const memory_allocate_info& info
 ) noexcept -> std::expected<std::reference_wrapper<device_memory>, result> {
     auto*      dev_mem = static_cast<device_memory*>(nullptr);
-    const auto res     = vkAllocateMemory(&dev, &info.native(), nullptr, &dev_mem);
+    const auto res     = vkAllocateMemory(&dev, &info.get(), nullptr, &dev_mem);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(dev_mem != nullptr);

@@ -28,7 +28,7 @@ class device final {
             .extensions({hgn::khr_swapchain_extention_name})
             .dynamic_rendering_features(dynamic_feature);
 
-        auto res = hgn::try_make_device(physical.native(), info);
+        auto res = hgn::try_make_device(physical.get(), info);
         if (not res) return make_error(runtime_error, "Failed to make logical device\n");
         return device{res->get()};
     }
@@ -58,7 +58,7 @@ class device final {
         return res.has_value();
     }
 
-    [[nodiscard]] auto native() noexcept -> hgn::device& { return *native_; }
+    [[nodiscard]] auto get() noexcept -> hgn::device& { return *native_; }
 
   private:
     void destroy() noexcept {

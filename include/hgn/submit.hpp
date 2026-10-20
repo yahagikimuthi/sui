@@ -39,7 +39,7 @@ class submit_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkSubmitInfo& { return native_; }
+    [[nodiscard]] auto get() const noexcept -> const VkSubmitInfo& { return native_; }
 
   private:
     VkSubmitInfo         native_{};
@@ -51,7 +51,7 @@ class submit_info final {
 
 [[nodiscard]] inline auto try_queue_submit(queue& que, const submit_info& info, fence& fen) noexcept
     -> std::expected<void, result> {
-    const auto res = vkQueueSubmit(&que, 1, &info.native(), &fen);
+    const auto res = vkQueueSubmit(&que, 1, &info.get(), &fen);
     if (res != VK_SUCCESS) return make_result(res);
     return {};
 }
@@ -80,7 +80,7 @@ class present_info_khr final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkPresentInfoKHR& { return native_; }
+    [[nodiscard]] auto get() const noexcept -> const VkPresentInfoKHR& { return native_; }
 
   private:
     VkPresentInfoKHR native_{};
@@ -91,7 +91,7 @@ class present_info_khr final {
 
 [[nodiscard]] inline auto try_queue_present_khr(queue& que, const present_info_khr& info) noexcept
     -> std::expected<void, result> {
-    const auto res = vkQueuePresentKHR(&que, &info.native());
+    const auto res = vkQueuePresentKHR(&que, &info.get());
     if (res != VK_SUCCESS) return make_result(res);
     return {};
 }

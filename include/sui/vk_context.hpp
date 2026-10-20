@@ -41,7 +41,7 @@ class vk_context final {
             );
 
         auto buffer_res =
-            buffer::try_make(hard_res->native_device(), hard_res->get_physical_device().native());
+            buffer::try_make(hard_res->native_device(), hard_res->get_physical_device().get());
         if (not buffer_res)
             return make_error(runtime_error, "Failed to make buffer.", buffer_res.error());
 

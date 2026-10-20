@@ -29,9 +29,7 @@ class rendering_attachment_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkRenderingAttachmentInfo& {
-        return native_;
-    }
+    [[nodiscard]] auto get() const noexcept -> const VkRenderingAttachmentInfo& { return native_; }
 
   private:
     VkRenderingAttachmentInfo native_{};
@@ -52,18 +50,18 @@ class rendering_info final {
 
     auto color_attachment(const rendering_attachment_info& info) noexcept -> rendering_info& {
         native_.colorAttachmentCount = 1;
-        native_.pColorAttachments    = &info.native();
+        native_.pColorAttachments    = &info.get();
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkRenderingInfo& { return native_; }
+    [[nodiscard]] auto get() const noexcept -> const VkRenderingInfo& { return native_; }
 
   private:
     VkRenderingInfo native_{};
 };
 
 inline void command_begin_rendering(command_buffer& cmd_buf, rendering_info& info) noexcept {
-    vkCmdBeginRendering(&cmd_buf, &info.native());
+    vkCmdBeginRendering(&cmd_buf, &info.get());
 }
 
 inline void command_end_rendering(command_buffer& cmd_buf) noexcept {

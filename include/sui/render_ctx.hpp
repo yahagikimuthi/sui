@@ -19,7 +19,7 @@ class render_context final {
         );
         if (not chain) return make_error(runtime_error, "Failed to make swapchain.", chain.error());
 
-        auto images = image_container::try_make(hard.native_device(), chain->native());
+        auto images = image_container::try_make(hard.native_device(), chain->get());
         if (not images)
             return make_error(runtime_error, "Failed to make image container.", images.error());
 
@@ -31,7 +31,7 @@ class render_context final {
         return render_context{std::move(*chain), std::move(*images), std::move(*views)};
     }
 
-    [[nodiscard]] auto native_swapchain() noexcept -> hgn::swapchain& { return chain_.native(); }
+    [[nodiscard]] auto native_swapchain() noexcept -> hgn::swapchain& { return chain_.get(); }
 
     [[nodiscard]] auto native_image(const std::size_t image_index) noexcept -> hgn::image& {
         return images_[image_index];

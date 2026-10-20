@@ -143,7 +143,7 @@ class pipeline_vertex_input_state_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkPipelineVertexInputStateCreateInfo& {
+    [[nodiscard]] auto get() const noexcept -> const VkPipelineVertexInputStateCreateInfo& {
         return native_;
     }
 
@@ -231,7 +231,7 @@ class pipeline_dynamic_state_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkPipelineDynamicStateCreateInfo& {
+    [[nodiscard]] auto get() const noexcept -> const VkPipelineDynamicStateCreateInfo& {
         return native_;
     }
 
@@ -350,7 +350,7 @@ class pipeline_color_blend_state_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkPipelineColorBlendStateCreateInfo& {
+    [[nodiscard]] auto get() const noexcept -> const VkPipelineColorBlendStateCreateInfo& {
         return native_;
     }
 
@@ -458,7 +458,7 @@ class pipeline_rendering_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkPipelineRenderingCreateInfo& {
+    [[nodiscard]] auto get() const noexcept -> const VkPipelineRenderingCreateInfo& {
         return native_;
     }
 
@@ -515,7 +515,7 @@ class graphics_pipeline_create_info final {
 
     auto rendering_info(const pipeline_rendering_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        rendering_info_ = info.native();
+        rendering_info_ = info.get();
         native_.pNext   = &rendering_info_;
         return *this;
     }
@@ -539,7 +539,7 @@ class graphics_pipeline_create_info final {
 
     auto vertex_input_state(const pipeline_vertex_input_state_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        vertex_input_info_        = info.native();
+        vertex_input_info_        = info.get();
         native_.pVertexInputState = &vertex_input_info_;
         return *this;
     }
@@ -574,14 +574,14 @@ class graphics_pipeline_create_info final {
 
     auto color_blend_state(const pipeline_color_blend_state_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        color_blend_             = info.native();
+        color_blend_             = info.get();
         native_.pColorBlendState = &color_blend_;
         return *this;
     }
 
     auto dynamic_states(const pipeline_dynamic_state_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        dynamic_state_        = info.native();
+        dynamic_state_        = info.get();
         native_.pDynamicState = &dynamic_state_;
         return *this;
     }
@@ -591,7 +591,7 @@ class graphics_pipeline_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkGraphicsPipelineCreateInfo& {
+    [[nodiscard]] auto get() const noexcept -> const VkGraphicsPipelineCreateInfo& {
         return native_;
     }
 
@@ -622,8 +622,7 @@ using pipeline = VkPipeline_T;
 ) noexcept -> std::expected<std::reference_wrapper<pipeline>, result> {
     auto* pipe_ptr = static_cast<pipeline*>(nullptr);
 
-    const auto res =
-        vkCreateGraphicsPipelines(&dev, nullptr, 1, &info.native(), nullptr, &pipe_ptr);
+    const auto res = vkCreateGraphicsPipelines(&dev, nullptr, 1, &info.get(), nullptr, &pipe_ptr);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(pipe_ptr != nullptr);

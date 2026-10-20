@@ -34,7 +34,7 @@ class hardware final {
         auto inst = instance::try_make();
         if (not inst) return make_error(runtime_error, "Failed to make instance.", inst.error());
 
-        auto sur = surface::try_make(win, inst->native());
+        auto sur = surface::try_make(win, inst->get());
         if (not sur) return make_error(runtime_error, "Failed to make surface.", sur.error());
 
         auto physical_devices_res = inst->try_enumerate_physical_devices();
@@ -45,13 +45,13 @@ class hardware final {
         auto suitable_physicals =
             native_physical_devices |
             std::views::filter([&](hgn::physical_device& physical) noexcept -> bool {
-                return is_device_suitable(physical, sur->native());
+                return is_device_suitable(physical, sur->get());
             });
 
         if (suitable_physicals.empty())
             return make_error(runtime_error, "Failed to find a suitable GPU.");
 
-        const auto indices = find_queue_families(suitable_physicals.front(), sur->native());
+        const auto indices = find_queue_families(suitable_physicals.front(), sur->get());
 
         auto physical = physical_device{
             suitable_physicals.front(), *indices.graphics_family, *indices.present_family
@@ -60,13 +60,13 @@ class hardware final {
         auto dev = device::try_make(physical);
         if (not dev) return make_error(runtime_error, "Failed to make device.", dev.error());
 
-        auto graphics_queue = queue::try_make(dev->native(), physical.graphics_family());
+        auto graphics_queue = queue::try_make(dev->get(), physical.graphics_family());
         if (not graphics_queue)
             return make_error(
                 runtime_error, "Failed to make graphics queue.", graphics_queue.error()
             );
 
-        auto present_queue = queue::try_make(dev->native(), physical.present_family());
+        auto present_queue = queue::try_make(dev->get(), physical.present_family());
         if (not present_queue)
             return make_error(
                 runtime_error, "Failed to make present queue.", present_queue.error()
@@ -84,11 +84,11 @@ class hardware final {
 
     [[nodiscard]] auto try_device_wait_idle() noexcept -> bool { return device_.try_wait_idle(); }
 
-    [[nodiscard]] auto native_surface() noexcept -> hgn::surface_khr& { return surface_.native(); }
+    [[nodiscard]] auto native_surface() noexcept -> hgn::surface_khr& { return surface_.get(); }
 
     [[nodiscard]] auto get_physical_device() noexcept -> sui::physical_device& { return physical_; }
 
-    [[nodiscard]] auto native_device() noexcept -> hgn::device& { return device_.native(); }
+    [[nodiscard]] auto native_device() noexcept -> hgn::device& { return device_.get(); }
 
     [[nodiscard]] auto try_submit(const hgn::submit_info& info, hgn::fence& fence) noexcept
         -> bool {

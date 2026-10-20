@@ -74,7 +74,7 @@ class native_buffer final {
 
     ~native_buffer() noexcept { destroy(); }
 
-    [[nodiscard]] auto native() noexcept -> hgn::buffer& { return *native_; }
+    [[nodiscard]] auto get() noexcept -> hgn::buffer& { return *native_; }
 
   private:
     void destroy() noexcept {
@@ -131,7 +131,7 @@ class buffer final {
         std::memcpy(data_.data(), vertices.data(), sizeof(float) * vertices.size());
     }
 
-    [[nodiscard]] auto get_native_buffer() noexcept -> hgn::buffer& { return buffer_.native(); }
+    [[nodiscard]] auto get_native_buffer() noexcept -> hgn::buffer& { return buffer_.get(); }
 
   private:
     explicit buffer(

@@ -48,7 +48,7 @@ class command_pool final {
 
     ~command_pool() noexcept { destroy(); }
 
-    [[nodiscard]] auto native() noexcept -> hgn::command_pool& { return *native_; }
+    [[nodiscard]] auto get() noexcept -> hgn::command_pool& { return *native_; }
 
   private:
     explicit command_pool(hgn::command_pool& native, hgn::device& dev) noexcept
@@ -113,7 +113,7 @@ class command_buffer final {
         return res.has_value();
     }
 
-    [[nodiscard]] auto native() noexcept -> hgn::command_buffer& { return native_.get(); }
+    [[nodiscard]] auto get() noexcept -> hgn::command_buffer& { return native_.get(); }
 
   private:
     explicit command_buffer(hgn::command_buffer& native) noexcept : native_{native} {}
@@ -130,7 +130,7 @@ class command final {
         if (not pool)
             return make_error(runtime_error, "Failed to make command pool.", pool.error());
 
-        auto buffer = command_buffer::try_make(dev, pool->native());
+        auto buffer = command_buffer::try_make(dev, pool->get());
         if (not buffer)
             return make_error(runtime_error, "Failed to make command buffer.", buffer.error());
 
@@ -146,7 +146,7 @@ class command final {
         return buffer_.try_end_rendering(image);
     }
 
-    [[nodiscard]] auto buffer() noexcept -> hgn::command_buffer& { return buffer_.native(); }
+    [[nodiscard]] auto buffer() noexcept -> hgn::command_buffer& { return buffer_.get(); }
 
   private:
     explicit command(command_pool&& pool, const command_buffer& buffer) noexcept

@@ -72,7 +72,7 @@ class device_queue_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkDeviceQueueCreateInfo& { return native_; }
+    [[nodiscard]] auto get() const noexcept -> const VkDeviceQueueCreateInfo& { return native_; }
 
   private:
     void reset() noexcept {
@@ -98,7 +98,7 @@ class physical_device_dynamic_rendering_features final {
         native_.dynamicRendering = VK_TRUE;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkPhysicalDeviceDynamicRenderingFeatures& {
+    [[nodiscard]] auto get() const noexcept -> const VkPhysicalDeviceDynamicRenderingFeatures& {
         return native_;
     }
 
@@ -146,7 +146,7 @@ class device_create_info final {
     auto dynamic_rendering_features(
         const physical_device_dynamic_rendering_features& features
     ) noexcept -> device_create_info& {
-        dynamic_features_ = features.native();
+        dynamic_features_ = features.get();
         native_.pNext     = &dynamic_features_;
         return *this;
     }
@@ -158,7 +158,7 @@ class device_create_info final {
         infos_.assign_range(
             infos | std::views::transform(
                         [](const device_queue_create_info& info) noexcept
-                            -> const VkDeviceQueueCreateInfo& { return info.native(); }
+                            -> const VkDeviceQueueCreateInfo& { return info.get(); }
                     )
         );
 
@@ -185,7 +185,7 @@ class device_create_info final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkDeviceCreateInfo& { return native_; }
+    [[nodiscard]] auto get() const noexcept -> const VkDeviceCreateInfo& { return native_; }
 
   private:
     void reset() noexcept {
@@ -209,7 +209,7 @@ using device = VkDevice_T;
     physical_device& physical, const device_create_info& info
 ) noexcept -> std::expected<std::reference_wrapper<device>, result> {
     auto*      dev = static_cast<device*>(nullptr);
-    const auto res = vkCreateDevice(&physical, &info.native(), nullptr, &dev);
+    const auto res = vkCreateDevice(&physical, &info.get(), nullptr, &dev);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(dev != nullptr);

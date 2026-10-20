@@ -44,7 +44,7 @@ class semaphore final {
 
     ~semaphore() noexcept { destroy(); }
 
-    [[nodiscard]] auto native() noexcept -> hgn::semaphore& { return native_.value(); }
+    [[nodiscard]] auto get() noexcept -> hgn::semaphore& { return native_.value(); }
 
   private:
     explicit semaphore(hgn::semaphore& native, hgn::device& dev) noexcept
@@ -88,7 +88,7 @@ class fence final {
 
     ~fence() noexcept { destroy(); }
 
-    [[nodiscard]] auto native() noexcept -> hgn::fence& { return native_.value(); }
+    [[nodiscard]] auto get() noexcept -> hgn::fence& { return native_.value(); }
 
   private:
     explicit fence(hgn::fence& native, hgn::device& dev) noexcept : native_{native}, dev_{dev} {}
@@ -142,14 +142,14 @@ class sync final {
     }
 
     [[nodiscard]] auto image_available_semaphore() noexcept -> hgn::semaphore& {
-        return image_available_.native();
+        return image_available_.get();
     }
 
     [[nodiscard]] auto render_finished_semaphore() noexcept -> hgn::semaphore& {
-        return render_finished_.native();
+        return render_finished_.get();
     }
 
-    [[nodiscard]] auto in_flight_fence() noexcept -> hgn::fence& { return fence_.native(); }
+    [[nodiscard]] auto in_flight_fence() noexcept -> hgn::fence& { return fence_.get(); }
 
   private:
     explicit sync(semaphore&& image, semaphore&& render, fence&& fen) noexcept

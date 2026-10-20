@@ -121,9 +121,7 @@ class swapchain_create_info_khr final {
         return *this;
     }
 
-    [[nodiscard]] auto native() const noexcept -> const VkSwapchainCreateInfoKHR& {
-        return native_;
-    }
+    [[nodiscard]] auto get() const noexcept -> const VkSwapchainCreateInfoKHR& { return native_; }
 
   private:
     void reset() noexcept {
@@ -160,7 +158,7 @@ using swapchain = VkSwapchainKHR_T;
     device& dev, const swapchain_create_info_khr& info
 ) noexcept -> std::expected<std::reference_wrapper<swapchain>, result> {
     auto*      chain = static_cast<swapchain*>(nullptr);
-    const auto res   = vkCreateSwapchainKHR(&dev, &info.native(), nullptr, &chain);
+    const auto res   = vkCreateSwapchainKHR(&dev, &info.get(), nullptr, &chain);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(chain != nullptr);

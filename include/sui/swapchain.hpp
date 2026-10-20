@@ -24,19 +24,19 @@ class swapchain final {
         physical_device& physical, hgn::surface_khr& sur, hgn::device& dev
     ) noexcept -> std::expected<swapchain, error> {
         const auto capabilities_res =
-            hgn::try_get_physical_device_surface_capabilities_khr(physical.native(), sur);
+            hgn::try_get_physical_device_surface_capabilities_khr(physical.get(), sur);
         if (not capabilities_res)
             return make_error(runtime_error, "Failed to get physical device surface capabilities.");
         const auto capabilities = *capabilities_res;
 
         const auto formats_res =
-            hgn::try_get_physical_device_surface_formats_khr(physical.native(), sur);
+            hgn::try_get_physical_device_surface_formats_khr(physical.get(), sur);
         if (not formats_res)
             return make_error(runtime_error, "Failed to get physical device surface formats.");
         const auto& formats = *formats_res;
 
         const auto present_modes_res =
-            hgn::try_get_physical_device_surface_present_modes_khr(physical.native(), sur);
+            hgn::try_get_physical_device_surface_present_modes_khr(physical.get(), sur);
         if (not present_modes_res)
             return make_error(
                 runtime_error, "Failed to get physical device surface present modes."
@@ -129,7 +129,7 @@ class swapchain final {
 
     [[nodiscard]] auto setting_format() const noexcept -> hgn::format { return setting_format_; }
 
-    [[nodiscard]] auto native() noexcept -> hgn::swapchain& { return *native_; }
+    [[nodiscard]] auto get() noexcept -> hgn::swapchain& { return *native_; }
 
   private:
     void destroy() noexcept {
