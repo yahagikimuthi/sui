@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 
 #include "kgm/enums.hpp"
-#include "kgm/key.hpp"
 #include "kgm/window.hpp"
 
 // TODO コールバックについて、呼ばれた際にWindowがヌルである場合があるか調査
