@@ -148,8 +148,8 @@ class instance_create_info final {
     ~instance_create_info() noexcept = default;
 
     auto app_info(const application_info& app) noexcept -> instance_create_info& {
-        app_info_                = app.native();
-        native_.pApplicationInfo = &app_info_;
+        app_info_                = app;
+        native_.pApplicationInfo = &app_info_.native();
         return *this;
     }
 
@@ -181,14 +181,14 @@ class instance_create_info final {
 
   private:
     void reset() noexcept {
-        if (native_.pApplicationInfo != nullptr) native_.pApplicationInfo = &app_info_;
+        if (native_.pApplicationInfo != nullptr) native_.pApplicationInfo = &app_info_.native();
         if (native_.ppEnabledLayerNames != nullptr) native_.ppEnabledLayerNames = layers_.data();
         if (native_.ppEnabledExtensionNames != nullptr)
             native_.ppEnabledExtensionNames = extensions_.data();
     }
 
     VkInstanceCreateInfo     native_{};
-    VkApplicationInfo        app_info_{};
+    application_info         app_info_;
     std::vector<const char*> layers_;
     std::vector<const char*> extensions_;
 };
