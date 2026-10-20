@@ -139,10 +139,8 @@ class buffer final {
     [[nodiscard]] auto get_native_buffer() noexcept -> hgn::buffer& { return buffer_.native(); }
 
   private:
-    explicit buffer(
-        native_buffer&& native, device_memory&& mem, std::span<std::byte> data_
-    ) noexcept
-        : memory_{std::move(mem)}, buffer_{std::move(native)}, data_{data_} {}
+    explicit buffer(native_buffer&& native, device_memory&& mem, std::span<std::byte> data) noexcept
+        : memory_{std::move(mem)}, buffer_{std::move(native)}, data_{data} {}
 
     [[nodiscard]] static auto find_memory_type(
         hgn::physical_device&            physical,
