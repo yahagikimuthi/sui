@@ -124,11 +124,7 @@ class buffer final {
         auto data = hgn::try_map_memory(dev, dev_mem->get(), max_buffer_size);
         if (not data) return make_error(runtime_error, "Failed to map device memory.");
 
-        return buffer{
-            native_buffer{buf->get(), dev},
-            device_memory{dev_mem->get(), dev},
-            std::span{*data, max_vertices}
-        };
+        return buffer{native_buffer{buf->get(), dev}, device_memory{dev_mem->get(), dev}, *data};
     }
 
     void update(const std::span<const float> vertices) noexcept {
