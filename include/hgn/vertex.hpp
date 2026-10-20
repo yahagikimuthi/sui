@@ -19,20 +19,13 @@
 namespace hgn {
 class vertex_input_binding_description final {
   public:
-    explicit vertex_input_binding_description() noexcept = default;
-
-    auto binding(const std::uint32_t num) noexcept -> vertex_input_binding_description& {
-        native_.binding = num;
-        return *this;
+    explicit vertex_input_binding_description() noexcept {
+        native_.binding   = 0;
+        native_.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
     }
 
     auto stride(const std::uint32_t str) noexcept -> vertex_input_binding_description& {
         native_.stride = str;
-        return *this;
-    }
-
-    auto input_rate(const vertex_input_rate rate) noexcept -> vertex_input_binding_description& {
-        native_.inputRate = static_cast<VkVertexInputRate>(rate);
         return *this;
     }
 
@@ -42,12 +35,7 @@ class vertex_input_binding_description final {
 
 class vertex_input_attribute_description final {
   public:
-    explicit vertex_input_attribute_description() noexcept = default;
-
-    auto binding(const std::uint32_t num) noexcept -> vertex_input_attribute_description& {
-        native_.binding = num;
-        return *this;
-    }
+    explicit vertex_input_attribute_description() noexcept { native_.binding = 0; }
 
     auto location(const std::uint32_t num) noexcept -> vertex_input_attribute_description& {
         native_.location = num;
@@ -117,7 +105,7 @@ class pipeline_vertex_input_state_create_info final {
     ~pipeline_vertex_input_state_create_info() noexcept = default;
 
     auto vertex_attribute_descriptions(
-        const std::span<vertex_input_attribute_description> descriptions
+        const std::span<const vertex_input_attribute_description> descriptions
     ) noexcept -> pipeline_vertex_input_state_create_info& {
         attributes_.reserve(descriptions.size());
         attributes_.assign_range(
@@ -163,14 +151,9 @@ class pipeline_vertex_input_state_create_info final {
 class pipeline_input_assembly_state_create_info final {
   public:
     explicit pipeline_input_assembly_state_create_info() noexcept {
-        native_.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        native_.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        native_.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         native_.primitiveRestartEnable = VK_FALSE;
-    }
-
-    auto topology(const primitive_topology type) noexcept
-        -> pipeline_input_assembly_state_create_info& {
-        native_.topology = static_cast<VkPrimitiveTopology>(type);
-        return *this;
     }
 
   private:
@@ -277,12 +260,8 @@ class pipeline_multisample_state_create_info final {
   public:
     explicit pipeline_multisample_state_create_info() noexcept {
         native_.sType                = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        native_.sampleShadingEnable  = VK_FALSE;
         native_.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-    }
-
-    auto is_sample_shadring(const bool cond) noexcept -> pipeline_multisample_state_create_info& {
-        native_.sampleShadingEnable = static_cast<VkBool32>(cond);
-        return *this;
     }
 
   private:
