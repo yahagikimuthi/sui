@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <cstdint>
 #include <ranges>
 #include <span>
@@ -26,6 +27,7 @@ namespace kgm {
     const auto extensions = std::span<const char* const>{extensions_ptr, count};
 
     return extensions | std::views::transform([](const char* ptr) noexcept -> std::string_view {
+               assert(ptr != nullptr);
                return std::string_view{ptr};
            }) |
            std::ranges::to<std::vector>();
