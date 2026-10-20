@@ -6,6 +6,9 @@
 #include "kgm/key.hpp"
 #include "kgm/window.hpp"
 
+// TODO コールバックについて、呼ばれた際にWindowがヌルである場合があるか調査
+// TODO ヌルである場合はoptional<T&>の利用、ヌルでない場合は参照を受ける関数を扱うものとする
+// TODO 関数ポインタをスレッドローカル指定した場合の安全性, テスト追加
 namespace kgm::detail {
 class callback_manager final {
     using key_fn          = void(window&, key, action);
