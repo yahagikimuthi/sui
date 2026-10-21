@@ -1,9 +1,11 @@
 #pragma once
 
 #include <cstddef>
+#include <expected>
 #include <utility>
 
 #include <hgn/image.hpp>
+#include <hgn/swapchain.hpp>
 
 #include "sui/hardware.hpp"
 #include "sui/images.hpp"
