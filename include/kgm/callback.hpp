@@ -12,7 +12,7 @@
 namespace kgm {
 template <std::convertible_to<void (*)(window&, key, action)> F>
 inline void set_key_callback(window& win, F&& callback) noexcept {
-    static thread_local constinit auto fn = std::forward<F>(callback);
+    static constinit auto fn = std::forward<F>(callback);
 
     glfwSetKeyCallback(
         &win,
@@ -29,7 +29,7 @@ inline void set_key_callback(window& win, F&& callback) noexcept {
 
 template <std::convertible_to<void (*)(window&, float, float)> F>
 inline void set_cursor_pos_callback(window& win, F&& callback) noexcept {
-    static thread_local constinit auto fn = std::forward<F>(callback);
+    static constinit auto fn = std::forward<F>(callback);
 
     glfwSetCursorPosCallback(&win, [](window* win_ptr, double xpos, double ypos) noexcept -> void {
         assert(win_ptr != nullptr);
@@ -39,7 +39,7 @@ inline void set_cursor_pos_callback(window& win, F&& callback) noexcept {
 
 template <std::convertible_to<void (*)(window&, mouse_button, action)> F>
 inline void set_mouse_button_callback(window& win, F&& callback) noexcept {
-    static thread_local constinit auto* fn = std::forward<F>(callback);
+    static constinit auto* fn = std::forward<F>(callback);
 
     glfwSetMouseButtonCallback(
         &win, [](window* win_ptr, int button, int act, [[maybe_unused]] int mods) noexcept -> void {
@@ -51,7 +51,7 @@ inline void set_mouse_button_callback(window& win, F&& callback) noexcept {
 
 template <std::convertible_to<void (*)(window&, std::uint32_t, std::uint32_t)> F>
 inline void set_window_size_callback(window& win, F&& callback) noexcept {
-    static thread_local auto fn = std::forward<F>(callback);
+    static auto fn = std::forward<F>(callback);
 
     glfwSetWindowSizeCallback(&win, [](window* win_ptr, int width, int height) noexcept -> void {
         assert(win_ptr != nullptr);
