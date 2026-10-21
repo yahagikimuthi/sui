@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cassert>
-#include <type_traits>
+#include <concepts>
 #include <utility>
 
 #include <GLFW/glfw3.h>
@@ -10,8 +10,7 @@
 #include "kgm/window.hpp"
 
 namespace kgm {
-template <typename F>
-    requires std::is_nothrow_invocable_r_v<void, F, window&, key, action>
+template <std::convertible_to<void (*)(window&, key, action)> F>
 inline void set_key_callback(window& win, F&& callback) noexcept {
     static thread_local constinit auto fn = std::forward<F>(callback);
 
@@ -28,8 +27,7 @@ inline void set_key_callback(window& win, F&& callback) noexcept {
     );
 }
 
-template <typename F>
-    requires std::is_nothrow_invocable_r_v<void, F, window&, float, float>
+template <std::convertible_to<void (*)(window&, float, float)> F>
 inline void set_cursor_pos_callback(window& win, F&& callback) noexcept {
     static thread_local constinit auto fn = std::forward<F>(callback);
 
@@ -39,8 +37,7 @@ inline void set_cursor_pos_callback(window& win, F&& callback) noexcept {
     });
 }
 
-template <typename F>
-    requires std::is_nothrow_invocable_r_v<void, F, window&, mouse_button, action>
+template <std::convertible_to<void (*)(window&, mouse_button, action)> F>
 inline void set_mouse_button_callback(window& win, F&& callback) noexcept {
     static thread_local constinit auto* fn = std::forward<F>(callback);
 
@@ -52,8 +49,7 @@ inline void set_mouse_button_callback(window& win, F&& callback) noexcept {
     );
 }
 
-template <typename F>
-    requires std::is_nothrow_invocable_r_v<void, F, window&, std::uint32_t, std::uint32_t>
+template <std::convertible_to<void (*)(window&, std::uint32_t, std::uint32_t)> F>
 inline void set_window_size_callback(window& win, F&& callback) noexcept {
     static thread_local auto fn = std::forward<F>(callback);
 
