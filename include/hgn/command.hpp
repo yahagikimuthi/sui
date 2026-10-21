@@ -170,7 +170,9 @@ class image_memory_barrier final {
     VkPipelineStageFlagBits destination_{};
 };
 
-inline void command_pipeline_barrier(command_buffer& cmd_buf, image_memory_barrier& barrier) {
+inline void command_pipeline_barrier(
+    command_buffer& cmd_buf, image_memory_barrier& barrier
+) noexcept {
     vkCmdPipelineBarrier(
         &cmd_buf,
         barrier.source_state(),

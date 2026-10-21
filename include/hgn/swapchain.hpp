@@ -166,7 +166,7 @@ using swapchain = VkSwapchainKHR_T;
     return std::ref(*chain);
 }
 
-inline void destroy_swapchain_khr(device& dev, swapchain& target) {
+inline void destroy_swapchain_khr(device& dev, swapchain& target) noexcept {
     vkDestroySwapchainKHR(&dev, &target, nullptr);
 }
 }  // namespace hgn
