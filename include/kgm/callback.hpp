@@ -53,7 +53,6 @@ inline void set_mouse_button_callback(window& win, F&& callback) noexcept {
 }
 
 template <std::convertible_to<void (*)(window&, std::uint32_t, std::uint32_t)> F>
-    requires std::is_default_constructible_v<F>
 inline void set_window_size_callback(window& win, F&& callback) noexcept {
     static auto fn = F{};
     fn             = std::forward<F>(callback);
