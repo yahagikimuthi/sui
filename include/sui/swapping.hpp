@@ -10,10 +10,9 @@
 #include "sui/swapchain.hpp"
 
 namespace sui {
-class render_context final {
+class swapping final {
   public:
-    [[nodiscard]] static auto try_make(hardware& hard) noexcept
-        -> std::expected<render_context, error> {
+    [[nodiscard]] static auto try_make(hardware& hard) noexcept -> std::expected<swapping, error> {
         auto chain = swapchain::try_make(
             hard.get_physical_device(), hard.native_surface(), hard.native_device()
         );
@@ -28,7 +27,7 @@ class render_context final {
         if (not views)
             return make_error(runtime_error, "Failed to make image view container.", views.error());
 
-        return render_context{std::move(*chain), std::move(*images), std::move(*views)};
+        return swapping{std::move(*chain), std::move(*images), std::move(*views)};
     }
 
     [[nodiscard]] auto native_swapchain() noexcept -> hgn::swapchain_khr& { return chain_.get(); }
@@ -43,7 +42,7 @@ class render_context final {
     }
 
   private:
-    explicit render_context(
+    explicit swapping(
         swapchain&& chain, image_container&& images, image_view_container&& views
     ) noexcept
         : chain_{std::move(chain)}, images_{std::move(images)}, image_views_{std::move(views)} {}

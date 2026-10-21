@@ -17,7 +17,7 @@
 #include "sui/error.hpp"
 #include "sui/hardware.hpp"
 #include "sui/protocol.hpp"
-#include "sui/render_ctx.hpp"
+#include "sui/swapping.hpp"
 
 namespace sui {
 class vk_context final {
@@ -28,7 +28,7 @@ class vk_context final {
         if (not hard_res)
             return make_error(runtime_error, "Failed to make hardware object.", hard_res.error());
 
-        auto render_res = render_context::try_make(*hard_res);
+        auto render_res = swapping::try_make(*hard_res);
         if (not render_res)
             return make_error(
                 runtime_error, "Failed to make render context class.", render_res.error()
@@ -134,9 +134,7 @@ class vk_context final {
     }
 
   private:
-    explicit vk_context(
-        hardware&& hard, render_context&& render, protocol&& prot, buffer&& buf
-    ) noexcept
+    explicit vk_context(hardware&& hard, swapping&& render, protocol&& prot, buffer&& buf) noexcept
         : hard_{std::move(hard)},
           render_{std::move(render)},
           protocol_{std::move(prot)},
@@ -151,11 +149,11 @@ class vk_context final {
         }
     }
 
-    hardware       hard_;
-    render_context render_;
-    protocol       protocol_;
-    buffer         buffer_;
-    std::uint32_t  image_index_{};
-    bool           is_valid_{true};
+    hardware      hard_;
+    swapping      render_;
+    protocol      protocol_;
+    buffer        buffer_;
+    std::uint32_t image_index_{};
+    bool          is_valid_{true};
 };
 }  // namespace sui
