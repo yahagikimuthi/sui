@@ -19,7 +19,7 @@ class image_container final {
     using ref_w = std::reference_wrapper<T>;
 
   public:
-    [[nodiscard]] static auto try_make(hgn::device& dev, hgn::swapchain& chain) noexcept
+    [[nodiscard]] static auto try_make(hgn::device& dev, hgn::swapchain_khr& chain) noexcept
         -> std::expected<image_container, error> {
         auto res = hgn::try_get_swapchain_images_khr(dev, chain);
         if (not res) return make_error(runtime_error, "Failed to make swapchain images");

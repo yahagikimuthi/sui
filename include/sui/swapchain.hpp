@@ -100,7 +100,7 @@ class swapchain final {
     }
 
     explicit swapchain(
-        hgn::swapchain& native, hgn::device& device, const hgn::format setting_format
+        hgn::swapchain_khr& native, hgn::device& device, const hgn::format setting_format
     ) noexcept
         : native_{native}, device_{device}, setting_format_{setting_format} {}
 
@@ -129,7 +129,7 @@ class swapchain final {
 
     [[nodiscard]] auto setting_format() const noexcept -> hgn::format { return setting_format_; }
 
-    [[nodiscard]] auto get() noexcept -> hgn::swapchain& { return *native_; }
+    [[nodiscard]] auto get() noexcept -> hgn::swapchain_khr& { return *native_; }
 
   private:
     void destroy() noexcept {
@@ -137,7 +137,7 @@ class swapchain final {
         hgn::destroy_swapchain_khr(device_.get(), *native_);
     }
 
-    std::optional<hgn::swapchain&>      native_;
+    std::optional<hgn::swapchain_khr&>  native_;
     std::reference_wrapper<hgn::device> device_;
     hgn::format                         setting_format_;
 };

@@ -152,12 +152,12 @@ class swapchain_create_info_khr final {
     std::vector<std::uint32_t> queue_family_indices_;
 };
 
-using swapchain = VkSwapchainKHR_T;
+using swapchain_khr = VkSwapchainKHR_T;
 
 [[nodiscard]] inline auto try_make_swapchain(
     device& dev, const swapchain_create_info_khr& info
-) noexcept -> std::expected<std::reference_wrapper<swapchain>, result> {
-    auto*      chain = static_cast<swapchain*>(nullptr);
+) noexcept -> std::expected<std::reference_wrapper<swapchain_khr>, result> {
+    auto*      chain = static_cast<swapchain_khr*>(nullptr);
     const auto res   = vkCreateSwapchainKHR(&dev, &info.get(), nullptr, &chain);
     if (res != VK_SUCCESS) return make_result(res);
 
@@ -166,7 +166,7 @@ using swapchain = VkSwapchainKHR_T;
     return std::ref(*chain);
 }
 
-inline void destroy_swapchain_khr(device& dev, swapchain& target) noexcept {
+inline void destroy_swapchain_khr(device& dev, swapchain_khr& target) noexcept {
     vkDestroySwapchainKHR(&dev, &target, nullptr);
 }
 }  // namespace hgn

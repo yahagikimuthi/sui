@@ -31,7 +31,7 @@ class render_context final {
         return render_context{std::move(*chain), std::move(*images), std::move(*views)};
     }
 
-    [[nodiscard]] auto native_swapchain() noexcept -> hgn::swapchain& { return chain_.get(); }
+    [[nodiscard]] auto native_swapchain() noexcept -> hgn::swapchain_khr& { return chain_.get(); }
 
     [[nodiscard]] auto native_image(const std::size_t image_index) noexcept -> hgn::image& {
         return images_[image_index];

@@ -18,7 +18,7 @@
 namespace hgn {
 using image = VkImage_T;
 
-[[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain& chain) noexcept
+[[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain_khr& chain) noexcept
     -> std::expected<std::vector<std::reference_wrapper<image>>, result> {
     auto       count = std::uint32_t{};
     const auto res1  = vkGetSwapchainImagesKHR(&dev, &chain, &count, nullptr);
@@ -97,7 +97,7 @@ inline void destroy_image_view(device& dev, image_view& view) noexcept {
 
 [[nodiscard]] inline auto try_acquire_next_image_khr(
     device&             dev,
-    swapchain&          chain,
+    swapchain_khr&      chain,
     semaphore&          semaph,
     fence&              fence_ref,
     const std::uint32_t timeout = std::numeric_limits<std::uint32_t>::max()
@@ -110,7 +110,7 @@ inline void destroy_image_view(device& dev, image_view& view) noexcept {
 
 [[nodiscard]] inline auto try_acquire_next_image_khr(
     device&             dev,
-    swapchain&          chain,
+    swapchain_khr&      chain,
     semaphore&          semaph,
     const std::uint32_t timeout = std::numeric_limits<std::uint32_t>::max()
 ) noexcept -> std::expected<std::uint32_t, result> {

@@ -67,7 +67,7 @@ class present_info_khr final {
         return *this;
     }
 
-    auto setting_swapchain(swapchain& chain) noexcept -> present_info_khr& {
+    auto setting_swapchain(swapchain_khr& chain) noexcept -> present_info_khr& {
         chain_                 = &chain;
         native_.pSwapchains    = &chain_;
         native_.swapchainCount = 1;
@@ -84,7 +84,7 @@ class present_info_khr final {
 
   private:
     VkPresentInfoKHR native_{};
-    swapchain*       chain_{};
+    swapchain_khr*   chain_{};
     semaphore*       wait_semapho_{};
     std::uint32_t    index_{};
 };
