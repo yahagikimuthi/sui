@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <concepts>
+#include <cstdint>
 #include <utility>
 
 #include <GLFW/glfw3.h>
