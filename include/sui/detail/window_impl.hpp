@@ -8,9 +8,9 @@
 
 #include <kgm/kgm.hpp>
 
+#include "sui/detail/native_window.hpp"
+#include "sui/detail/vk_context.hpp"
 #include "sui/error.hpp"
-#include "sui/native_window.hpp"
-#include "sui/vk_context.hpp"
 
 namespace sui::detail {
 class window_impl final {

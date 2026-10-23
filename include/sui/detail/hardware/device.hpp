@@ -5,10 +5,10 @@
 #include <utility>
 
 #include <hgn/device.hpp>
+#include <hgn/enums.hpp>
 
-#include "hgn/enums.hpp"
+#include "sui/detail/hardware/physical_device.hpp"
 #include "sui/error.hpp"
-#include "sui/hardware/physical_device.hpp"
 
 namespace sui {
 class device final {

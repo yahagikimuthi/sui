@@ -13,13 +13,13 @@
 #include <hgn/submit.hpp>
 #include <kgm/window.hpp>
 
-#include "sui/buffer.hpp"
+#include "sui/detail/hardware/hardware.hpp"
+#include "sui/detail/protocol/protocol.hpp"
+#include "sui/detail/rendering/buffer.hpp"
+#include "sui/detail/rendering/pipeline.hpp"
+#include "sui/detail/rendering/shader.hpp"
+#include "sui/detail/swapping/swapping.hpp"
 #include "sui/error.hpp"
-#include "sui/hardware.hpp"
-#include "sui/pipeline.hpp"
-#include "sui/protocol.hpp"
-#include "sui/shader_module.hpp"
-#include "sui/swapping.hpp"
 
 namespace sui {
 class vk_context final {

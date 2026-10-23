@@ -4,15 +4,15 @@
 #include <expected>
 #include <utility>
 
+#include <hgn/command.hpp>
 #include <hgn/device.hpp>
 #include <hgn/image.hpp>
 #include <hgn/submit.hpp>
 #include <hgn/sync.hpp>
 
-#include "hgn/command.hpp"
-#include "sui/command.hpp"
+#include "sui/detail/protocol/command.hpp"
+#include "sui/detail/protocol/sync.hpp"
 #include "sui/error.hpp"
-#include "sui/sync.hpp"
 
 namespace sui {
 class protocol final {

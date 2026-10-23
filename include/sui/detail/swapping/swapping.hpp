@@ -8,9 +8,9 @@
 #include <hgn/image.hpp>
 #include <hgn/swapchain.hpp>
 
-#include "sui/hardware.hpp"
-#include "sui/images.hpp"
-#include "sui/swapchain.hpp"
+#include "sui/detail/hardware/hardware.hpp"
+#include "sui/detail/swapping/images.hpp"
+#include "sui/detail/swapping/swapchain.hpp"
 
 namespace sui {
 class swapping final {

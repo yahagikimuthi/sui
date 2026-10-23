@@ -7,10 +7,10 @@
 #include <vector>
 
 #include <hgn/device.hpp>
+#include <hgn/enums.hpp>
 #include <hgn/image.hpp>
 #include <hgn/swapchain.hpp>
 
-#include "hgn/enums.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
