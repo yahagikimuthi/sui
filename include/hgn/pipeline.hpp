@@ -590,7 +590,7 @@ class graphics_pipeline_create_info final {
     VkPipelineInputAssemblyStateCreateInfo       input_assembly_{};
     VkPipelineViewportStateCreateInfo            viewport_state_{};
     VkPipelineRasterizationStateCreateInfo       rasterizer_{};
-    VkPipelineMultisampleStateCreateInfo         multisampling_{};
+    VkPipelineMultisampleStateCreateInfo         multisampling_{};  // NOLINT
     VkPipelineColorBlendStateCreateInfo          color_blend_{};
     VkPipelineDynamicStateCreateInfo             dynamic_state_{};
 };
