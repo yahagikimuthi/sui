@@ -70,7 +70,6 @@ class protocol final {
             .setting_command_buffer(command_.buffer())
             .wait_semaphore(sync_.image_available_semaphore())
             .signal_semaphore(sync_.render_finished_semaphore());
-        ;
     }
 
     [[nodiscard]] auto get_command_buffer() noexcept -> hgn::command_buffer& {
