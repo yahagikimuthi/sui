@@ -1,6 +1,5 @@
 #pragma once
 
-#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
@@ -74,17 +73,6 @@ class option final {
   public:
     constexpr option() noexcept = default;
 
-    constexpr option(T value) noexcept  // NOLINT
-        :
-#if __cpp_lib_optional >= 202506L
-          m_{value}
-#else
-          m_{&value}
-#endif
-    {
-    }
-
-    template <std::convertible_to<value_type> U>
     constexpr option(T value) noexcept  // NOLINT
         :
 #if __cpp_lib_optional >= 202506L
