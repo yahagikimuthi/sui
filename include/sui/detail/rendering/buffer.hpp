@@ -90,18 +90,15 @@ class buffer final {
   public:
     [[nodiscard]] static auto try_make(hgn::device& dev, hgn::physical_device& physical) noexcept
         -> std::expected<buffer, error> {
-        auto info = hgn::buffer_create_info{};
-        info.size(max_buffer_size)
-            .usage(hgn::buffer_usage_flag_bits::vertex_buffer)
-            .setting_sharing_mode(hgn::sharing_mode::exclusive);
+        const auto info = hgn::buffer_create_info{}
+                              .size(max_buffer_size)
+                              .usage(hgn::buffer_usage_flag_bits::vertex_buffer)
+                              .setting_sharing_mode(hgn::sharing_mode::exclusive);
 
         auto buf = hgn::try_make_buffer(dev, info);
         if (not buf) return make_error(runtime_error, "Failed to make buffer.");
 
-        auto mem_requirements = hgn::get_buffer_memory_requirements(dev, *buf);
-
-        auto alloc_info = hgn::memory_allocate_info{};
-        alloc_info.allocation_size(mem_requirements.size());
+        const auto mem_requirements = hgn::get_buffer_memory_requirements(dev, *buf);
 
         const auto memory_type = find_memory_type(
             physical,
@@ -110,7 +107,9 @@ class buffer final {
         );
         if (not memory_type) return make_error(runtime_error, "Failed to find memory type.");
 
-        alloc_info.memory_type_index(*memory_type);
+        const auto alloc_info = hgn::memory_allocate_info{}
+                                    .allocation_size(mem_requirements.size())
+                                    .memory_type_index(*memory_type);
 
         auto dev_mem = hgn::try_allocate_memory(dev, alloc_info);
         if (not dev_mem) return make_error(runtime_error, "Failed to allocate device memory.");
@@ -118,7 +117,7 @@ class buffer final {
         if (not hgn::try_bind_buffer_memory(dev, buf->get(), dev_mem->get()))
             return make_error(runtime_error, "Failed to bind buffer and device memory.");
 
-        auto data = hgn::try_map_memory<max_buffer_size>(dev, dev_mem->get());
+        const auto data = hgn::try_map_memory<max_buffer_size>(dev, dev_mem->get());
         if (not data) return make_error(runtime_error, "Failed to map device memory.");
 
         return buffer{native_buffer{buf->get(), dev}, device_memory{dev_mem->get(), dev}, *data};

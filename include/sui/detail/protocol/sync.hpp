@@ -24,8 +24,7 @@ class semaphore final {
         return semaphore{res->get(), dev};
     }
 
-    semaphore(const semaphore&) noexcept = delete;
-
+    semaphore(const semaphore&) noexcept                    = delete;
     auto operator=(const semaphore&) noexcept -> semaphore& = delete;
 
     semaphore(semaphore&& other) noexcept
