@@ -44,6 +44,8 @@ class shader_module final {
 
     ~shader_module() noexcept { destroy(); }
 
+    [[nodiscard]] auto get() noexcept -> hgn::shader_module& { return *native_; }
+
   private:
     explicit shader_module(hgn::shader_module& native, hgn::device& dev) noexcept
         : native_{native}, dev_{std::ref(dev)} {}
@@ -75,6 +77,10 @@ class shader final {
 
         return shader{std::move(*vert), std::move(*frag)};
     }
+
+    [[nodiscard]] auto vertex_shader() noexcept -> hgn::shader_module& { return vert_.get(); }
+
+    [[nodiscard]] auto fragment_shader() noexcept -> hgn::shader_module& { return frag_.get(); }
 
   private:
     explicit shader(shader_module&& vert, shader_module&& frag) noexcept
