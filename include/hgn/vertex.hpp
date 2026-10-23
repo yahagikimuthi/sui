@@ -12,6 +12,7 @@
 
 #include <vulkan/vulkan_core.h>
 
+#include "hgn/command.hpp"
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/shader.hpp"
@@ -610,5 +611,9 @@ using pipeline = VkPipeline_T;
 
 inline void destroy_pipeline(device& dev, pipeline& target) noexcept {
     vkDestroyPipeline(&dev, &target, nullptr);
+}
+
+inline void command_bind_pipeline(command_buffer& buf, pipeline& pipe) noexcept {
+    vkCmdBindPipeline(&buf, VK_PIPELINE_BIND_POINT_GRAPHICS, &pipe);
 }
 }  // namespace hgn
