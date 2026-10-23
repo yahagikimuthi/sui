@@ -99,7 +99,7 @@ enum class memory_property_flags : std::int32_t {  // NOLINT
 enum class shader_stage_flag_bits : std::int32_t {  // NOLINT
     vertex   = VK_SHADER_STAGE_VERTEX_BIT,
     fragment = VK_SHADER_STAGE_FRAGMENT_BIT
-};  // NOLINT
+};
 
 enum class dynamic_state : std::int32_t {  // NOLINT
     viewport = VK_DYNAMIC_STATE_VIEWPORT,
