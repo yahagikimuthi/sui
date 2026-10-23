@@ -53,8 +53,12 @@ class vk_context final {
         if (not shader_res)
             return make_error(runtime_error, "Failed to make shader.", shader_res.error());
 
-        auto pipe_res =
-            pipeline::try_make(hard_res->native_device(), swapping_res->setting_format());
+        auto pipe_res = pipeline::try_make(
+            hard_res->native_device(),
+            shader_res->vertex_shader(),
+            shader_res->fragment_shader(),
+            swapping_res->setting_format()
+        );
         if (not pipe_res)
             return make_error(runtime_error, "Failed to make pipeline.", pipe_res.error());
 

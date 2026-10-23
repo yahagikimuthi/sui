@@ -8,6 +8,7 @@
 
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
+#include <hgn/shader.hpp>
 #include <hgn/vertex.hpp>
 
 #include "sui/error.hpp"
@@ -20,8 +21,9 @@ class pipeline final {
     };
 
   public:
-    [[nodiscard]] static auto try_make(hgn::device& dev, const hgn::format fmt) noexcept
-        -> std::expected<pipeline, error> {
+    [[nodiscard]] static auto try_make(
+        hgn::device& dev, hgn::shader_module& vert, hgn::shader_module& frag, const hgn::format fmt
+    ) noexcept -> std::expected<pipeline, error> {
         const auto binding_description =
             hgn::vertex_input_binding_description{}.stride(sizeof(float) * 5);
 
@@ -60,12 +62,13 @@ class pipeline final {
         const auto color_blending =
             hgn::pipeline_color_blend_state_create_info{}.attachment(color_blend_attachment);
 
-        // TODO Moduleをattach
-        const auto vert_shader_stage_info =
-            hgn::pipeline_shader_stage_create_info{}.stage(hgn::shader_stage_flag_bits::vertex);
+        const auto vert_shader_stage_info = hgn::pipeline_shader_stage_create_info{}
+                                                .stage(hgn::shader_stage_flag_bits::vertex)
+                                                .module(vert);
 
-        const auto frag_shader_stage_info =
-            hgn::pipeline_shader_stage_create_info{}.stage(hgn::shader_stage_flag_bits::fragment);
+        const auto frag_shader_stage_info = hgn::pipeline_shader_stage_create_info{}
+                                                .stage(hgn::shader_stage_flag_bits::fragment)
+                                                .module(frag);
 
         const auto shader_stages = std::array<hgn::pipeline_shader_stage_create_info, 2>{
             vert_shader_stage_info, frag_shader_stage_info
