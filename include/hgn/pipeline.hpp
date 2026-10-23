@@ -231,7 +231,7 @@ class pipeline_dynamic_state_create_info final {
 class pipeline_viewport_state_create_info final {
   public:
     explicit constexpr pipeline_viewport_state_create_info() noexcept {
-        native_.sType         = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        native_.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         native_.viewportCount = 1;
         native_.scissorCount  = 1;
     }
@@ -260,7 +260,7 @@ class pipeline_rasterization_state_create_info final {
 class pipeline_multisample_state_create_info final {
   public:
     explicit pipeline_multisample_state_create_info() noexcept {
-        native_.sType                = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        native_.sType                = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         native_.sampleShadingEnable  = VK_FALSE;
         native_.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
     }
