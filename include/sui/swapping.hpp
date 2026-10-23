@@ -4,6 +4,7 @@
 #include <expected>
 #include <utility>
 
+#include <hgn/enums.hpp>
 #include <hgn/image.hpp>
 #include <hgn/swapchain.hpp>
 
@@ -30,6 +31,10 @@ class swapping final {
             return make_error(runtime_error, "Failed to make image view container.", views.error());
 
         return swapping{std::move(*chain), std::move(*images), std::move(*views)};
+    }
+
+    [[nodiscard]] auto setting_format() const noexcept -> hgn::format {
+        return chain_.setting_format();
     }
 
     [[nodiscard]] auto native_swapchain() noexcept -> hgn::swapchain_khr& { return chain_.get(); }

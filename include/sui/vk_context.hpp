@@ -16,6 +16,7 @@
 #include "sui/buffer.hpp"
 #include "sui/error.hpp"
 #include "sui/hardware.hpp"
+#include "sui/pipeline.hpp"
 #include "sui/protocol.hpp"
 #include "sui/swapping.hpp"
 
@@ -28,10 +29,10 @@ class vk_context final {
         if (not hard_res)
             return make_error(runtime_error, "Failed to make hardware object.", hard_res.error());
 
-        auto render_res = swapping::try_make(*hard_res);
-        if (not render_res)
+        auto swapping_res = swapping::try_make(*hard_res);
+        if (not swapping_res)
             return make_error(
-                runtime_error, "Failed to make render context class.", render_res.error()
+                runtime_error, "Failed to make render context class.", swapping_res.error()
             );
 
         auto protocol_res = protocol::try_make(
@@ -47,11 +48,17 @@ class vk_context final {
         if (not buffer_res)
             return make_error(runtime_error, "Failed to make buffer.", buffer_res.error());
 
+        auto pipe_res =
+            pipeline::try_make(hard_res->native_device(), swapping_res->setting_format());
+        if (not pipe_res)
+            return make_error(runtime_error, "Failed to make pipeline.", pipe_res.error());
+
         return vk_context{
             std::move(*hard_res),
-            std::move(*render_res),
+            std::move(*swapping_res),
             std::move(*protocol_res),
-            std::move(*buffer_res)
+            std::move(*buffer_res),
+            std::move(*pipe_res)
         };
     }
 
@@ -64,6 +71,7 @@ class vk_context final {
           render_{std::move(other.render_)},
           protocol_{std::move(other.protocol_)},
           buffer_{std::move(other.buffer_)},
+          pipe_{std::move(other.pipe_)},
           image_index_{other.image_index_},
           is_valid_{std::exchange(other.is_valid_, false)} {}
 
@@ -76,6 +84,7 @@ class vk_context final {
         render_      = std::move(other.render_);
         protocol_    = std::move(other.protocol_);
         buffer_      = std::move(other.buffer_);
+        pipe_        = std::move(other.pipe_);
         image_index_ = other.image_index_;
 
         is_valid_ = std::exchange(other.is_valid_, false);
@@ -109,6 +118,8 @@ class vk_context final {
         hgn::command_draw(protocol_.get_command_buffer(), vertex_count, 1);
     }
 
+    void render() noexcept {}
+
     [[nodiscard]] auto try_end_rendering() noexcept -> bool {
         if (not protocol_.try_end_rendering(render_.native_image(image_index_))) return false;
 
@@ -134,11 +145,14 @@ class vk_context final {
     }
 
   private:
-    explicit vk_context(hardware&& hard, swapping&& render, protocol&& prot, buffer&& buf) noexcept
+    explicit vk_context(
+        hardware&& hard, swapping&& render, protocol&& prot, buffer&& buf, pipeline&& pipe
+    ) noexcept
         : hard_{std::move(hard)},
           render_{std::move(render)},
           protocol_{std::move(prot)},
-          buffer_{std::move(buf)} {}
+          buffer_{std::move(buf)},
+          pipe_{std::move(pipe)} {}
 
     void destroy() noexcept {
         if (not is_valid_) return;
@@ -153,6 +167,7 @@ class vk_context final {
     swapping      render_;
     protocol      protocol_;
     buffer        buffer_;
+    pipeline      pipe_;
     std::uint32_t image_index_{};
     bool          is_valid_{true};
 };
