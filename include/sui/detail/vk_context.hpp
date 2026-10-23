@@ -15,9 +15,7 @@
 
 #include "sui/detail/hardware/hardware.hpp"
 #include "sui/detail/protocol/protocol.hpp"
-#include "sui/detail/rendering/buffer.hpp"
-#include "sui/detail/rendering/pipeline.hpp"
-#include "sui/detail/rendering/shader.hpp"
+#include "sui/detail/rendering/renderer.hpp"
 #include "sui/detail/swapping/swapping.hpp"
 #include "sui/error.hpp"
 
@@ -44,31 +42,19 @@ class vk_context final {
                 runtime_error, "Failed to make protocol object.", protocol_res.error()
             );
 
-        auto buffer_res =
-            buffer::try_make(hard_res->native_device(), hard_res->get_physical_device().get());
-        if (not buffer_res)
-            return make_error(runtime_error, "Failed to make buffer.", buffer_res.error());
-
-        auto shader_res = shader::try_make(hard_res->native_device());
-        if (not shader_res)
-            return make_error(runtime_error, "Failed to make shader.", shader_res.error());
-
-        auto pipe_res = pipeline::try_make(
+        auto renderer_res = renderer::try_make(
             hard_res->native_device(),
-            shader_res->vertex_shader(),
-            shader_res->fragment_shader(),
+            hard_res->get_physical_device().get(),
             swapping_res->setting_format()
         );
-        if (not pipe_res)
-            return make_error(runtime_error, "Failed to make pipeline.", pipe_res.error());
+        if (not renderer_res)
+            return make_error(runtime_error, "Failed to make renderer.", renderer_res.error());
 
         return vk_context{
             std::move(*hard_res),
             std::move(*swapping_res),
-            std::move(*protocol_res),
-            std::move(*buffer_res),
-            std::move(*shader_res),
-            std::move(*pipe_res)
+            std::move(*renderer_res),
+            std::move(*protocol_res)
         };
     }
 
@@ -78,11 +64,9 @@ class vk_context final {
 
     vk_context(vk_context&& other) noexcept
         : hard_{std::move(other.hard_)},
-          render_{std::move(other.render_)},
+          swapper_{std::move(other.swapper_)},
+          renderer_{std::move(other.renderer_)},
           protocol_{std::move(other.protocol_)},
-          buffer_{std::move(other.buffer_)},
-          shader_{std::move(other.shader_)},
-          pipe_{std::move(other.pipe_)},
           image_index_{other.image_index_},
           is_valid_{std::exchange(other.is_valid_, false)} {}
 
@@ -92,14 +76,11 @@ class vk_context final {
         destroy();
 
         hard_        = std::move(other.hard_);
-        render_      = std::move(other.render_);
+        swapper_     = std::move(other.swapper_);
+        renderer_    = std::move(other.renderer_);
         protocol_    = std::move(other.protocol_);
-        buffer_      = std::move(other.buffer_);
-        pipe_        = std::move(other.pipe_);
-        shader_      = std::move(other.shader_);
         image_index_ = other.image_index_;
-
-        is_valid_ = std::exchange(other.is_valid_, false);
+        is_valid_    = std::exchange(other.is_valid_, false);
 
         return *this;
     }
@@ -110,22 +91,22 @@ class vk_context final {
         if (not protocol_.try_wait(hard_.native_device())) return false;
 
         const auto image_index_res = hgn::try_acquire_next_image_khr(
-            hard_.native_device(), render_.native_swapchain(), protocol_.image_available_semaphore()
+            hard_.native_device(),
+            swapper_.native_swapchain(),
+            protocol_.image_available_semaphore()
         );
 
         if (not image_index_res) return false;
         image_index_ = *image_index_res;
 
         return protocol_.try_begin_rendering(
-            render_.native_image(image_index_), render_.native_image_view(image_index_)
+            swapper_.native_image(image_index_), swapper_.native_image_view(image_index_)
         );
     }
 
     void try_rendering(const std::span<const float> vertices) noexcept {
-        buffer_.update(vertices);
-        hgn::command_bind_vertex_buffers(
-            protocol_.get_command_buffer(), buffer_.get_native_buffer()
-        );
+        renderer_.update(vertices);
+        hgn::command_bind_vertex_buffers(protocol_.get_command_buffer(), renderer_.get_buffer());
         const auto vertex_count = static_cast<std::uint32_t>(vertices.size());
         hgn::command_draw(protocol_.get_command_buffer(), vertex_count, 1);
     }
@@ -133,14 +114,14 @@ class vk_context final {
     void render() noexcept {}
 
     [[nodiscard]] auto try_end_rendering() noexcept -> bool {
-        if (not protocol_.try_end_rendering(render_.native_image(image_index_))) return false;
+        if (not protocol_.try_end_rendering(swapper_.native_image(image_index_))) return false;
 
         const auto submit_info = protocol_.make_submit_info();
         if (not hard_.try_submit(submit_info, protocol_.in_flight_fence())) return false;
 
         auto present_info = hgn::present_info_khr{};
         present_info.wait_semaphore(protocol_.render_finished_semaphore())
-            .setting_swapchain(render_.native_swapchain())
+            .setting_swapchain(swapper_.native_swapchain())
             .image_indices(image_index_);
 
         const auto res = hard_.try_present(present_info);
@@ -158,19 +139,12 @@ class vk_context final {
 
   private:
     explicit vk_context(
-        hardware&& hard,
-        swapping&& render,
-        protocol&& prot,
-        buffer&&   buf,
-        shader&&   shad,
-        pipeline&& pipe
+        hardware&& hard, swapping&& swapper, renderer&& render, protocol&& prot
     ) noexcept
         : hard_{std::move(hard)},
-          render_{std::move(render)},
-          protocol_{std::move(prot)},
-          buffer_{std::move(buf)},
-          shader_{std::move(shad)},
-          pipe_{std::move(pipe)} {}
+          swapper_{std::move(swapper)},
+          renderer_{std::move(render)},
+          protocol_{std::move(prot)} {}
 
     void destroy() noexcept {
         if (not is_valid_) return;
@@ -182,11 +156,9 @@ class vk_context final {
     }
 
     hardware      hard_;
-    swapping      render_;
+    swapping      swapper_;
+    renderer      renderer_;
     protocol      protocol_;
-    buffer        buffer_;
-    shader        shader_;
-    pipeline      pipe_;
     std::uint32_t image_index_{};
     bool          is_valid_{true};
 };
