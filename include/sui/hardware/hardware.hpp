@@ -10,12 +10,12 @@
 #include <hgn/sync.hpp>
 #include <kgm/window.hpp>
 
-#include "sui/device.hpp"
 #include "sui/error.hpp"
-#include "sui/instance.hpp"
-#include "sui/physical_device.hpp"
-#include "sui/queue.hpp"
-#include "sui/surface.hpp"
+#include "sui/hardware/device.hpp"
+#include "sui/hardware/instance.hpp"
+#include "sui/hardware/physical_device.hpp"
+#include "sui/hardware/queue.hpp"
+#include "sui/hardware/surface.hpp"
 
 namespace sui {
 struct queue_family_indices final {

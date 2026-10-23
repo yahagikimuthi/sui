@@ -8,9 +8,9 @@
 
 #include <hgn/app_instance_info.hpp>
 #include <hgn/instance.hpp>
+#include <hgn/physical_device.hpp>
 #include <kgm/kgm.hpp>
 
-#include "hgn/physical_device.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
