@@ -9,6 +9,7 @@
 #include <hgn/device.hpp>
 #include <hgn/shader.hpp>
 
+#include "sui/detail/others.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
@@ -53,5 +54,33 @@ class shader_module final {
 
     std::optional<hgn::shader_module&>  native_;
     std::reference_wrapper<hgn::device> dev_;
+};
+
+class shader final {
+  public:
+    [[nodiscard]] static auto try_make(hgn::device& dev) noexcept -> std::expected<shader, error> {
+        const auto vert_source = detail::read_file("../include/sui/vert.spv");
+        if (not vert_source) return make_error(logic_error, "Failed to read vertex source file.");
+        auto vert = shader_module::try_make(dev, *vert_source);
+        if (not vert)
+            return make_error(runtime_error, "Failed to make vertex shader module.", vert.error());
+
+        const auto frag_source = detail::read_file("../include/sui/frag.spv");
+        if (not frag_source) return make_error(logic_error, "Failed to read fragment source file.");
+        auto frag = shader_module::try_make(dev, *frag_source);
+        if (not frag)
+            return make_error(
+                runtime_error, "Failed to make fragment shader module.", frag.error()
+            );
+
+        return shader{std::move(*vert), std::move(*frag)};
+    }
+
+  private:
+    explicit shader(shader_module&& vert, shader_module&& frag) noexcept
+        : vert_{std::move(vert)}, frag_{std::move(frag)} {}
+
+    shader_module vert_;
+    shader_module frag_;
 };
 }  // namespace sui
