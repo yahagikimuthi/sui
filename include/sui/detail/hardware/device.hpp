@@ -15,18 +15,15 @@ class device final {
   public:
     [[nodiscard]] static auto try_make(sui::physical_device& physical) noexcept
         -> std::expected<device, error> {
-        auto queue_info = hgn::device_queue_create_info{};
-        queue_info.queue_family_index(physical.graphics_family())
-            .queue_count(1)
-            .queue_priorities(1);
+        const auto queue_info =
+            hgn::device_queue_create_info{}.queue_family_index(physical.graphics_family());
 
-        auto dynamic_feature = hgn::physical_device_dynamic_rendering_features{};
-
-        auto info = hgn::device_create_info{};
-        info.queue_create_infos({queue_info})
-            .features(hgn::physical_device_features{})
-            .extensions({hgn::khr_swapchain_extention_name})
-            .dynamic_rendering_features(dynamic_feature);
+        const auto info =
+            hgn::device_create_info{}
+                .queue_create_info(queue_info)
+                .features(hgn::physical_device_features{})
+                .extensions({hgn::khr_swapchain_extention_name})
+                .dynamic_rendering_features(hgn::physical_device_dynamic_rendering_features{});
 
         auto res = hgn::try_make_device(physical.get(), info);
         if (not res) return make_error(runtime_error, "Failed to make logical device\n");

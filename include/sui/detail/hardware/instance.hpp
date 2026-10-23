@@ -17,19 +17,19 @@ namespace sui {
 class instance final {
   public:
     [[nodiscard]] static auto try_make() noexcept -> std::expected<instance, error> {
-        auto app_info = hgn::application_info{};
-        app_info.application_name("Sui")
-            .application_version(1, 0, 0)
-            .engine_name("No Engine")
-            .engine_version(1, 0, 0)
-            .engine_version(1, 3, 0)
-            .api_version(1, 3, 0);
+        const auto app_info = hgn::application_info{}
+                                  .application_name("sui")
+                                  .application_version(1, 0, 0)
+                                  .engine_name("No Engine")
+                                  .engine_version(1, 0, 0)
+                                  .engine_version(1, 3, 0)
+                                  .api_version(1, 3, 0);
 
-        auto info = hgn::instance_create_info{};
-        info.app_info(app_info).extensions(required_extensions());
+        auto info =
+            hgn::instance_create_info{}.app_info(app_info).extensions(required_extensions());
 
 #ifndef NDEBUG
-        info.layers({"VK_LAYER_KHRONOS_validation"});
+        info.layer("VK_LAYER_KHRONOS_validation");
 #endif
         auto ins = hgn::try_make_instance(info);
         if (not ins) return make_error(runtime_error, "Failed to make hagane instance\n");

@@ -108,7 +108,7 @@ class instance_create_info final {
     instance_create_info(const instance_create_info& other) noexcept
         : native_{other.native_},
           app_info_{other.app_info_},
-          layers_{other.layers_},
+          layer_{other.layer_},
           extensions_{other.extensions_} {
         reset();
     }
@@ -118,7 +118,7 @@ class instance_create_info final {
 
         native_     = other.native_;
         app_info_   = other.app_info_;
-        layers_     = other.layers_;
+        layer_      = other.layer_;
         extensions_ = other.extensions_;
 
         reset();
@@ -128,7 +128,7 @@ class instance_create_info final {
     instance_create_info(instance_create_info&& other) noexcept
         : native_{other.native_},
           app_info_{other.app_info_},
-          layers_{std::move(other.layers_)},
+          layer_{other.layer_},
           extensions_{std::move(other.extensions_)} {
         reset();
     }
@@ -138,7 +138,7 @@ class instance_create_info final {
 
         native_     = other.native_;
         app_info_   = other.app_info_;
-        layers_     = std::move(other.layers_);
+        layer_      = other.layer_;
         extensions_ = std::move(other.extensions_);
 
         reset();
@@ -153,15 +153,10 @@ class instance_create_info final {
         return *this;
     }
 
-    auto layers(const std::span<const std::string_view> vec) noexcept -> instance_create_info& {
-        layers_.reserve(vec.size());
-        layers_.assign_range(
-            vec | std::views::transform([](const std::string_view view) noexcept -> const char* {
-                return view.data();
-            })
-        );
-        native_.enabledLayerCount   = static_cast<std::uint32_t>(layers_.size());
-        native_.ppEnabledLayerNames = layers_.data();
+    auto layer(const std::string_view vec) noexcept -> instance_create_info& {
+        layer_                      = vec.data();
+        native_.enabledLayerCount   = 1;
+        native_.ppEnabledLayerNames = &layer_;
         return *this;
     }
 
@@ -182,14 +177,14 @@ class instance_create_info final {
   private:
     void reset() noexcept {
         if (native_.pApplicationInfo != nullptr) native_.pApplicationInfo = &app_info_.get();
-        if (native_.ppEnabledLayerNames != nullptr) native_.ppEnabledLayerNames = layers_.data();
+        if (native_.ppEnabledLayerNames != nullptr) native_.ppEnabledLayerNames = &layer_;
         if (native_.ppEnabledExtensionNames != nullptr)
             native_.ppEnabledExtensionNames = extensions_.data();
     }
 
     VkInstanceCreateInfo     native_{};
     application_info         app_info_;
-    std::vector<const char*> layers_;
+    const char*              layer_{};
     std::vector<const char*> extensions_;
 };
 }  // namespace hgn

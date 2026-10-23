@@ -66,12 +66,8 @@ class command_buffer final {
   public:
     [[nodiscard]] static auto try_make(hgn::device& dev, hgn::command_pool& pool) noexcept
         -> std::expected<command_buffer, error> {
-        auto alloc_info = hgn::command_buffer_allocate_info{};
-        alloc_info.level(hgn::command_buffer_level::primary)
-            .command_buffer_count(1)
-            .command_pool(pool);
-        auto res = hgn::try_allocate_command_buffers(dev, alloc_info);
-
+        auto alloc_info = hgn::command_buffer_allocate_info{}.command_pool(pool);
+        auto res        = hgn::try_allocate_command_buffers(dev, alloc_info);
         if (not res) return make_error(runtime_error, "Failed to make command buffer.");
 
         return command_buffer{*res};
@@ -79,21 +75,24 @@ class command_buffer final {
 
     [[nodiscard]] auto try_begin_rendering(hgn::image& image, hgn::image_view& view) noexcept
         -> bool {
-        auto begin_info = hgn::command_buffer_begin_info{};
-        auto res        = hgn::try_begin_command_buffer(native_.get(), begin_info);
+        const auto res =
+            hgn::try_begin_command_buffer(native_.get(), hgn::command_buffer_begin_info{});
         if (not res) return false;
 
-        auto barrier = hgn::image_memory_barrier{};
-        barrier.layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
-            .setting_image(image);
+        const auto barrier =
+            hgn::image_memory_barrier{}
+                .layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
+                .setting_image(image);
 
         hgn::command_pipeline_barrier(native_.get(), barrier);
 
-        auto color_attachment = hgn::rendering_attachment_info{};
-        color_attachment.setting_image_view(view).clear_color(0.1f, 0.2f, 0.4f, 1.f);
+        const auto color_attachment =
+            hgn::rendering_attachment_info{}.setting_image_view(view).clear_color(
+                0.1f, 0.2f, 0.4f, 1.f
+            );
 
-        auto render_info = hgn::rendering_info{};
-        render_info.extent(800, 600).color_attachment(color_attachment);
+        const auto render_info =
+            hgn::rendering_info{}.extent(800, 600).color_attachment(color_attachment);
 
         hgn::command_begin_rendering(native_.get(), render_info);
         return true;

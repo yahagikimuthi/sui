@@ -60,7 +60,7 @@ class rendering_info final {
     VkRenderingInfo native_{};
 };
 
-inline void command_begin_rendering(command_buffer& cmd_buf, rendering_info& info) noexcept {
+inline void command_begin_rendering(command_buffer& cmd_buf, const rendering_info& info) noexcept {
     vkCmdBeginRendering(&cmd_buf, &info.get());
 }
 

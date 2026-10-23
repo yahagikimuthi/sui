@@ -9,7 +9,6 @@
 #include <ranges>
 #include <span>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -21,7 +20,9 @@ namespace hgn {
 class device_queue_create_info final {
   public:
     explicit device_queue_create_info() noexcept {
-        native_.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        native_.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        native_.queueCount       = 1;
+        native_.pQueuePriorities = &priority_;
     }
 
     device_queue_create_info(const device_queue_create_info& other) noexcept
@@ -80,7 +81,7 @@ class device_queue_create_info final {
     }
 
     VkDeviceQueueCreateInfo native_{};
-    float                   priority_{};
+    float                   priority_{1};
 };
 
 class physical_device_features final {
@@ -111,31 +112,31 @@ class device_create_info final {
     explicit device_create_info() noexcept { native_.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO; }
 
     device_create_info(const device_create_info& other) noexcept
-        : native_{other.native_}, features_{other.features_}, infos_{other.infos_} {
+        : native_{other.native_}, queue_info_{other.queue_info_}, features_{other.features_} {
         reset();
     }
 
     auto operator=(const device_create_info& other) noexcept -> device_create_info& {
         if (this == &other) return *this;
-        native_   = other.native_;
-        features_ = other.features_;
-        infos_    = other.infos_;
+        native_     = other.native_;
+        queue_info_ = other.queue_info_;
+        features_   = other.features_;
 
         reset();
         return *this;
     }
 
     device_create_info(device_create_info&& other) noexcept
-        : native_{other.native_}, features_{other.features_}, infos_{std::move(other.infos_)} {
+        : native_{other.native_}, queue_info_{other.queue_info_}, features_{other.features_} {
         reset();
     }
 
     auto operator=(device_create_info&& other) noexcept -> device_create_info& {
         if (this == &other) return *this;
 
-        native_   = other.native_;
-        features_ = other.features_;
-        infos_    = other.infos_;
+        native_     = other.native_;
+        queue_info_ = other.queue_info_;
+        features_   = other.features_;
 
         reset();
         return *this;
@@ -151,19 +152,10 @@ class device_create_info final {
         return *this;
     }
 
-    auto queue_create_infos(const std::span<const device_queue_create_info> infos) noexcept
-        -> device_create_info& {
-        infos_ = std::vector<VkDeviceQueueCreateInfo>{};
-        infos_.reserve(infos.size());
-        infos_.assign_range(
-            infos | std::views::transform(
-                        [](const device_queue_create_info& info) noexcept
-                            -> const VkDeviceQueueCreateInfo& { return info.get(); }
-                    )
-        );
-
-        native_.queueCreateInfoCount = static_cast<std::uint32_t>(infos_.size());
-        native_.pQueueCreateInfos    = infos_.data();
+    auto queue_create_info(const device_queue_create_info& info) noexcept -> device_create_info& {
+        queue_info_                  = info;
+        native_.queueCreateInfoCount = 1;
+        native_.pQueueCreateInfos    = &queue_info_.get();
         return *this;
     }
 
@@ -190,16 +182,16 @@ class device_create_info final {
   private:
     void reset() noexcept {
         if (native_.pEnabledFeatures != nullptr) native_.pEnabledFeatures = &features_;
-        if (native_.pQueueCreateInfos != nullptr) native_.pQueueCreateInfos = infos_.data();
+        if (native_.pQueueCreateInfos != nullptr) native_.pQueueCreateInfos = &queue_info_.get();
         if (native_.ppEnabledExtensionNames != nullptr)
             native_.ppEnabledExtensionNames = extensions_.data();
         if (native_.pNext != nullptr) native_.pNext = &dynamic_features_;
     }
 
     VkDeviceCreateInfo                       native_{};
+    device_queue_create_info                 queue_info_;
     VkPhysicalDeviceFeatures                 features_{};
     VkPhysicalDeviceDynamicRenderingFeatures dynamic_features_{};
-    std::vector<VkDeviceQueueCreateInfo>     infos_;
     std::vector<const char*>                 extensions_;
 };
 

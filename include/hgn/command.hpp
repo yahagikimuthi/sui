@@ -54,7 +54,9 @@ inline void destroy_command_pool(device& dev, command_pool& target) noexcept {
 class command_buffer_allocate_info final {
   public:
     explicit command_buffer_allocate_info() noexcept {
-        native_.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        native_.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        native_.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        native_.commandBufferCount = 1;
     }
 
     auto level(const command_buffer_level lev) noexcept -> command_buffer_allocate_info& {
@@ -171,7 +173,7 @@ class image_memory_barrier final {
 };
 
 inline void command_pipeline_barrier(
-    command_buffer& cmd_buf, image_memory_barrier& barrier
+    command_buffer& cmd_buf, const image_memory_barrier& barrier
 ) noexcept {
     vkCmdPipelineBarrier(
         &cmd_buf,
