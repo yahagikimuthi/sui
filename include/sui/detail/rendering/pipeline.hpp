@@ -100,8 +100,7 @@ class pipeline final {
         return pipeline{res->get(), dev};
     }
 
-    pipeline(const pipeline&) noexcept = delete;
-
+    pipeline(const pipeline&) noexcept                    = delete;
     auto operator=(const pipeline&) noexcept -> pipeline& = delete;
 
     pipeline(pipeline&& other) noexcept

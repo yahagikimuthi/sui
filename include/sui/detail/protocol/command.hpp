@@ -137,6 +137,12 @@ class command final {
         return command{std::move(*pool), *buffer};
     }
 
+    command(const command&) noexcept                    = delete;
+    auto operator=(const command&) noexcept -> command& = delete;
+    command(command&&) noexcept                         = default;
+    auto operator=(command&&) noexcept -> command&      = default;
+    ~command() noexcept                                 = default;
+
     [[nodiscard]] auto try_begin_rendering(hgn::image& image, hgn::image_view& view) noexcept
         -> bool {
         return buffer_.try_begin_rendering(image, view);

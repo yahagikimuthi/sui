@@ -20,8 +20,7 @@ class device_memory final {
     explicit device_memory(hgn::device_memory& native, hgn::device& dev) noexcept
         : native_{native}, dev_{std::ref(dev)} {}
 
-    device_memory(const device_memory&) noexcept = delete;
-
+    device_memory(const device_memory&) noexcept              = delete;
     auto operator=(device_memory&) noexcept -> device_memory& = delete;
 
     device_memory(device_memory&& other) noexcept
@@ -54,8 +53,7 @@ class native_buffer final {
     explicit native_buffer(hgn::buffer& native, hgn::device& dev) noexcept
         : native_{native}, dev_{std::ref(dev)} {}
 
-    native_buffer(const native_buffer&) noexcept = delete;
-
+    native_buffer(const native_buffer&) noexcept                    = delete;
     auto operator=(const native_buffer&) noexcept -> native_buffer& = delete;
 
     native_buffer(native_buffer&& other) noexcept
@@ -125,6 +123,12 @@ class buffer final {
 
         return buffer{native_buffer{buf->get(), dev}, device_memory{dev_mem->get(), dev}, *data};
     }
+
+    buffer(const buffer&) noexcept                    = delete;
+    auto operator=(const buffer&) noexcept -> buffer& = delete;
+    buffer(buffer&&) noexcept                         = default;
+    auto operator=(buffer&&) noexcept -> buffer&      = default;
+    ~buffer() noexcept                                = default;
 
     void update(const std::span<const float> vertices) noexcept {
         assert(vertices.size() <= max_vertices);

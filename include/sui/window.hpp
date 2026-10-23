@@ -18,6 +18,12 @@ class window final {
         const std::string_view title = "No Title"
     ) noexcept -> std::expected<window, error>;
 
+    window(const window&) noexcept                    = delete;
+    auto operator=(const window&) noexcept -> window& = delete;
+    window(window&&) noexcept                         = default;
+    auto operator=(window&&) noexcept -> window&      = default;
+    ~window() noexcept                                = default;
+
     [[nodiscard]] auto is_open() const noexcept -> bool;
 
     void pool_events() const noexcept;

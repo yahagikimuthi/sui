@@ -58,8 +58,7 @@ class vk_context final {
         };
     }
 
-    vk_context(const vk_context&) noexcept = delete;
-
+    vk_context(const vk_context&) noexcept                    = delete;
     auto operator=(const vk_context&) noexcept -> vk_context& = delete;
 
     vk_context(vk_context&& other) noexcept

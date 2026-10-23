@@ -29,6 +29,12 @@ class window_impl final {
         return window_impl{std::move(*win_res), std::move(*ctx_res)};
     }
 
+    window_impl(const window_impl&) noexcept                    = delete;
+    auto operator=(const window_impl&) noexcept -> window_impl& = delete;
+    window_impl(window_impl&&) noexcept                         = default;
+    auto operator=(window_impl&&) noexcept -> window_impl&      = default;
+    ~window_impl() noexcept                                     = default;
+
     [[nodiscard]] auto is_open() const noexcept -> bool { return win_.is_open(); }
 
     void pool_events() const noexcept { kgm::poll_events(); }  // NOLINT

@@ -37,8 +37,7 @@ class instance final {
         return instance{ins->get()};
     }
 
-    instance(const instance&) noexcept = delete;
-
+    instance(const instance&) noexcept                    = delete;
     auto operator=(const instance&) noexcept -> instance& = delete;
 
     instance(instance&& other) noexcept : native_{std::exchange(other.native_, std::nullopt)} {}

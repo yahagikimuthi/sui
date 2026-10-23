@@ -31,6 +31,12 @@ class protocol final {
         return protocol{std::move(*sync_res), std::move(*cmd_res)};
     }
 
+    protocol(const protocol&) noexcept                    = delete;
+    auto operator=(const protocol&) noexcept -> protocol& = delete;
+    protocol(protocol&&) noexcept                         = default;
+    auto operator=(protocol&&) noexcept -> protocol&      = default;
+    ~protocol() noexcept                                  = default;
+
     [[nodiscard]] auto try_wait(hgn::device& dev) noexcept -> bool {
         const auto res = sync_.try_wait_fence(dev);
         if (not res) {

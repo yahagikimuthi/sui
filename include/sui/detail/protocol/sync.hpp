@@ -68,8 +68,7 @@ class fence final {
         return fence{res->get(), dev};
     }
 
-    fence(const fence&) noexcept = delete;
-
+    fence(const fence&) noexcept                    = delete;
     auto operator=(const fence&) noexcept -> fence& = delete;
 
     fence(fence&& other) noexcept
@@ -126,6 +125,12 @@ class sync final {
 
         return sync{std::move(*sem1), std::move(*sem2), std::move(*fen)};
     }
+
+    sync(const sync&) noexcept                    = delete;
+    auto operator=(const sync&) noexcept -> sync& = delete;
+    sync(sync&&) noexcept                         = default;
+    auto operator=(sync&&) noexcept -> sync&      = default;
+    ~sync() noexcept                              = default;
 
     [[nodiscard]] auto try_wait_fence(hgn::device& dev) noexcept -> bool {
         auto wait_res = hgn::try_wait_for_fence(dev, in_flight_fence());

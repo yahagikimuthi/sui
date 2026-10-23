@@ -28,8 +28,7 @@ class native_window final {
         return native_window{*win};
     }
 
-    native_window(const native_window&) noexcept = delete;
-
+    native_window(const native_window&) noexcept                    = delete;
     auto operator=(const native_window&) noexcept -> native_window& = delete;
 
     native_window(native_window&& other) noexcept

@@ -22,8 +22,7 @@ class surface final {
         return surface{native->get(), inst};
     }
 
-    surface(const surface&) noexcept = delete;
-
+    surface(const surface&) noexcept                    = delete;
     auto operator=(const surface&) noexcept -> surface& = delete;
 
     surface(surface&& other) noexcept

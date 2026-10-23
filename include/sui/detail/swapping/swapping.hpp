@@ -33,6 +33,12 @@ class swapping final {
         return swapping{std::move(*chain), std::move(*images), std::move(*views)};
     }
 
+    swapping(const swapping&) noexcept                    = delete;
+    auto operator=(const swapping&) noexcept -> swapping& = delete;
+    swapping(swapping&&) noexcept                         = default;
+    auto operator=(swapping&&) noexcept -> swapping&      = default;
+    ~swapping() noexcept                                  = default;
+
     [[nodiscard]] auto setting_format() const noexcept -> hgn::format {
         return chain_.setting_format();
     }

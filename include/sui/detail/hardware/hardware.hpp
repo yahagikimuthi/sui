@@ -82,6 +82,12 @@ class hardware final {
         };
     }
 
+    hardware(const hardware&) noexcept                    = delete;
+    auto operator=(const hardware&) noexcept -> hardware& = delete;
+    hardware(hardware&&) noexcept                         = default;
+    auto operator=(hardware&&) noexcept -> hardware&      = default;
+    ~hardware() noexcept                                  = default;
+
     [[nodiscard]] auto try_device_wait_idle() noexcept -> bool { return device_.try_wait_idle(); }
 
     [[nodiscard]] auto native_surface() noexcept -> hgn::surface_khr& { return surface_.get(); }

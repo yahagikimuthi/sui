@@ -63,13 +63,18 @@ class image_view_container final {
         return image_view_container{std::move(views), dev};
     }
 
-    image_view_container(const image_view_container&) noexcept = delete;
-
+    image_view_container(const image_view_container&) noexcept                    = delete;
     auto operator=(const image_view_container&) noexcept -> image_view_container& = delete;
+    image_view_container(image_view_container&& other) noexcept                   = default;
 
-    image_view_container(image_view_container&& other) noexcept = default;
+    auto operator=(image_view_container&& other) noexcept -> image_view_container& {
+        if (this == &other) return *this;
 
-    auto operator=(image_view_container&& other) noexcept -> image_view_container& = default;
+        destroy();
+
+        views_ = std::move(other.views_);
+        return *this;
+    }
 
     ~image_view_container() noexcept { destroy(); }
 

@@ -33,10 +33,7 @@ class device final {
         return device{res->get()};
     }
 
-    explicit device(hgn::device& native) noexcept : native_{native} {}
-
-    device(const device&) noexcept = delete;
-
+    device(const device&) noexcept                    = delete;
     auto operator=(const device&) noexcept -> device& = delete;
 
     device(device&& other) noexcept : native_{std::exchange(other.native_, std::nullopt)} {}
@@ -61,6 +58,8 @@ class device final {
     [[nodiscard]] auto get() noexcept -> hgn::device& { return *native_; }
 
   private:
+    explicit device(hgn::device& native) noexcept : native_{native} {}
+
     void destroy() noexcept {
         if (native_) hgn::destroy_device(*native_);
     }
