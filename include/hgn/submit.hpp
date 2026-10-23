@@ -18,6 +18,54 @@ class submit_info final {
         native_.pWaitDstStageMask = &wait_stage_;
     }
 
+    submit_info(const submit_info& other) noexcept
+        : native_{other.native_},
+          wait_semapho_{other.wait_semapho_},
+          signal_semapho_{other.signal_semapho_},
+          buffer_{other.buffer_},
+          wait_stage_{other.wait_stage_} {
+        reset();
+    }
+
+    auto operator=(const submit_info& other) noexcept -> submit_info& {
+        if (this == &other) return *this;
+
+        native_         = other.native_;
+        wait_semapho_   = other.wait_semapho_;
+        signal_semapho_ = other.signal_semapho_;
+        buffer_         = other.buffer_;
+        wait_stage_     = other.wait_stage_;
+
+        reset();
+
+        return *this;
+    }
+
+    submit_info(submit_info&& other) noexcept
+        : native_{other.native_},
+          wait_semapho_{other.wait_semapho_},
+          signal_semapho_{other.signal_semapho_},
+          buffer_{other.buffer_},
+          wait_stage_{other.wait_stage_} {
+        reset();
+    }
+
+    auto operator=(submit_info&& other) noexcept -> submit_info& {
+        if (this == &other) return *this;
+
+        native_         = other.native_;
+        wait_semapho_   = other.wait_semapho_;
+        signal_semapho_ = other.signal_semapho_;
+        buffer_         = other.buffer_;
+        wait_stage_     = other.wait_stage_;
+
+        reset();
+
+        return *this;
+    }
+
+    ~submit_info() noexcept = default;
+
     auto wait_semaphore(semaphore& semapho) noexcept -> submit_info& {
         wait_semapho_              = &semapho;
         native_.pWaitSemaphores    = &wait_semapho_;
@@ -42,6 +90,10 @@ class submit_info final {
     [[nodiscard]] auto get() const noexcept -> const VkSubmitInfo& { return native_; }
 
   private:
+    void reset() noexcept {
+        if (native_.pWaitDstStageMask != nullptr) native_.pWaitDstStageMask = &wait_stage_;
+    }
+
     VkSubmitInfo         native_{};
     semaphore*           wait_semapho_{};
     semaphore*           signal_semapho_{};
