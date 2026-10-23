@@ -1,6 +1,5 @@
 #pragma once
 
-#include <bit>
 #include <cassert>
 #include <cstdint>
 #include <expected>
@@ -88,6 +87,8 @@ class physical_device_features final {
   public:
     explicit physical_device_features() noexcept = default;
 
+    [[nodiscard]] auto get() const noexcept -> const VkPhysicalDeviceFeatures& { return native_; }
+
   private:
     [[maybe_unused]] VkPhysicalDeviceFeatures native_{};
 };
@@ -147,8 +148,8 @@ class device_create_info final {
     auto dynamic_rendering_features(
         const physical_device_dynamic_rendering_features& features
     ) noexcept -> device_create_info& {
-        dynamic_features_ = features.get();
-        native_.pNext     = &dynamic_features_;
+        dynamic_features_ = features;
+        native_.pNext     = &dynamic_features_.get();
         return *this;
     }
 
@@ -160,8 +161,8 @@ class device_create_info final {
     }
 
     auto features(const physical_device_features& features) noexcept -> device_create_info& {
-        features_                = std::bit_cast<VkPhysicalDeviceFeatures>(features);
-        native_.pEnabledFeatures = &features_;
+        features_                = features;
+        native_.pEnabledFeatures = &features_.get();
         return *this;
     }
 
@@ -181,18 +182,18 @@ class device_create_info final {
 
   private:
     void reset() noexcept {
-        if (native_.pEnabledFeatures != nullptr) native_.pEnabledFeatures = &features_;
+        if (native_.pEnabledFeatures != nullptr) native_.pEnabledFeatures = &features_.get();
         if (native_.pQueueCreateInfos != nullptr) native_.pQueueCreateInfos = &queue_info_.get();
         if (native_.ppEnabledExtensionNames != nullptr)
             native_.ppEnabledExtensionNames = extensions_.data();
-        if (native_.pNext != nullptr) native_.pNext = &dynamic_features_;
+        if (native_.pNext != nullptr) native_.pNext = &dynamic_features_.get();
     }
 
-    VkDeviceCreateInfo                       native_{};
-    device_queue_create_info                 queue_info_;
-    VkPhysicalDeviceFeatures                 features_{};
-    VkPhysicalDeviceDynamicRenderingFeatures dynamic_features_{};
-    std::vector<const char*>                 extensions_;
+    VkDeviceCreateInfo                         native_{};
+    device_queue_create_info                   queue_info_;
+    physical_device_features                   features_;
+    physical_device_dynamic_rendering_features dynamic_features_;
+    std::vector<const char*>                   extensions_;
 };
 
 using device = VkDevice_T;

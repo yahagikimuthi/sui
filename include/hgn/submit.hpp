@@ -91,6 +91,9 @@ class submit_info final {
 
   private:
     void reset() noexcept {
+        if (native_.pWaitSemaphores != nullptr) native_.pWaitSemaphores = &wait_semapho_;
+        if (native_.pSignalSemaphores != nullptr) native_.pSignalSemaphores = &signal_semapho_;
+        if (native_.pCommandBuffers != nullptr) native_.pCommandBuffers = &buffer_;
         if (native_.pWaitDstStageMask != nullptr) native_.pWaitDstStageMask = &wait_stage_;
     }
 
@@ -135,6 +138,12 @@ class present_info_khr final {
     [[nodiscard]] auto get() const noexcept -> const VkPresentInfoKHR& { return native_; }
 
   private:
+    void reset() noexcept {
+        if (native_.pSwapchains != nullptr) native_.pSwapchains = &chain_;
+        if (native_.pWaitSemaphores != nullptr) native_.pWaitSemaphores = &wait_semapho_;
+        if (native_.pImageIndices != nullptr) native_.pImageIndices = &index_;
+    }
+
     VkPresentInfoKHR native_{};
     swapchain_khr*   chain_{};
     semaphore*       wait_semapho_{};
