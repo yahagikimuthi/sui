@@ -10,8 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "sui/detail/others.hpp"
-
 namespace sui {
 enum class error_type : std::uint8_t { logic, runtime, count };
 
@@ -25,29 +23,6 @@ class error final {
     };
 
   public:
-    template <typename T>
-        requires detail::is_string_literal_v<T>
-    [[nodiscard]] static auto make(const error_type type, const T& message) noexcept
-        -> std::unexpected<error> {
-        const auto codes = error_code{.type = type, .message = std::string{message}};
-        const auto out   = error{std::vector{codes}};
-        return std::unexpected{out};
-    }
-
-    template <typename T>
-        requires detail::is_string_literal_v<T>
-    [[nodiscard]] static auto make(
-        const error_type type, const T& message, const error& child_error
-    ) noexcept -> std::unexpected<error> {
-        auto codes = std::vector<error_code>{};
-        codes.reserve(1 + child_error.codes_.size());
-        codes.emplace_back(type, std::string{message});
-        codes.assign_range(child_error.codes_);
-
-        const auto out = error{std::move(codes)};
-        return std::unexpected{out};
-    }
-
     [[nodiscard]] static auto make(const error_type type, const std::string_view message) noexcept
         -> std::unexpected<error> {
         const auto codes = error_code{.type = type, .message = std::string{message}};
@@ -113,21 +88,6 @@ class error final {
 
     std::vector<error_code> codes_;
 };
-
-template <typename T>
-    requires detail::is_string_literal_v<T>
-[[nodiscard]] inline auto make_error(const error_type type, const T& message) noexcept
-    -> std::unexpected<error> {
-    return error::make(type, message);
-}
-
-template <typename T>
-    requires detail::is_string_literal_v<T>
-[[nodiscard]] inline auto make_error(
-    const error_type type, const T& message, const error& child_error
-) noexcept -> std::unexpected<error> {
-    return error::make(type, message, child_error);
-}
 
 [[nodiscard]] inline auto make_error(const error_type type, const std::string_view message) noexcept
     -> std::unexpected<error> {
