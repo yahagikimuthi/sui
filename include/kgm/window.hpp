@@ -14,10 +14,9 @@
 #include <hgn/instance.hpp>
 #include <hgn/surface.hpp>
 
-#ifndef GLFW_INCLUDE_VULKAN
 #define GLFW_INCLUDE_VULKAN
-#endif
 #include <GLFW/glfw3.h>
+#undef GLFW_INCLUDE_VULKAN
 
 namespace kgm {
 enum class window_hint : std::int32_t { client_api = GLFW_CLIENT_API };
