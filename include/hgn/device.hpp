@@ -8,6 +8,7 @@
 #include <ranges>
 #include <span>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -90,7 +91,7 @@ class physical_device_features final {
     [[nodiscard]] auto get() const noexcept -> const VkPhysicalDeviceFeatures& { return native_; }
 
   private:
-    [[maybe_unused]] VkPhysicalDeviceFeatures native_{};
+    VkPhysicalDeviceFeatures native_{};
 };
 
 class physical_device_dynamic_rendering_features final {
@@ -113,31 +114,44 @@ class device_create_info final {
     explicit device_create_info() noexcept { native_.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO; }
 
     device_create_info(const device_create_info& other) noexcept
-        : native_{other.native_}, queue_info_{other.queue_info_}, features_{other.features_} {
+        : native_{other.native_},
+          queue_info_{other.queue_info_},
+          features_{other.features_},
+          dynamic_features_{other.dynamic_features_},
+          extensions_{other.extensions_} {
         reset();
     }
 
     auto operator=(const device_create_info& other) noexcept -> device_create_info& {
         if (this == &other) return *this;
-        native_     = other.native_;
-        queue_info_ = other.queue_info_;
-        features_   = other.features_;
+
+        native_           = other.native_;
+        queue_info_       = other.queue_info_;
+        features_         = other.features_;
+        dynamic_features_ = other.dynamic_features_;
+        extensions_       = other.extensions_;
 
         reset();
         return *this;
     }
 
     device_create_info(device_create_info&& other) noexcept
-        : native_{other.native_}, queue_info_{other.queue_info_}, features_{other.features_} {
+        : native_{other.native_},
+          queue_info_{other.queue_info_},
+          features_{other.features_},
+          dynamic_features_{other.dynamic_features_},
+          extensions_{std::move(other.extensions_)} {
         reset();
     }
 
     auto operator=(device_create_info&& other) noexcept -> device_create_info& {
         if (this == &other) return *this;
 
-        native_     = other.native_;
-        queue_info_ = other.queue_info_;
-        features_   = other.features_;
+        native_           = other.native_;
+        queue_info_       = other.queue_info_;
+        features_         = other.features_;
+        dynamic_features_ = other.dynamic_features_;
+        extensions_       = std::move(other.extensions_);
 
         reset();
         return *this;
