@@ -18,16 +18,16 @@
 #include "sui/error.hpp"
 
 namespace sui {
-struct queue_family_indices final {
-    std::optional<std::uint32_t> graphics_family;
-    std::optional<std::uint32_t> present_family;
-
-    [[nodiscard]] auto is_complete() const noexcept -> bool {
-        return graphics_family.has_value() and present_family.has_value();
-    }
-};
-
 class hardware final {
+    struct queue_family_indices final {
+        std::optional<std::uint32_t> graphics_family;
+        std::optional<std::uint32_t> present_family;
+
+        [[nodiscard]] auto is_complete() const noexcept -> bool {
+            return graphics_family.has_value() and present_family.has_value();
+        }
+    };
+
   public:
     [[nodiscard]] static auto try_make(kgm::window& win) noexcept
         -> std::expected<hardware, error> {
