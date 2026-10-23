@@ -147,7 +147,7 @@ class buffer final {
         const std::uint32_t              type_filter,
         const hgn::memory_property_flags properties
     ) noexcept -> std::optional<std::uint32_t> {
-        auto mem_properties = hgn::get_physical_device_memory_properties(physical);
+        const auto mem_properties = hgn::get_physical_device_memory_properties(physical);
 
         for (const auto i : std::views::indices(mem_properties.memory_type_count())) {
             if ((type_filter & (1 << i)) != 0 and
