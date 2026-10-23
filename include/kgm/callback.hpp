@@ -14,7 +14,7 @@ namespace kgm::detail {
 template <typename F, typename... Signatures>
 concept callback_like =
     std::convertible_to<F, void (*)(Signatures...)> and std::is_default_constructible_v<F> and
-    (std::copyable<F> or std::movable<F>);
+    (std::copyable<F> or std::movable<F>) and std::is_nothrow_invocable_r_v<void, F, Signatures...>;
 }  // namespace kgm::detail
 
 namespace kgm {
