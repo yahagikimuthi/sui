@@ -95,8 +95,8 @@ class hardware final {
         return graphics_.try_submit(info, fence);
     }
 
-    [[nodiscard]] auto try_present(const hgn::present_info_khr& info) noexcept {
-        return present_.try_present(info);
+    [[nodiscard]] auto try_present(const hgn::present_info_khr& info) noexcept -> bool {
+        return present_.try_present(info).has_value();
     }
 
   private:
