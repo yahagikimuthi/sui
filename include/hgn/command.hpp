@@ -247,4 +247,34 @@ class viewport final {
 inline void command_set_viewport(command_buffer& buf, const viewport& view) noexcept {
     vkCmdSetViewport(&buf, 0, 1, &view.get());
 }
+
+class rect2d final {
+  public:
+    auto offset(const std::int32_t x, const std::int32_t y) noexcept -> rect2d& {
+        native_.offset.x = x;
+        native_.offset.y = y;
+        return *this;
+    }
+
+    auto extent(const std::uint32_t width, const std::uint32_t height) noexcept -> rect2d& {
+        native_.extent.width  = width;
+        native_.extent.height = height;
+        return *this;
+    }
+
+    [[nodiscard]] auto get() const noexcept -> const VkRect2D& { return native_; }
+
+  private:
+    VkRect2D native_{};
+};
+
+inline void command_set_scissor(command_buffer& buf, const rect2d& scissor) noexcept {
+    vkCmdSetScissor(&buf, 0, 1, &scissor.get());
+}
+
+inline void command_bind_vertex_buffer(command_buffer& cmd_buf, buffer& buf) noexcept {
+    const auto offsets = std::size_t{};
+    auto*      buf_ptr = &buf;
+    vkCmdBindVertexBuffers(&cmd_buf, 0, 1, &buf_ptr, &offsets);
+}
 }  // namespace hgn
