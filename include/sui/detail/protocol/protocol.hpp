@@ -66,11 +66,11 @@ class protocol final {
     }
 
     [[nodiscard]] auto make_submit_info() noexcept -> hgn::submit_info {
-        auto info = hgn::submit_info{};
-        info.setting_command_buffer(command_.buffer())
+        return hgn::submit_info{}
+            .setting_command_buffer(command_.buffer())
             .wait_semaphore(sync_.image_available_semaphore())
             .signal_semaphore(sync_.render_finished_semaphore());
-        return info;
+        ;
     }
 
     [[nodiscard]] auto get_command_buffer() noexcept -> hgn::command_buffer& {
