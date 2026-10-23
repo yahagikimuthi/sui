@@ -78,6 +78,12 @@ class shader final {
         return shader{std::move(*vert), std::move(*frag)};
     }
 
+    shader(const shader&) noexcept                    = delete;
+    auto operator=(const shader&) noexcept -> shader& = delete;
+    shader(shader&&) noexcept                         = default;
+    auto operator=(shader&&) noexcept -> shader&      = default;
+    ~shader() noexcept                                = default;
+
     [[nodiscard]] auto vertex_shader() noexcept -> hgn::shader_module& { return vert_.get(); }
 
     [[nodiscard]] auto fragment_shader() noexcept -> hgn::shader_module& { return frag_.get(); }
