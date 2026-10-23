@@ -8,8 +8,8 @@
 
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
+#include <hgn/pipeline.hpp>
 #include <hgn/shader.hpp>
-#include <hgn/vertex.hpp>
 
 #include "sui/error.hpp"
 
