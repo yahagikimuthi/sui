@@ -30,15 +30,16 @@ template <typename F>
     requires std::is_nothrow_invocable_r_v<void, F>
 class scope_exit final {
   public:
-    [[nodiscard]] explicit constexpr scope_exit(F&& f) noexcept : f_{std::move(f)} {}
-    [[nodiscard]] explicit constexpr scope_exit(const F& f) noexcept : f_{f} {}
+    [[nodiscard]] explicit constexpr scope_exit(F&& f) noexcept
+        requires std::is_nothrow_move_constructible_v<F>
+        : f_{std::move(f)} {}
+    [[nodiscard]] explicit constexpr scope_exit(const F& f) noexcept
+        requires std::is_nothrow_copy_constructible_v<F>
+        : f_{f} {}
 
-    constexpr scope_exit(const scope_exit&) = delete;
-
-    constexpr auto operator=(const scope_exit&) noexcept -> scope_exit& = delete;
-
-    constexpr scope_exit(scope_exit&& other) noexcept = delete;
-
+    constexpr scope_exit(const scope_exit&)                              = delete;
+    constexpr auto operator=(const scope_exit&) noexcept -> scope_exit&  = delete;
+    constexpr scope_exit(scope_exit&& other) noexcept                    = delete;
     constexpr auto operator=(scope_exit&& other) noexcept -> scope_exit& = delete;
 
     constexpr ~scope_exit() noexcept {
