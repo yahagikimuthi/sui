@@ -59,11 +59,6 @@ class command_buffer_allocate_info final {
         native_.commandBufferCount = 1;
     }
 
-    auto level(const command_buffer_level lev) noexcept -> command_buffer_allocate_info& {
-        native_.level = static_cast<VkCommandBufferLevel>(lev);
-        return *this;
-    }
-
     auto command_pool(command_pool& pool) noexcept -> command_buffer_allocate_info& {
         native_.commandPool = &pool;
         return *this;

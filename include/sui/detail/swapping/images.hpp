@@ -52,8 +52,7 @@ class image_view_container final {
         views.reserve(images.size());
 
         for (const auto i : std::views::indices(images.size())) {
-            auto info = hgn::image_view_create_info{};
-            info.setting_image(images[i]).view_type(hgn::image_view_type::type_2d).format(format);
+            const auto info = hgn::image_view_create_info{}.setting_image(images[i]).format(format);
 
             auto res = hgn::try_make_image_view(dev, info);
             if (not res) return make_error(runtime_error, "Failed to make swapchain image view.");

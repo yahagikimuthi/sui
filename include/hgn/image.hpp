@@ -56,15 +56,12 @@ class image_view_create_info final {
         native_.subresourceRange.levelCount     = 1;
         native_.subresourceRange.baseArrayLayer = 0;
         native_.subresourceRange.layerCount     = 1;
+
+        native_.viewType = VK_IMAGE_VIEW_TYPE_2D;
     }
 
     auto setting_image(image& image_ref) noexcept -> image_view_create_info& {
         native_.image = &image_ref;
-        return *this;
-    }
-
-    auto view_type(const image_view_type type) noexcept -> image_view_create_info& {
-        native_.viewType = static_cast<VkImageViewType>(type);
         return *this;
     }
 

@@ -92,7 +92,6 @@ class buffer final {
         -> std::expected<buffer, error> {
         const auto info = hgn::buffer_create_info{}
                               .size(max_buffer_size)
-                              .usage(hgn::buffer_usage_flag_bits::vertex_buffer)
                               .setting_sharing_mode(hgn::sharing_mode::exclusive);
 
         auto buf = hgn::try_make_buffer(dev, info);

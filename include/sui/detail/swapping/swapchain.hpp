@@ -71,14 +71,14 @@ class swapchain final {
             image_count = capabilities.max_image_count();
         }
 
-        auto info = hgn::swapchain_create_info_khr{};
-        info.surface(sur)
-            .min_image_count(image_count)
-            .image_format(surface_format.setting_format())
-            .image_color_space(surface_format.color_space())
-            .image_extent(extent)
-            .image_array_layers(1)
-            .image_usage(hgn::image_usage_flags::color_attachment);
+        auto info = hgn::swapchain_create_info_khr{}
+                        .surface(sur)
+                        .min_image_count(image_count)
+                        .image_format(surface_format.setting_format())
+                        .image_color_space(surface_format.color_space())
+                        .image_extent(extent)
+                        .pre_transform(capabilities.current_transform())
+                        .present_mode(present_mode);
 
         auto indices = std::array{physical.graphics_family(), physical.present_family()};
 
@@ -87,11 +87,6 @@ class swapchain final {
         } else {
             info.image_sharing_mode(hgn::sharing_mode::exclusive);
         }
-
-        info.pre_transform(capabilities.current_transform())
-            .composite_alpha(hgn::composite_alpha_flag_bits_khr::opaque)
-            .present_mode(present_mode)
-            .clipped(true);
 
         auto res = hgn::try_make_swapchain(dev, info);
         if (not res) return make_error(runtime_error, "Failed to make swapchain");

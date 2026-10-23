@@ -17,7 +17,12 @@
 namespace hgn {
 class swapchain_create_info_khr final {
   public:
-    explicit swapchain_create_info_khr() noexcept = default;
+    explicit swapchain_create_info_khr() noexcept {
+        native_.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        native_.imageArrayLayers = 1;
+        native_.compositeAlpha   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        native_.clipped          = VK_TRUE;
+    }
 
     swapchain_create_info_khr(const swapchain_create_info_khr& other) noexcept
         : native_{other.native_}, queue_family_indices_{other.queue_family_indices_} {
@@ -76,16 +81,6 @@ class swapchain_create_info_khr final {
         return *this;
     }
 
-    auto image_array_layers(const std::uint32_t layers) noexcept -> swapchain_create_info_khr& {
-        native_.imageArrayLayers = layers;
-        return *this;
-    }
-
-    auto image_usage(const image_usage_flags usage) noexcept -> swapchain_create_info_khr& {
-        native_.imageUsage = static_cast<VkImageUsageFlags>(usage);
-        return *this;
-    }
-
     auto image_sharing_mode(const sharing_mode mode) noexcept -> swapchain_create_info_khr& {
         native_.imageSharingMode = static_cast<VkSharingMode>(mode);
         return *this;
@@ -105,19 +100,8 @@ class swapchain_create_info_khr final {
         return *this;
     }
 
-    auto composite_alpha(const composite_alpha_flag_bits_khr bits) noexcept
-        -> swapchain_create_info_khr& {
-        native_.compositeAlpha = static_cast<VkCompositeAlphaFlagBitsKHR>(bits);
-        return *this;
-    }
-
     auto present_mode(const present_mode_khr mode) noexcept -> swapchain_create_info_khr& {
         native_.presentMode = static_cast<VkPresentModeKHR>(mode);
-        return *this;
-    }
-
-    auto clipped(const bool cond) noexcept -> swapchain_create_info_khr& {
-        native_.clipped = static_cast<std::uint32_t>(cond);
         return *this;
     }
 

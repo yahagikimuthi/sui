@@ -22,15 +22,12 @@ class buffer_create_info final {
     explicit buffer_create_info() noexcept {
         native_.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         native_.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        native_.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     }
 
     auto size(std::size_t n) noexcept -> buffer_create_info& {
         native_.size = n;
-        return *this;
-    }
-
-    auto usage(const buffer_usage_flag_bits flag) noexcept -> buffer_create_info& {
-        native_.usage = static_cast<VkBufferUsageFlagBits>(flag);
         return *this;
     }
 

@@ -62,23 +62,9 @@ enum class result : std::int32_t {
     return std::unexpected{static_cast<result>(res)};
 }
 
-enum class image_view_type : std::int32_t { type_2d = VK_IMAGE_VIEW_TYPE_2D };  // NOLINT
-
-enum class image_usage_flags : std::int32_t {  // NOLINT
-    color_attachment = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
-};
-
 enum class sharing_mode : std::int32_t {  // NOLINT
     concurrent = VK_SHARING_MODE_CONCURRENT,
     exclusive  = VK_SHARING_MODE_EXCLUSIVE
-};
-
-enum class composite_alpha_flag_bits_khr : std::int32_t {  // NOLINT
-    opaque = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
-};
-
-enum class command_buffer_level : std::int32_t {  // NOLINT
-    primary = VK_COMMAND_BUFFER_LEVEL_PRIMARY
 };
 
 enum class image_layout : std::int32_t {  // NOLINT
@@ -109,16 +95,6 @@ enum class memory_property_flags : std::int32_t {  // NOLINT
     const auto out      = casted_a | casted_b;
     return static_cast<memory_property_flags>(out);
 }
-
-enum class buffer_usage_flag_bits : std::int32_t {  // NOLINT
-    vertex_buffer = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
-};
-
-enum class vertex_input_rate : std::int32_t { vertex = VK_VERTEX_INPUT_RATE_VERTEX };  // NOLINT
-
-enum class primitive_topology : std::int32_t {  // NOLINT
-    triangle_list = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
-};
 
 enum class shader_stage_flag_bits : std::int32_t {  // NOLINT
     vertex   = VK_SHADER_STAGE_VERTEX_BIT,
