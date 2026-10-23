@@ -8,7 +8,6 @@
 #include <string>
 #include <string_view>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include "sui/detail/others.hpp"
@@ -21,19 +20,8 @@ inline constexpr auto runtime_error = error_type::runtime;
 
 class error final {
     struct error_code final {
-        using str_t = std::variant<std::string_view, std::string>;
-
-        [[nodiscard]] auto message_to_str() const noexcept -> std::string {
-            return message.visit([](auto&& str) noexcept -> std::string {
-                return std::string{str};
-            });
-        }
-        [[nodiscard]] auto message_to_view() const noexcept -> std::string_view {
-            return message.visit([](auto&& str) noexcept -> std::string_view { return str; });
-        }
-
-        error_type type{error_type::count};
-        str_t      message;
+        error_type  type{error_type::count};
+        std::string message;
     };
 
   public:
@@ -41,7 +29,7 @@ class error final {
         requires detail::is_string_literal_v<T>
     [[nodiscard]] static auto make(const error_type type, const T& message) noexcept
         -> std::unexpected<error> {
-        const auto codes = error_code{.type = type, .message = std::string_view{message}};
+        const auto codes = error_code{.type = type, .message = std::string{message}};
         const auto out   = error{std::vector{codes}};
         return std::unexpected{out};
     }
@@ -53,7 +41,7 @@ class error final {
     ) noexcept -> std::unexpected<error> {
         auto codes = std::vector<error_code>{};
         codes.reserve(1 + child_error.codes_.size());
-        codes.emplace_back(type, std::string_view{message});
+        codes.emplace_back(type, std::string{message});
         codes.assign_range(child_error.codes_);
 
         const auto out = error{std::move(codes)};
@@ -88,9 +76,9 @@ class error final {
                 out += " -> ";
             }
             if (code.type == logic_error) {
-                out += "[Logic Error]: " + code.message_to_str() + '\n';
+                out += "[Logic Error]: " + code.message + '\n';
             } else {
-                out += "[Runtime Error]: " + code.message_to_str() + '\n';
+                out += "[Runtime Error]: " + code.message + '\n';
             }
         }
         return out;
@@ -107,7 +95,7 @@ class error final {
             else
                 os << "[Runtimer Error]: ";
 
-            os << code.message_to_view() << '\n';
+            os << code.message << '\n';
         }
 
         return os;
