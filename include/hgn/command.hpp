@@ -205,4 +205,46 @@ inline void command_draw(
 ) noexcept {
     vkCmdDraw(&cmd_buf, vertex_count, instance_count, 0, 0);
 }
+
+class viewport final {
+  public:
+    auto x(const float value) noexcept -> viewport& {
+        native_.x = value;
+        return *this;
+    }
+
+    auto y(const float value) noexcept -> viewport& {
+        native_.y = value;
+        return *this;
+    }
+
+    auto width(const float value) noexcept -> viewport& {
+        native_.width = value;
+        return *this;
+    }
+
+    auto height(const float value) noexcept -> viewport& {
+        native_.height = value;
+        return *this;
+    }
+
+    auto min_depth(const float value) noexcept -> viewport& {
+        native_.minDepth = value;
+        return *this;
+    }
+
+    auto max_depth(const float value) noexcept -> viewport& {
+        native_.maxDepth = value;
+        return *this;
+    }
+
+    [[nodiscard]] auto get() const noexcept -> const VkViewport& { return native_; }
+
+  private:
+    VkViewport native_{};
+};
+
+inline void command_set_viewport(command_buffer& buf, const viewport& view) noexcept {
+    vkCmdSetViewport(&buf, 0, 1, &view.get());
+}
 }  // namespace hgn
