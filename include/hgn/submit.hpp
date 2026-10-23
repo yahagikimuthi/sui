@@ -13,7 +13,7 @@
 namespace hgn {
 class submit_info final {
   public:
-    explicit submit_info() noexcept : wait_stage_{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT} {
+    explicit submit_info() noexcept {
         native_.sType             = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         native_.pWaitDstStageMask = &wait_stage_;
     }
@@ -98,7 +98,7 @@ class submit_info final {
     semaphore*           wait_semapho_{};
     semaphore*           signal_semapho_{};
     command_buffer*      buffer_{};
-    VkPipelineStageFlags wait_stage_{};
+    VkPipelineStageFlags wait_stage_{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 };
 
 [[nodiscard]] inline auto try_queue_submit(queue& que, const submit_info& info, fence& fen) noexcept
