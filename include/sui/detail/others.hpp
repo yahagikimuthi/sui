@@ -84,7 +84,7 @@ class option final {
     {
     }
 
-    template <std::convertible_to<T> U>
+    template <std::convertible_to<value_type> U>
     constexpr option(T value) noexcept  // NOLINT
         :
 #if __cpp_lib_optional >= 202506L
