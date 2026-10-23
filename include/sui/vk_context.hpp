@@ -18,6 +18,7 @@
 #include "sui/hardware.hpp"
 #include "sui/pipeline.hpp"
 #include "sui/protocol.hpp"
+#include "sui/shader_module.hpp"
 #include "sui/swapping.hpp"
 
 namespace sui {
@@ -48,6 +49,10 @@ class vk_context final {
         if (not buffer_res)
             return make_error(runtime_error, "Failed to make buffer.", buffer_res.error());
 
+        auto shader_res = shader::try_make(hard_res->native_device());
+        if (not shader_res)
+            return make_error(runtime_error, "Failed to make shader.", shader_res.error());
+
         auto pipe_res =
             pipeline::try_make(hard_res->native_device(), swapping_res->setting_format());
         if (not pipe_res)
@@ -58,6 +63,7 @@ class vk_context final {
             std::move(*swapping_res),
             std::move(*protocol_res),
             std::move(*buffer_res),
+            std::move(*shader_res),
             std::move(*pipe_res)
         };
     }
@@ -71,6 +77,7 @@ class vk_context final {
           render_{std::move(other.render_)},
           protocol_{std::move(other.protocol_)},
           buffer_{std::move(other.buffer_)},
+          shader_{std::move(other.shader_)},
           pipe_{std::move(other.pipe_)},
           image_index_{other.image_index_},
           is_valid_{std::exchange(other.is_valid_, false)} {}
@@ -85,6 +92,7 @@ class vk_context final {
         protocol_    = std::move(other.protocol_);
         buffer_      = std::move(other.buffer_);
         pipe_        = std::move(other.pipe_);
+        shader_      = std::move(other.shader_);
         image_index_ = other.image_index_;
 
         is_valid_ = std::exchange(other.is_valid_, false);
@@ -146,12 +154,18 @@ class vk_context final {
 
   private:
     explicit vk_context(
-        hardware&& hard, swapping&& render, protocol&& prot, buffer&& buf, pipeline&& pipe
+        hardware&& hard,
+        swapping&& render,
+        protocol&& prot,
+        buffer&&   buf,
+        shader&&   shad,
+        pipeline&& pipe
     ) noexcept
         : hard_{std::move(hard)},
           render_{std::move(render)},
           protocol_{std::move(prot)},
           buffer_{std::move(buf)},
+          shader_{std::move(shad)},
           pipe_{std::move(pipe)} {}
 
     void destroy() noexcept {
@@ -167,6 +181,7 @@ class vk_context final {
     swapping      render_;
     protocol      protocol_;
     buffer        buffer_;
+    shader        shader_;
     pipeline      pipe_;
     std::uint32_t image_index_{};
     bool          is_valid_{true};
