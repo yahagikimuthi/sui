@@ -110,8 +110,6 @@ class vk_context final {
         hgn::command_draw(protocol_.get_command_buffer(), vertex_count, 1);
     }
 
-    void render() noexcept {}
-
     [[nodiscard]] auto try_end_rendering() noexcept -> bool {
         if (not protocol_.try_end_rendering(swapper_.native_image(image_index_))) return false;
 
