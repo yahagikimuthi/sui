@@ -11,14 +11,14 @@
 #include "kgm/window.hpp"
 
 namespace kgm::detail {
-template <typename F, typename Signature>
+template <typename F, typename... Signatures>
 concept callback_like =
-    std::convertible_to<F, Signature*> and std::is_default_constructible_v<F> and
+    std::convertible_to<F, void (*)(Signatures...)> and std::is_default_constructible_v<F> and
     (std::copyable<F> or std::movable<F>);
 }  // namespace kgm::detail
 
 namespace kgm {
-template <detail::callback_like<void(window&, key, action)> F>
+template <detail::callback_like<window&, key, action> F>
 inline void set_key_callback(window& win, F&& callback) noexcept {
     static constinit auto fn = F{};
     fn                       = std::forward<F>(callback);
@@ -36,7 +36,7 @@ inline void set_key_callback(window& win, F&& callback) noexcept {
     );
 }
 
-template <std::convertible_to<void (*)(window&, float, float)> F>
+template <detail::callback_like<window&, float, float> F>
 inline void set_cursor_pos_callback(window& win, F&& callback) noexcept {
     static constinit auto fn = F{};
     fn                       = std::forward<F>(callback);
@@ -47,7 +47,7 @@ inline void set_cursor_pos_callback(window& win, F&& callback) noexcept {
     });
 }
 
-template <std::convertible_to<void (*)(window&, mouse_button, action)> F>
+template <detail::callback_like<window&, mouse_button, action> F>
 inline void set_mouse_button_callback(window& win, F&& callback) noexcept {
     static constinit auto fn = F{};
     fn                       = std::forward<F>(callback);
@@ -60,7 +60,7 @@ inline void set_mouse_button_callback(window& win, F&& callback) noexcept {
     );
 }
 
-template <detail::callback_like<void(window&, std::uint32_t, std::uint32_t)> F>
+template <detail::callback_like<window&, std::uint32_t, std::uint32_t> F>
 inline void set_window_size_callback(window& win, F&& callback) noexcept {
     static constinit auto fn = F{};
     fn                       = std::forward<F>(callback);
