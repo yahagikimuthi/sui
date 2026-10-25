@@ -153,10 +153,11 @@ class instance_create_info final {
         return *this;
     }
 
-    auto layer(const std::string_view vec) noexcept -> instance_create_info& {
-        layer_                      = vec.data();
+    auto layer(const std::string_view name) noexcept -> instance_create_info& {
+        layer_                      = name;
+        layer_ptr_                  = layer_.c_str();
         native_.enabledLayerCount   = 1;
-        native_.ppEnabledLayerNames = &layer_;
+        native_.ppEnabledLayerNames = &layer_ptr_;
         return *this;
     }
 
@@ -177,14 +178,15 @@ class instance_create_info final {
   private:
     void reset() noexcept {
         if (native_.pApplicationInfo != nullptr) native_.pApplicationInfo = &app_info_.get();
-        if (native_.ppEnabledLayerNames != nullptr) native_.ppEnabledLayerNames = &layer_;
+        if (native_.ppEnabledLayerNames != nullptr) native_.ppEnabledLayerNames = &layer_ptr_;
         if (native_.ppEnabledExtensionNames != nullptr)
             native_.ppEnabledExtensionNames = extensions_.data();
     }
 
     VkInstanceCreateInfo     native_{};
     application_info         app_info_;
-    const char*              layer_{};
+    std::string              layer_;
+    const char*              layer_ptr_{};
     std::vector<const char*> extensions_;
 };
 }  // namespace hgn
