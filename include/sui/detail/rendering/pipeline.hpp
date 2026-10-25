@@ -47,7 +47,7 @@ class pipeline_layout final {
     std::reference_wrapper<hgn::device>  dev_;
 };
 
-class pipeline final {
+class graphic_pipeline final {
     struct vertex final {
         float position[2];  // NOLINT
         float color[3];     // NOLINT
@@ -56,7 +56,7 @@ class pipeline final {
   public:
     [[nodiscard]] static auto try_make(
         hgn::device& dev, hgn::shader_module& vert, hgn::shader_module& frag, const hgn::format fmt
-    ) noexcept -> std::expected<pipeline, error> {
+    ) noexcept -> std::expected<graphic_pipeline, error> {
         const auto binding_description =
             hgn::vertex_input_binding_description{}.stride(sizeof(float) * 5);
 
@@ -130,18 +130,18 @@ class pipeline final {
         const auto res = hgn::try_make_graphics_pipeline(dev, pipeline_info);
         if (not res) return make_error(runtime_error, "Failed to make graphics pipeline.");
 
-        return pipeline{res->get(), pipeline_layout{pipe_layout->get(), dev}, dev};
+        return graphic_pipeline{res->get(), pipeline_layout{pipe_layout->get(), dev}, dev};
     }
 
-    pipeline(const pipeline&) noexcept                    = delete;
-    auto operator=(const pipeline&) noexcept -> pipeline& = delete;
+    graphic_pipeline(const graphic_pipeline&) noexcept                    = delete;
+    auto operator=(const graphic_pipeline&) noexcept -> graphic_pipeline& = delete;
 
-    pipeline(pipeline&& other) noexcept
+    graphic_pipeline(graphic_pipeline&& other) noexcept
         : layout_{std::move(other.layout_)},
           native_{std::exchange(other.native_, std::nullopt)},
           dev_{other.dev_} {}
 
-    auto operator=(pipeline&& other) noexcept -> pipeline& {
+    auto operator=(graphic_pipeline&& other) noexcept -> graphic_pipeline& {
         if (this == &other) return *this;
 
         destroy();
@@ -153,10 +153,12 @@ class pipeline final {
         return *this;
     }
 
-    ~pipeline() noexcept { destroy(); }
+    ~graphic_pipeline() noexcept { destroy(); }
 
   private:
-    explicit pipeline(hgn::pipeline& native, pipeline_layout&& layout, hgn::device& dev) noexcept
+    explicit graphic_pipeline(
+        hgn::pipeline& native, pipeline_layout&& layout, hgn::device& dev
+    ) noexcept
         : layout_{std::move(layout)}, native_{native}, dev_{std::ref(dev)} {}
 
     void destroy() noexcept {

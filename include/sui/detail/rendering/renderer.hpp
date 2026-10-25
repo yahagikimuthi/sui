@@ -23,7 +23,7 @@ class renderer final {
         if (not shader_res)
             return make_error(runtime_error, "Failed to make shader.", shader_res.error());
 
-        auto pipe_res = pipeline::try_make(
+        auto pipe_res = graphic_pipeline::try_make(
             dev, shader_res->vertex_shader(), shader_res->fragment_shader(), fmt
         );
         if (not pipe_res)
@@ -47,11 +47,11 @@ class renderer final {
     [[nodiscard]] auto get_buffer() noexcept -> hgn::buffer& { return buf_.get_native_buffer(); }
 
   private:
-    explicit renderer(shader&& shad, pipeline&& pipe, buffer&& buf) noexcept
+    explicit renderer(shader&& shad, graphic_pipeline&& pipe, buffer&& buf) noexcept
         : shader_{std::move(shad)}, pipe_{std::move(pipe)}, buf_{std::move(buf)} {}
 
-    shader   shader_;
-    pipeline pipe_;
-    buffer   buf_;
+    shader           shader_;
+    graphic_pipeline pipe_;
+    buffer           buf_;
 };
 }  // namespace sui
