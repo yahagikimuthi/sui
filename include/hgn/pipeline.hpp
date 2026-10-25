@@ -157,6 +157,10 @@ class pipeline_input_assembly_state_create_info final {
         native_.primitiveRestartEnable = VK_FALSE;
     }
 
+    [[nodiscard]] auto get() const noexcept -> const VkPipelineInputAssemblyStateCreateInfo& {
+        return native_;
+    }
+
   private:
     VkPipelineInputAssemblyStateCreateInfo native_{};
 };
@@ -236,6 +240,10 @@ class pipeline_viewport_state_create_info final {
         native_.scissorCount  = 1;
     }
 
+    [[nodiscard]] auto get() const noexcept -> const VkPipelineViewportStateCreateInfo& {
+        return native_;
+    }
+
   private:
     VkPipelineViewportStateCreateInfo native_{};
 };
@@ -253,6 +261,10 @@ class pipeline_rasterization_state_create_info final {
         native_.depthBiasEnable         = VK_FALSE;
     }
 
+    [[nodiscard]] auto get() const noexcept -> const VkPipelineRasterizationStateCreateInfo& {
+        return native_;
+    }
+
   private:
     VkPipelineRasterizationStateCreateInfo native_{};
 };
@@ -263,6 +275,10 @@ class pipeline_multisample_state_create_info final {
         native_.sType                = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         native_.sampleShadingEnable  = VK_FALSE;
         native_.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    }
+
+    [[nodiscard]] auto get() const noexcept -> const VkPipelineMultisampleStateCreateInfo& {
+        return native_;
     }
 
   private:
@@ -495,74 +511,76 @@ class graphics_pipeline_create_info final {
 
     auto rendering_info(const pipeline_rendering_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        rendering_info_ = info.get();
-        native_.pNext   = &rendering_info_;
+        rendering_info_ = info;
+        native_.pNext   = &rendering_info_.get();
         return *this;
     }
 
     auto stages(const std::span<const pipeline_shader_stage_create_info> stage_infos) noexcept
         -> graphics_pipeline_create_info& {
         shader_stages_.reserve(stage_infos.size());
-        shader_stages_.assign_range(
-            stage_infos | std::views::transform(
-                              [](const pipeline_shader_stage_create_info& info) noexcept
-                                  -> VkPipelineShaderStageCreateInfo {
-                                  return std::bit_cast<VkPipelineShaderStageCreateInfo>(info);
-                              }
-                          )
+        native_shader_stages_.reserve(stage_infos.size());
+        shader_stages_.assign_range(stage_infos);
+        native_shader_stages_.assign_range(
+            shader_stages_ | std::views::transform(
+                                 [](const pipeline_shader_stage_create_info& info) noexcept
+                                     -> VkPipelineShaderStageCreateInfo {
+                                     return std::bit_cast<VkPipelineShaderStageCreateInfo>(info);
+                                 }
+                             )
         );
 
         native_.stageCount = static_cast<std::uint32_t>(shader_stages_.size());
-        native_.pStages    = shader_stages_.data();
+        native_.pStages    = native_shader_stages_.data();
         return *this;
     }
 
     auto vertex_input_state(const pipeline_vertex_input_state_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        vertex_input_info_        = info.get();
-        native_.pVertexInputState = &vertex_input_info_;
+        vertex_input_info_        = info;
+        native_.pVertexInputState = &vertex_input_info_.get();
         return *this;
     }
 
     auto input_assembly_state(const pipeline_input_assembly_state_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        input_assembly_             = std::bit_cast<VkPipelineInputAssemblyStateCreateInfo>(info);
-        native_.pInputAssemblyState = &input_assembly_;
+        input_assembly_             = info;
+        native_.pInputAssemblyState = &input_assembly_.get();
         return *this;
     }
 
     auto viewport_state(const pipeline_viewport_state_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        viewport_state_        = std::bit_cast<VkPipelineViewportStateCreateInfo>(info);
-        native_.pViewportState = &viewport_state_;
+        viewport_state_        = info;
+        native_.pViewportState = &viewport_state_.get();
         return *this;
     }
 
     auto rasterization_state(const pipeline_rasterization_state_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        rasterizer_                 = std::bit_cast<VkPipelineRasterizationStateCreateInfo>(info);
-        native_.pRasterizationState = &rasterizer_;
+        rasterizer_                 = info;
+        native_.pRasterizationState = &rasterizer_.get();
         return *this;
     }
 
     auto multisample_state(const pipeline_multisample_state_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        multisampling_            = std::bit_cast<VkPipelineMultisampleStateCreateInfo>(info);
-        native_.pMultisampleState = &multisampling_;
+        multisampling_            = info;
+        native_.pMultisampleState = &multisampling_.get();
         return *this;
     }
 
     auto color_blend_state(const pipeline_color_blend_state_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        color_blend_             = info.get();
-        native_.pColorBlendState = &color_blend_;
+        color_blend_             = info;
+        native_.pColorBlendState = &color_blend_.get();
         return *this;
     }
 
     auto dynamic_states(const pipeline_dynamic_state_create_info& info) noexcept
         -> graphics_pipeline_create_info& {
-        dynamic_state_        = info.get();
-        native_.pDynamicState = &dynamic_state_;
+        dynamic_state_        = info;
+        native_.pDynamicState = &dynamic_state_.get();
         return *this;
     }
 
@@ -578,21 +596,24 @@ class graphics_pipeline_create_info final {
   private:
     void reset() noexcept {
         if (native_.pNext != nullptr) native_.pNext = &rendering_info_;
-        if (native_.pStages != nullptr) native_.pStages = shader_stages_.data();
-        if (native_.pVertexInputState != nullptr) native_.pVertexInputState = &vertex_input_info_;
-        if (native_.pInputAssemblyState != nullptr) native_.pInputAssemblyState = &input_assembly_;
+        if (native_.pStages != nullptr) native_.pStages = native_shader_stages_.data();
+        if (native_.pVertexInputState != nullptr)
+            native_.pVertexInputState = &vertex_input_info_.get();
+        if (native_.pInputAssemblyState != nullptr)
+            native_.pInputAssemblyState = &input_assembly_.get();
     }
 
-    VkGraphicsPipelineCreateInfo                 native_{};
-    VkPipelineRenderingCreateInfo                rendering_info_{};
-    std::vector<VkPipelineShaderStageCreateInfo> shader_stages_;
-    VkPipelineVertexInputStateCreateInfo         vertex_input_info_{};
-    VkPipelineInputAssemblyStateCreateInfo       input_assembly_{};
-    VkPipelineViewportStateCreateInfo            viewport_state_{};
-    VkPipelineRasterizationStateCreateInfo       rasterizer_{};
-    VkPipelineMultisampleStateCreateInfo         multisampling_{};  // NOLINT
-    VkPipelineColorBlendStateCreateInfo          color_blend_{};
-    VkPipelineDynamicStateCreateInfo             dynamic_state_{};
+    VkGraphicsPipelineCreateInfo                   native_{};
+    pipeline_rendering_create_info                 rendering_info_;
+    std::vector<pipeline_shader_stage_create_info> shader_stages_;
+    std::vector<VkPipelineShaderStageCreateInfo>   native_shader_stages_;
+    pipeline_vertex_input_state_create_info        vertex_input_info_;
+    pipeline_input_assembly_state_create_info      input_assembly_;
+    pipeline_viewport_state_create_info            viewport_state_;
+    pipeline_rasterization_state_create_info       rasterizer_;
+    pipeline_multisample_state_create_info         multisampling_;
+    pipeline_color_blend_state_create_info         color_blend_;
+    pipeline_dynamic_state_create_info             dynamic_state_;
 };
 
 using pipeline = VkPipeline_T;
