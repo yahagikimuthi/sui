@@ -80,7 +80,7 @@ class swapchain final {
                         .pre_transform(capabilities.current_transform())
                         .present_mode(present_mode);
 
-        auto indices = std::array{physical.graphics_family(), physical.present_family()};
+        const auto indices = std::array{physical.graphics_family(), physical.present_family()};
 
         if (physical.graphics_family() != physical.present_family()) {
             info.image_sharing_mode(hgn::sharing_mode::concurrent).queue_family_indices(indices);
