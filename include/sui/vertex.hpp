@@ -2,7 +2,7 @@
 
 namespace sui {
 struct vertex final {
-    float position[2];
-    float color[3];
+    float position[2];  // NOLINT
+    float color[3];     // NOLINT
 };
 }  // namespace sui
