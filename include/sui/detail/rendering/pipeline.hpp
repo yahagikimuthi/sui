@@ -12,6 +12,7 @@
 #include <hgn/shader.hpp>
 
 #include "sui/error.hpp"
+#include "sui/vertex.hpp"
 
 namespace sui {
 class pipeline_layout final {
@@ -79,11 +80,6 @@ class pipeline final {
 };
 
 class graphics_pipeline final {
-    struct vertex final {
-        float position[2];  // NOLINT
-        float color[3];     // NOLINT
-    };
-
   public:
     [[nodiscard]] static auto try_make(
         hgn::device& dev, hgn::shader_module& vert, hgn::shader_module& frag, const hgn::format fmt
