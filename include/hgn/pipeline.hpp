@@ -436,6 +436,10 @@ class pipeline_layout_create_info final {
     return std::ref(*layout_ptr);
 }
 
+inline void destroy_pipeline_layout(device& dev, pipeline_layout& target) noexcept {
+    vkDestroyPipelineLayout(&dev, &target, nullptr);
+}
+
 class pipeline_rendering_create_info final {
   public:
     explicit pipeline_rendering_create_info() noexcept {
