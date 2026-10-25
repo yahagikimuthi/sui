@@ -10,6 +10,7 @@
 #include <hgn/command.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/image.hpp>
+#include <hgn/pipeline.hpp>
 #include <hgn/submit.hpp>
 #include <kgm/window.hpp>
 
@@ -98,9 +99,19 @@ class vk_context final {
         if (not image_index_res) return false;
         image_index_ = *image_index_res;
 
-        return protocol_.try_begin_rendering(
-            swapper_.native_image(image_index_), swapper_.native_image_view(image_index_)
-        );
+        if (not protocol_.try_begin_rendering(
+                swapper_.native_image(image_index_), swapper_.native_image_view(image_index_)
+            ))
+            return false;
+
+        hgn::command_bind_pipeline(protocol_.get_command_buffer(), renderer_.get_pipeline());
+        const auto viewport = hgn::viewport{}.width(800).height(600).min_depth(0.f).max_depth(1.f);
+        hgn::command_set_viewport(protocol_.get_command_buffer(), viewport);
+
+        const auto scissor = hgn::rect2d{}.offset(0, 0).extent(800, 600);
+        hgn::command_set_scissor(protocol_.get_command_buffer(), scissor);
+        hgn::command_bind_vertex_buffers(protocol_.get_command_buffer(), renderer_.get_buffer());
+        return true;
     }
 
     void try_rendering(const std::span<const float> vertices) noexcept {
