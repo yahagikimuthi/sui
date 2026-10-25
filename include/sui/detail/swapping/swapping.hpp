@@ -16,17 +16,16 @@ namespace sui {
 class swapping final {
   public:
     [[nodiscard]] static auto try_make(hardware& hard) noexcept -> std::expected<swapping, error> {
-        auto chain = swapchain::try_make(
-            hard.get_physical_device(), hard.native_surface(), hard.native_device()
-        );
+        auto chain =
+            swapchain::try_make(hard.get_physical(), hard.get_surface(), hard.get_device());
         if (not chain) return make_error(runtime_error, "Failed to make swapchain.", chain.error());
 
-        auto images = image_container::try_make(hard.native_device(), chain->get());
+        auto images = image_container::try_make(hard.get_device(), *chain);
         if (not images)
             return make_error(runtime_error, "Failed to make image container.", images.error());
 
         auto views =
-            image_view_container::try_make(*images, hard.native_device(), chain->setting_format());
+            image_view_container::try_make(*images, hard.get_device(), chain->setting_format());
         if (not views)
             return make_error(runtime_error, "Failed to make image view container.", views.error());
 

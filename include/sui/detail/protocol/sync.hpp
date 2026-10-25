@@ -134,13 +134,13 @@ class sync final {
     [[nodiscard]] auto try_wait_fence(hgn::device& dev) noexcept -> bool {
         auto wait_res = hgn::try_wait_for_fence(dev, in_flight_fence());
         if (not wait_res) {
-            debugger::notify("Failed to wait for fence.");
+            detail::debugger::notify("Failed to wait for fence.");
             return false;
         }
 
         auto reset_res = hgn::try_reset_fence(dev, in_flight_fence());
         if (not reset_res) {
-            debugger::notify("Failed to reset fence.");
+            detail::debugger::notify("Failed to reset fence.");
         }
 
         return true;

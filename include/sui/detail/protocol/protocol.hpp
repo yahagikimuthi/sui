@@ -10,6 +10,7 @@
 #include <hgn/submit.hpp>
 #include <hgn/sync.hpp>
 
+#include "sui/detail/hardware/device.hpp"
 #include "sui/detail/protocol/command.hpp"
 #include "sui/detail/protocol/sync.hpp"
 #include "sui/error.hpp"
@@ -18,13 +19,13 @@ namespace sui {
 class protocol final {
   public:
     [[nodiscard]] static auto try_make(
-        hgn::device& dev, const std::uint32_t queue_family_indices
+        device& dev, const std::uint32_t queue_family_indices
     ) noexcept -> std::expected<protocol, error> {
-        auto sync_res = sync::try_make(dev);
+        auto sync_res = sync::try_make(dev.get());
         if (not sync_res)
             return make_error(runtime_error, "Failed to make sync.", sync_res.error());
 
-        auto cmd_res = command::try_make(dev, queue_family_indices);
+        auto cmd_res = command::try_make(dev.get(), queue_family_indices);
         if (not cmd_res)
             return make_error(runtime_error, "Failed to make command class.", cmd_res.error());
 
@@ -40,7 +41,7 @@ class protocol final {
     [[nodiscard]] auto try_wait(hgn::device& dev) noexcept -> bool {
         const auto res = sync_.try_wait_fence(dev);
         if (not res) {
-            debugger::notify("Therefore, Failed to sync.");
+            detail::debugger::notify("Therefore, Failed to sync.");
             return false;
         }
         return true;

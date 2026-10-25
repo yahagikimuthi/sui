@@ -4,11 +4,11 @@
 #include <span>
 #include <utility>
 
-#include <hgn/device.hpp>
 #include <hgn/enums.hpp>
-#include <hgn/physical_device.hpp>
 #include <hgn/pipeline.hpp>
 
+#include "sui/detail/hardware/device.hpp"
+#include "sui/detail/hardware/physical_device.hpp"
 #include "sui/detail/rendering/buffer.hpp"
 #include "sui/detail/rendering/pipeline.hpp"
 #include "sui/detail/rendering/shader.hpp"
@@ -18,19 +18,19 @@ namespace sui {
 class renderer final {
   public:
     [[nodiscard]] static auto try_make(
-        hgn::device& dev, hgn::physical_device& physical, const hgn::format fmt
+        device& dev, physical_device& physical, const hgn::format fmt
     ) noexcept -> std::expected<renderer, error> {
-        auto shader_res = shader::try_make(dev);
+        auto shader_res = shader::try_make(dev.get());
         if (not shader_res)
             return make_error(runtime_error, "Failed to make shader.", shader_res.error());
 
         auto pipe_res = graphics_pipeline::try_make(
-            dev, shader_res->vertex_shader(), shader_res->fragment_shader(), fmt
+            dev.get(), shader_res->vertex_shader(), shader_res->fragment_shader(), fmt
         );
         if (not pipe_res)
             return make_error(runtime_error, "Failed to make pipeline.", pipe_res.error());
 
-        auto buffer_res = buffer::try_make(dev, physical);
+        auto buffer_res = buffer::try_make(dev.get(), physical.get());
         if (not buffer_res)
             return make_error(runtime_error, "Failed to make buffer.", buffer_res.error());
 

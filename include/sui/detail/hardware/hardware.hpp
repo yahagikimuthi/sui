@@ -34,7 +34,7 @@ class hardware final {
         auto inst = instance::try_make();
         if (not inst) return make_error(runtime_error, "Failed to make instance.", inst.error());
 
-        auto sur = surface::try_make(win, inst->get());
+        auto sur = surface::try_make(win, *inst);
         if (not sur) return make_error(runtime_error, "Failed to make surface.", sur.error());
 
         auto physical_devices_res = inst->try_enumerate_physical_devices();
@@ -60,13 +60,13 @@ class hardware final {
         auto dev = device::try_make(physical);
         if (not dev) return make_error(runtime_error, "Failed to make device.", dev.error());
 
-        auto graphics_queue = queue::try_make(dev->get(), physical.graphics_family());
+        auto graphics_queue = queue::try_make(*dev, physical.graphics_family());
         if (not graphics_queue)
             return make_error(
                 runtime_error, "Failed to make graphics queue.", graphics_queue.error()
             );
 
-        auto present_queue = queue::try_make(dev->get(), physical.present_family());
+        auto present_queue = queue::try_make(*dev, physical.present_family());
         if (not present_queue)
             return make_error(
                 runtime_error, "Failed to make present queue.", present_queue.error()
@@ -88,23 +88,11 @@ class hardware final {
     auto operator=(hardware&&) noexcept -> hardware&      = default;
     ~hardware() noexcept                                  = default;
 
-    [[nodiscard]] auto try_device_wait_idle() noexcept -> bool { return device_.try_wait_idle(); }
-
-    [[nodiscard]] auto native_surface() noexcept -> hgn::surface_khr& { return surface_.get(); }
-
-    [[nodiscard]] auto get_physical_device() noexcept -> sui::physical_device& { return physical_; }
-
-    [[nodiscard]] auto native_device() noexcept -> hgn::device& { return device_.get(); }
-
-    [[nodiscard]] auto try_submit(const hgn::submit_info& info, hgn::fence& fence) noexcept
-        -> bool {
-        return graphics_.try_submit(info, fence);
-    }
-
-    [[nodiscard]] auto try_present(const hgn::present_info_khr& info) noexcept
-        -> std::expected<void, hgn::result> {
-        return present_.try_present(info);
-    }
+    [[nodiscard]] auto get_surface() noexcept -> surface& { return surface_; }
+    [[nodiscard]] auto get_physical() noexcept -> physical_device& { return physical_; }
+    [[nodiscard]] auto get_device() noexcept -> device& { return device_; }
+    [[nodiscard]] auto get_graphics_queue() noexcept -> queue& { return graphics_; }
+    [[nodiscard]] auto get_present_queue() noexcept -> queue& { return present_; }
 
   private:
     explicit hardware(

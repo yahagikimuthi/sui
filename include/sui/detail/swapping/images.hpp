@@ -11,6 +11,8 @@
 #include <hgn/image.hpp>
 #include <hgn/swapchain.hpp>
 
+#include "sui/detail/hardware/device.hpp"
+#include "sui/detail/swapping/swapchain.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
@@ -19,9 +21,9 @@ class image_container final {
     using ref_w = std::reference_wrapper<T>;
 
   public:
-    [[nodiscard]] static auto try_make(hgn::device& dev, hgn::swapchain_khr& chain) noexcept
+    [[nodiscard]] static auto try_make(device& dev, swapchain& chain) noexcept
         -> std::expected<image_container, error> {
-        auto res = hgn::try_get_swapchain_images_khr(dev, chain);
+        auto res = hgn::try_get_swapchain_images_khr(dev.get(), chain.get());
         if (not res) return make_error(runtime_error, "Failed to make swapchain images");
 
         return image_container{std::move(*res)};
@@ -46,7 +48,7 @@ class image_view_container final {
 
   public:
     [[nodiscard]] static auto try_make(
-        image_container& images, hgn::device& dev, const hgn::format format
+        image_container& images, device& dev, const hgn::format format
     ) noexcept -> std::expected<image_view_container, error> {
         auto views = std::vector<ref_w<hgn::image_view>>{};
         views.reserve(images.size());
@@ -54,12 +56,12 @@ class image_view_container final {
         for (const auto i : std::views::indices(images.size())) {
             const auto info = hgn::image_view_create_info{}.setting_image(images[i]).format(format);
 
-            auto res = hgn::try_make_image_view(dev, info);
+            auto res = hgn::try_make_image_view(dev.get(), info);
             if (not res) return make_error(runtime_error, "Failed to make swapchain image view.");
             views.emplace_back(std::ref(*res));
         }
 
-        return image_view_container{std::move(views), dev};
+        return image_view_container{std::move(views), dev.get()};
     }
 
     image_view_container(const image_view_container&) noexcept                    = delete;

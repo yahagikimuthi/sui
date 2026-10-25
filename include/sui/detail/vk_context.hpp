@@ -35,18 +35,15 @@ class vk_context final {
                 runtime_error, "Failed to make render context class.", swapping_res.error()
             );
 
-        auto protocol_res = protocol::try_make(
-            hard_res->native_device(), hard_res->get_physical_device().graphics_family()
-        );
+        auto protocol_res =
+            protocol::try_make(hard_res->get_device(), hard_res->get_physical().graphics_family());
         if (not protocol_res)
             return make_error(
                 runtime_error, "Failed to make protocol object.", protocol_res.error()
             );
 
         auto renderer_res = renderer::try_make(
-            hard_res->native_device(),
-            hard_res->get_physical_device().get(),
-            swapping_res->setting_format()
+            hard_res->get_device(), hard_res->get_physical(), swapping_res->setting_format()
         );
         if (not renderer_res)
             return make_error(runtime_error, "Failed to make renderer.", renderer_res.error());
@@ -88,10 +85,10 @@ class vk_context final {
     ~vk_context() noexcept { destroy(); }
 
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool {
-        if (not protocol_.try_wait(hard_.native_device())) return false;
+        if (not protocol_.try_wait(hard_.get_device().get())) return false;
 
         const auto image_index_res = hgn::try_acquire_next_image_khr(
-            hard_.native_device(),
+            hard_.get_device().get(),
             swapper_.native_swapchain(),
             protocol_.image_available_semaphore()
         );
@@ -124,14 +121,15 @@ class vk_context final {
         if (not protocol_.try_end_rendering(swapper_.native_image(image_index_))) return false;
 
         const auto submit_info = protocol_.make_submit_info();
-        if (not hard_.try_submit(submit_info, protocol_.in_flight_fence())) return false;
+        if (not hard_.get_graphics_queue().try_submit(submit_info, protocol_.in_flight_fence()))
+            return false;
 
         const auto present_info = hgn::present_info_khr{}
                                       .wait_semaphore(protocol_.render_finished_semaphore())
                                       .setting_swapchain(swapper_.native_swapchain())
                                       .image_indices(image_index_);
 
-        const auto res = hard_.try_present(present_info);
+        const auto res = hard_.get_present_queue().try_present(present_info);
         if (res) return true;
 
         const auto error_code = res.error();
@@ -156,7 +154,7 @@ class vk_context final {
     void destroy() noexcept {
         if (not is_valid_) return;
 
-        if (not hard_.try_device_wait_idle()) {
+        if (not hard_.get_device().try_wait_idle()) {
             std::cerr << "Failed to wait device\n";
             std::terminate();
         }
