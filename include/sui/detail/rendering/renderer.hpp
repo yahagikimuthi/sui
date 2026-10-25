@@ -5,9 +5,10 @@
 #include <utility>
 
 #include <hgn/device.hpp>
+#include <hgn/enums.hpp>
 #include <hgn/physical_device.hpp>
+#include <hgn/pipeline.hpp>
 
-#include "hgn/enums.hpp"
 #include "sui/detail/rendering/buffer.hpp"
 #include "sui/detail/rendering/pipeline.hpp"
 #include "sui/detail/rendering/shader.hpp"
@@ -44,7 +45,9 @@ class renderer final {
 
     void update(const std::span<const float> vertices) noexcept { buf_.update(vertices); }
 
-    [[nodiscard]] auto get_buffer() noexcept -> hgn::buffer& { return buf_.get_native_buffer(); }
+    [[nodiscard]] auto get_buffer() noexcept -> hgn::buffer& { return buf_.get_buffer(); }
+
+    [[nodiscard]] auto get_pipeline() noexcept -> hgn::pipeline& { return pipe_.get_pipeline(); }
 
   private:
     explicit renderer(shader&& shad, graphics_pipeline&& pipe, buffer&& buf) noexcept

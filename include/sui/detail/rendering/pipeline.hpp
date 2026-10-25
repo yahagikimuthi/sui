@@ -70,6 +70,8 @@ class pipeline final {
 
     ~pipeline() noexcept { destroy(); }
 
+    [[nodiscard]] auto get() noexcept -> hgn::pipeline& { return *native_; }
+
   private:
     void destroy() noexcept {
         if (native_) hgn::destroy_pipeline(dev_.get(), *native_);
@@ -167,6 +169,8 @@ class graphics_pipeline final {
     graphics_pipeline(graphics_pipeline&& other) noexcept                    = default;
     auto operator=(graphics_pipeline&& other) noexcept -> graphics_pipeline& = default;
     ~graphics_pipeline() noexcept                                            = default;
+
+    [[nodiscard]] auto get_pipeline() noexcept -> hgn::pipeline& { return pipe_.get(); }
 
   private:
     explicit graphics_pipeline(pipeline_layout&& layout, pipeline&& pipe) noexcept
