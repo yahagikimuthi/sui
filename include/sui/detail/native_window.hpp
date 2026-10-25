@@ -25,7 +25,9 @@ class native_window final {
         auto win = kgm::try_make_window(width, height, title);
         if (not win) return make_error(runtime_error, "Failed to make window");
 
-        return native_window{*win};
+        return native_window{
+            *win, {.width = static_cast<float>(width), .height = static_cast<float>(height)}
+        };
     }
 
     native_window(const native_window&) noexcept                    = delete;
@@ -55,10 +57,13 @@ class native_window final {
         return not kgm::should_window_close(*native_);
     }
 
+    [[nodiscard]] auto size() const noexcept -> extent { return size_; }
+
     [[nodiscard]] auto get() noexcept -> kgm::window& { return *native_; }
 
   private:
-    explicit native_window(kgm::window& native) noexcept : native_{native} {
+    explicit native_window(kgm::window& native, const extent size) noexcept
+        : native_{native}, size_{size} {
         kgm::set_window_user(native, *this);
         kgm::set_window_size_callback(
             native,
@@ -80,6 +85,6 @@ class native_window final {
     }
 
     std::optional<kgm::window&> native_;
-    extent                      size_{};
+    extent                      size_;
 };
 }  // namespace sui
