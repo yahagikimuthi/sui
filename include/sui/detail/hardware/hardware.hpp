@@ -150,8 +150,7 @@ class hardware final {
     [[nodiscard]] static auto is_device_suitable(
         hgn::physical_device& device, hgn::surface_khr& surface
     ) noexcept -> bool {
-        auto indices = find_queue_families(device, surface);
-        return indices.is_complete();
+        return find_queue_families(device, surface).is_complete();
     }
 
     instance        instance_;
