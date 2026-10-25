@@ -17,7 +17,7 @@
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
 
-namespace sui {
+namespace sui::detail {
 class device_memory final {
   public:
     explicit device_memory(hgn::device_memory& native, hgn::device& dev) noexcept
@@ -191,4 +191,4 @@ class buffer final {
     native_buffer                         buffer_;
     std::span<std::byte, max_buffer_size> data_;
 };
-}  // namespace sui
+}  // namespace sui::detail

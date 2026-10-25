@@ -11,7 +11,7 @@
 
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class queue final {
   public:
     [[nodiscard]] static auto try_make(
@@ -39,4 +39,4 @@ class queue final {
 
     std::reference_wrapper<hgn::queue> native_;
 };
-}  // namespace sui
+}  // namespace sui::detail

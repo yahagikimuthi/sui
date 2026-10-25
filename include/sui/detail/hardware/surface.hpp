@@ -12,7 +12,7 @@
 
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class surface final {
   public:
     [[nodiscard]] static auto try_make(kgm::window& win, hgn::instance& inst) noexcept
@@ -57,4 +57,4 @@ class surface final {
     std::optional<hgn::surface_khr&>      native_;
     std::reference_wrapper<hgn::instance> instance_;
 };
-}  // namespace sui
+}  // namespace sui::detail

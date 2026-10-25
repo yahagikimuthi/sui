@@ -13,7 +13,7 @@
 #include "sui/detail/rendering/shader.hpp"
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class renderer final {
   public:
     [[nodiscard]] static auto try_make(hardware& hard, const hgn::format fmt) noexcept
@@ -55,4 +55,4 @@ class renderer final {
     graphics_pipeline pipe_;
     buffer            buf_;
 };
-}  // namespace sui
+}  // namespace sui::detail

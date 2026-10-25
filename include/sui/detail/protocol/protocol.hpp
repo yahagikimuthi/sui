@@ -15,7 +15,7 @@
 #include "sui/detail/protocol/sync.hpp"
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class protocol final {
   public:
     [[nodiscard]] static auto try_make(
@@ -84,4 +84,4 @@ class protocol final {
     sync    sync_;
     command command_;
 };
-}  // namespace sui
+}  // namespace sui::detail

@@ -14,7 +14,7 @@
 #include "sui/detail/swapping/swapchain.hpp"
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class image_container final {
     template <typename T>
     using ref_w = std::reference_wrapper<T>;
@@ -97,4 +97,4 @@ class image_view_container final {
     std::vector<ref_w<hgn::image_view>> views_;
     ref_w<hgn::device>                  dev_;
 };
-}  // namespace sui
+}  // namespace sui::detail

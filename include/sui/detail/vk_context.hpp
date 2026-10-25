@@ -20,7 +20,7 @@
 #include "sui/detail/swapping/swapping.hpp"
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class vk_context final {
   public:
     [[nodiscard]] static auto try_make(kgm::window& win) noexcept
@@ -165,4 +165,4 @@ class vk_context final {
     std::uint32_t image_index_{};
     bool          is_valid_{true};
 };
-}  // namespace sui
+}  // namespace sui::detail

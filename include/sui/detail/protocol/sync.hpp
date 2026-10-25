@@ -15,7 +15,7 @@
 #include "sui/detail/hardware/device.hpp"
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class semaphore final {
   public:
     [[nodiscard]] static auto try_make(device& dev) noexcept -> std::expected<semaphore, error> {
@@ -166,4 +166,4 @@ class sync final {
     semaphore render_finished_;
     fence     fence_;
 };
-}  // namespace sui
+}  // namespace sui::detail

@@ -13,7 +13,7 @@
 #include "sui/detail/others.hpp"
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class shader_module final {
   public:
     [[nodiscard]] static auto try_make(device& dev, const std::span<const char> code) noexcept
@@ -96,4 +96,4 @@ class shader final {
     shader_module vert_;
     shader_module frag_;
 };
-}  // namespace sui
+}  // namespace sui::detail

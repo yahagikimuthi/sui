@@ -20,7 +20,7 @@
 #include "sui/detail/hardware/physical_device.hpp"
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class swapchain final {
   public:
     [[nodiscard]] static auto try_make(hardware& hard) noexcept -> std::expected<swapchain, error> {
@@ -141,4 +141,4 @@ class swapchain final {
     std::reference_wrapper<hgn::device> device_;
     hgn::format                         setting_format_;
 };
-}  // namespace sui
+}  // namespace sui::detail

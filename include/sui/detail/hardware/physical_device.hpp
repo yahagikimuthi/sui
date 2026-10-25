@@ -7,7 +7,7 @@
 #include <hgn/physical_device.hpp>
 #include <hgn/surface.hpp>
 
-namespace sui {
+namespace sui::detail {
 class physical_device final {
   public:
     explicit physical_device(
@@ -42,4 +42,4 @@ class physical_device final {
     std::uint32_t                                graphics_family_;
     std::uint32_t                                present_family_;
 };
-}  // namespace sui
+}  // namespace sui::detail

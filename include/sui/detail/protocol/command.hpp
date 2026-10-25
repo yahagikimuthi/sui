@@ -14,7 +14,7 @@
 #include "sui/detail/hardware/device.hpp"
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class command_pool final {
   public:
     [[nodiscard]] static auto try_make(
@@ -161,4 +161,4 @@ class command final {
     command_pool   pool_;
     command_buffer buffer_;
 };
-}  // namespace sui
+}  // namespace sui::detail

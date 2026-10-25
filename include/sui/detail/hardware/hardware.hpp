@@ -4,13 +4,13 @@
 #include <ranges>
 #include <utility>
 
+#include <hgn/enums.hpp>
 #include <hgn/physical_device.hpp>
 #include <hgn/submit.hpp>
 #include <hgn/surface.hpp>
 #include <hgn/sync.hpp>
 #include <kgm/window.hpp>
 
-#include "hgn/enums.hpp"
 #include "sui/detail/hardware/device.hpp"
 #include "sui/detail/hardware/instance.hpp"
 #include "sui/detail/hardware/physical_device.hpp"
@@ -18,7 +18,7 @@
 #include "sui/detail/hardware/surface.hpp"
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class hardware final {
     struct queue_family_indices final {
         std::optional<std::uint32_t> graphics_family;
@@ -171,4 +171,4 @@ class hardware final {
     queue           graphics_;
     queue           present_;
 };
-}  // namespace sui
+}  // namespace sui::detail

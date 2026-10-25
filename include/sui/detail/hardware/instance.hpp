@@ -13,7 +13,7 @@
 
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class instance final {
   public:
     [[nodiscard]] static auto try_make() noexcept -> std::expected<instance, error> {
@@ -84,4 +84,4 @@ class instance final {
 
     std::optional<hgn::instance&> native_;
 };
-}  // namespace sui
+}  // namespace sui::detail

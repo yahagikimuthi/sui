@@ -5,18 +5,18 @@
 #include <utility>
 
 #include <hgn/buffer.hpp>
+#include <hgn/command.hpp>
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/pipeline.hpp>
 #include <hgn/shader.hpp>
 #include <hgn/swapchain.hpp>
+#include <hgn/sync.hpp>
 
-#include "hgn/command.hpp"
-#include "hgn/sync.hpp"
 #include "sui/detail/hardware/physical_device.hpp"
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class device final {
   public:
     [[nodiscard]] static auto try_make(physical_device& physical) noexcept
@@ -129,4 +129,4 @@ class device final {
 
     std::optional<hgn::device&> native_;
 };
-}  // namespace sui
+}  // namespace sui::detail

@@ -15,7 +15,7 @@
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
 
-namespace sui {
+namespace sui::detail {
 class pipeline_layout final {
   public:
     explicit pipeline_layout(hgn::pipeline_layout& native, hgn::device& dev) noexcept
@@ -178,4 +178,4 @@ class graphics_pipeline final {
     pipeline_layout layout_;
     pipeline        pipe_;
 };
-}  // namespace sui
+}  // namespace sui::detail

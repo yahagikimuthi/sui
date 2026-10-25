@@ -13,7 +13,7 @@
 #include "sui/error.hpp"
 #include "sui/extent.hpp"
 
-namespace sui {
+namespace sui::detail {
 class native_window final {
   public:
     [[nodiscard]] static auto try_make(
@@ -87,4 +87,4 @@ class native_window final {
     std::optional<kgm::window&> native_;
     extent                      size_;
 };
-}  // namespace sui
+}  // namespace sui::detail

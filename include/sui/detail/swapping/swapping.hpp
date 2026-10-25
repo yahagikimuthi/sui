@@ -12,7 +12,7 @@
 #include "sui/detail/swapping/images.hpp"
 #include "sui/detail/swapping/swapchain.hpp"
 
-namespace sui {
+namespace sui::detail {
 class swapping final {
   public:
     [[nodiscard]] static auto try_make(hardware& hard) noexcept -> std::expected<swapping, error> {
@@ -62,4 +62,4 @@ class swapping final {
     image_container      images_;
     image_view_container image_views_;
 };
-}  // namespace sui
+}  // namespace sui::detail
