@@ -5,7 +5,7 @@
 #include <utility>
 #include <variant>
 
-namespace sui {
+namespace sui::detail {
 class debugger final {
     using r_arg_t = void(std::string_view);
     using fn_t    = std::variant<std::reference_wrapper<r_arg_t>, std::function<r_arg_t>>;
@@ -33,17 +33,24 @@ class debugger final {
     static inline constinit auto fn_          = fn_t{std::ref(null_fn_)};  // NOLINT
 };
 
+[[nodiscard]] inline auto fail(const std::string_view message) noexcept -> bool {
+    debugger::notify(message);
+    return false;
+}
+}  // namespace sui::detail
+
+namespace sui {
 inline void set_debug_function(void (&fn)(std::string_view)) noexcept {
-    debugger::set(fn);
+    detail::debugger::set(fn);
 }
 
 template <typename F>
     requires std::is_invocable_r_v<void, F, const std::string_view>
 inline void set_debug_function(F&& fn) noexcept {
-    debugger::set(std::forward<F>(fn));
+    detail::debugger::set(std::forward<F>(fn));
 }
 
 inline void reset_debug_function() noexcept {
-    debugger::reset();
+    detail::debugger::reset();
 }
 }  // namespace sui
