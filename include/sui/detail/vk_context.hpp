@@ -116,8 +116,10 @@ class vk_context final {
         const auto submit_info = protocol_.make_submit_info();
         if (not hard_.try_submit(submit_info, protocol_.in_flight_fence())) return false;
 
-        const auto present_info =
-            hgn::present_info_khr{}.wait_semaphore(protocol_.render_finished_semaphore());
+        const auto present_info = hgn::present_info_khr{}
+                                      .wait_semaphore(protocol_.render_finished_semaphore())
+                                      .setting_swapchain(swapper_.native_swapchain())
+                                      .image_indices(image_index_);
 
         const auto res = hard_.try_present(present_info);
         if (res) return true;
