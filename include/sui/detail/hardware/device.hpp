@@ -54,6 +54,8 @@ class device final {
 
     [[nodiscard]] auto get() noexcept -> hgn::device& { return *native_; }
 
+    [[nodiscard]] operator hgn::device&() noexcept { return get(); }
+
   private:
     explicit device(hgn::device& native) noexcept : native_{native} {}
 

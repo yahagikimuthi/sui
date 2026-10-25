@@ -44,6 +44,8 @@ class surface final {
 
     [[nodiscard]] auto get() noexcept -> hgn::surface_khr& { return *native_; }
 
+    [[nodiscard]] operator hgn::surface_khr&() noexcept { return get(); }
+
   private:
     explicit surface(hgn::surface_khr& native, hgn::instance& inst) noexcept
         : native_{native}, instance_{inst} {}
