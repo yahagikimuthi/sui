@@ -1,13 +1,12 @@
 #pragma once
 
-#include <functional>
 #include <string_view>
+#include <type_traits>
 #include <utility>
-#include <variant>
 
 #include "sui/detail/debug_impl.hpp"
 
-namespace sui::detail {
+namespace sui {
 inline void set_debug_function(void (&fn)(std::string_view)) noexcept {
     detail::debugger::set(fn);
 }
@@ -21,4 +20,4 @@ inline void set_debug_function(F&& fn) noexcept {
 inline void reset_debug_function() noexcept {
     detail::debugger::reset();
 }
-}  // namespace sui::detail
+}  // namespace sui
