@@ -16,8 +16,7 @@ namespace sui {
 class swapping final {
   public:
     [[nodiscard]] static auto try_make(hardware& hard) noexcept -> std::expected<swapping, error> {
-        auto chain =
-            swapchain::try_make(hard.get_physical(), hard.get_surface(), hard.get_device());
+        auto chain = swapchain::try_make(hard);
         if (not chain) return make_error(runtime_error, "Failed to make swapchain.", chain.error());
 
         auto images = image_container::try_make(hard.get_device(), *chain);

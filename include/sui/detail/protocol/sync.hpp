@@ -12,16 +12,16 @@
 #include <hgn/sync.hpp>
 
 #include "sui/debugger.hpp"
+#include "sui/detail/hardware/device.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
 class semaphore final {
   public:
-    [[nodiscard]] static auto try_make(hgn::device& dev) noexcept
-        -> std::expected<semaphore, error> {
-        const auto res = hgn::try_make_semaphore(dev, hgn::semaphore_create_info{});
+    [[nodiscard]] static auto try_make(device& dev) noexcept -> std::expected<semaphore, error> {
+        const auto res = dev.try_make_semaphore(hgn::semaphore_create_info{});
         if (not res) return make_error(runtime_error, "Failed to make semaphore");
-        return semaphore{res->get(), dev};
+        return semaphore{*res, dev};
     }
 
     semaphore(const semaphore&) noexcept                    = delete;
@@ -60,11 +60,11 @@ class semaphore final {
 
 class fence final {
   public:
-    [[nodiscard]] static auto try_make(hgn::device& dev) noexcept -> std::expected<fence, error> {
-        const auto res = hgn::try_make_fence(dev, hgn::fence_create_info{});
+    [[nodiscard]] static auto try_make(device& dev) noexcept -> std::expected<fence, error> {
+        const auto res = dev.try_make_fence(hgn::fence_create_info{});
         if (not res) return make_error(runtime_error, "Failed to make fence");
 
-        return fence{res->get(), dev};
+        return fence{*res, dev};
     }
 
     fence(const fence&) noexcept                    = delete;
@@ -107,7 +107,7 @@ class fence final {
 
 class sync final {
   public:
-    [[nodiscard]] static auto try_make(hgn::device& dev) noexcept -> std::expected<sync, error> {
+    [[nodiscard]] static auto try_make(device& dev) noexcept -> std::expected<sync, error> {
         auto sem1 = semaphore::try_make(dev);
         auto sem2 = semaphore::try_make(dev);
         auto fen  = fence::try_make(dev);

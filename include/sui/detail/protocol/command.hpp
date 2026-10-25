@@ -11,6 +11,7 @@
 #include <hgn/image.hpp>
 #include <hgn/render.hpp>
 
+#include "sui/detail/hardware/device.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
@@ -64,10 +65,10 @@ class command_pool final {
 
 class command_buffer final {
   public:
-    [[nodiscard]] static auto try_make(hgn::device& dev, hgn::command_pool& pool) noexcept
+    [[nodiscard]] static auto try_make(device& dev, hgn::command_pool& pool) noexcept
         -> std::expected<command_buffer, error> {
         auto alloc_info = hgn::command_buffer_allocate_info{}.command_pool(pool);
-        auto res        = hgn::try_allocate_command_buffers(dev, alloc_info);
+        auto res        = dev.try_allocate_command_buffer(alloc_info);
         if (not res) return make_error(runtime_error, "Failed to make command buffer.");
 
         return command_buffer{*res};
@@ -123,7 +124,7 @@ class command_buffer final {
 class command final {
   public:
     [[nodiscard]] static auto try_make(
-        hgn::device& dev, const std::uint32_t queue_family_indices
+        device& dev, const std::uint32_t queue_family_indices
     ) noexcept -> std::expected<command, error> {
         auto pool = command_pool::try_make(dev, queue_family_indices);
         if (not pool)

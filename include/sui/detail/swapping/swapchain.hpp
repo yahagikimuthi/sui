@@ -14,31 +14,27 @@
 #include <hgn/surface.hpp>
 #include <hgn/swapchain.hpp>
 
+#include "hgn/image.hpp"
 #include "sui/detail/hardware/device.hpp"
+#include "sui/detail/hardware/hardware.hpp"
 #include "sui/detail/hardware/physical_device.hpp"
-#include "sui/detail/hardware/surface.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
 class swapchain final {
   public:
-    [[nodiscard]] static auto try_make(
-        physical_device& physical, surface& sur, device& dev
-    ) noexcept -> std::expected<swapchain, error> {
-        const auto capabilities_res =
-            hgn::try_get_physical_device_surface_capabilities_khr(physical.get(), sur.get());
+    [[nodiscard]] static auto try_make(hardware& hard) noexcept -> std::expected<swapchain, error> {
+        const auto capabilities_res = hard.try_get_physical_device_surface_capabilities();
         if (not capabilities_res)
             return make_error(runtime_error, "Failed to get physical device surface capabilities.");
         const auto capabilities = *capabilities_res;
 
-        const auto formats_res =
-            hgn::try_get_physical_device_surface_formats_khr(physical.get(), sur.get());
+        const auto formats_res = hard.try_get_physical_device_surface_formats();
         if (not formats_res)
             return make_error(runtime_error, "Failed to get physical device surface formats.");
         const auto& formats = *formats_res;
 
-        const auto present_modes_res =
-            hgn::try_get_physical_device_surface_present_modes_khr(physical.get(), sur.get());
+        const auto present_modes_res = hard.try_get_physical_device_surface_present_modes();
         if (not present_modes_res)
             return make_error(
                 runtime_error, "Failed to get physical device surface present modes."
@@ -74,7 +70,7 @@ class swapchain final {
         }
 
         auto info = hgn::swapchain_create_info_khr{}
-                        .surface(sur.get())
+                        .surface(hard.get_surface())
                         .min_image_count(image_count)
                         .image_format(surface_format.setting_format())
                         .image_color_space(surface_format.color_space())
@@ -82,18 +78,19 @@ class swapchain final {
                         .pre_transform(capabilities.current_transform())
                         .present_mode(present_mode);
 
-        const auto indices = std::array{physical.graphics_family(), physical.present_family()};
+        const auto indices =
+            std::array{hard.get_physical().graphics_family(), hard.get_physical().present_family()};
 
-        if (physical.graphics_family() != physical.present_family()) {
+        if (hard.get_physical().graphics_family() != hard.get_physical().present_family()) {
             info.image_sharing_mode(hgn::sharing_mode::concurrent).queue_family_indices(indices);
         } else {
             info.image_sharing_mode(hgn::sharing_mode::exclusive);
         }
 
-        auto res = hgn::try_make_swapchain(dev.get(), info);
+        auto res = hard.get_device().try_make_swapchain(info);
         if (not res) return make_error(runtime_error, "Failed to make swapchain");
 
-        return swapchain{res->get(), dev.get(), surface_format.setting_format()};
+        return swapchain{*res, hard.get_device(), surface_format.setting_format()};
     }
 
     swapchain(const swapchain&) noexcept                    = delete;
@@ -119,6 +116,13 @@ class swapchain final {
     ~swapchain() noexcept { destroy(); }
 
     [[nodiscard]] auto setting_format() const noexcept -> hgn::format { return setting_format_; }
+
+    [[nodiscard]] auto try_get_swapchain_images(hgn::device& dev) noexcept
+        -> std::optional<std::vector<std::reference_wrapper<hgn::image>>> {
+        const auto res = hgn::try_get_swapchain_images_khr(dev, *native_);
+        if (not res) return std::nullopt;
+        return *res;
+    }
 
     [[nodiscard]] auto get() noexcept -> hgn::swapchain_khr& { return *native_; }
 

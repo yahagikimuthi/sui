@@ -11,6 +11,7 @@
 #include <hgn/pipeline.hpp>
 #include <hgn/shader.hpp>
 
+#include "sui/detail/hardware/device.hpp"
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
 
@@ -84,7 +85,7 @@ class pipeline final {
 class graphics_pipeline final {
   public:
     [[nodiscard]] static auto try_make(
-        hgn::device& dev, hgn::shader_module& vert, hgn::shader_module& frag, const hgn::format fmt
+        device& dev, hgn::shader_module& vert, hgn::shader_module& frag, const hgn::format fmt
     ) noexcept -> std::expected<graphics_pipeline, error> {
         const auto binding_description =
             hgn::vertex_input_binding_description{}.stride(sizeof(float) * 5);
@@ -138,7 +139,7 @@ class graphics_pipeline final {
 
         const auto pipeline_layout_info = hgn::pipeline_layout_create_info{};
 
-        const auto pipe_layout = hgn::try_make_pipeline_layout(dev, pipeline_layout_info);
+        const auto pipe_layout = dev.try_make_pipeline_layout(pipeline_layout_info);
         if (not pipe_layout) return make_error(runtime_error, "Failed to make pipeline layout.");
 
         const auto pipeline_rendering_info =
@@ -154,14 +155,12 @@ class graphics_pipeline final {
                                        .multisample_state(multisampling)
                                        .color_blend_state(color_blending)
                                        .dynamic_states(dynamic_state)
-                                       .layout(pipe_layout->get());
+                                       .layout(*pipe_layout);
 
         const auto res = hgn::try_make_graphics_pipeline(dev, pipeline_info);
         if (not res) return make_error(runtime_error, "Failed to make graphics pipeline.");
 
-        return graphics_pipeline{
-            pipeline_layout{pipe_layout->get(), dev}, pipeline{res->get(), dev}
-        };
+        return graphics_pipeline{pipeline_layout{*pipe_layout, dev}, pipeline{res->get(), dev}};
     }
 
     graphics_pipeline(const graphics_pipeline&) noexcept                     = delete;

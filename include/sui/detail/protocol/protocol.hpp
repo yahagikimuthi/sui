@@ -21,11 +21,11 @@ class protocol final {
     [[nodiscard]] static auto try_make(
         device& dev, const std::uint32_t queue_family_indices
     ) noexcept -> std::expected<protocol, error> {
-        auto sync_res = sync::try_make(dev.get());
+        auto sync_res = sync::try_make(dev);
         if (not sync_res)
             return make_error(runtime_error, "Failed to make sync.", sync_res.error());
 
-        auto cmd_res = command::try_make(dev.get(), queue_family_indices);
+        auto cmd_res = command::try_make(dev, queue_family_indices);
         if (not cmd_res)
             return make_error(runtime_error, "Failed to make command class.", cmd_res.error());
 

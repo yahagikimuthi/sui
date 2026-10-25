@@ -9,15 +9,15 @@
 #include <hgn/submit.hpp>
 #include <hgn/sync.hpp>
 
-#include "sui/detail/hardware/device.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
 class queue final {
   public:
-    [[nodiscard]] static auto try_make(device& dev, const std::uint32_t family_indices) noexcept
-        -> std::expected<queue, error> {
-        auto res = hgn::try_get_device_queue(dev.get(), family_indices);
+    [[nodiscard]] static auto try_make(
+        hgn::device& dev, const std::uint32_t family_indices
+    ) noexcept -> std::expected<queue, error> {
+        auto res = hgn::try_get_device_queue(dev, family_indices);
         if (not res) return make_error(runtime_error, "Failed to make queue.");
 
         return queue{*res};

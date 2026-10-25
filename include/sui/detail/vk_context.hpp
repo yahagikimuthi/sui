@@ -42,9 +42,7 @@ class vk_context final {
                 runtime_error, "Failed to make protocol object.", protocol_res.error()
             );
 
-        auto renderer_res = renderer::try_make(
-            hard_res->get_device(), hard_res->get_physical(), swapping_res->setting_format()
-        );
+        auto renderer_res = renderer::try_make(*hard_res, swapping_res->setting_format());
         if (not renderer_res)
             return make_error(runtime_error, "Failed to make renderer.", renderer_res.error());
 

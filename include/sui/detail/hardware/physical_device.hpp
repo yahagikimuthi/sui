@@ -30,6 +30,11 @@ class physical_device final {
 
     [[nodiscard]] auto get() noexcept -> hgn::physical_device& { return native_.get(); }
 
+    [[nodiscard]] auto get_physical_device_memory_properties() noexcept
+        -> hgn::physical_device_memory_properties {
+        return hgn::get_physical_device_memory_properties(native_);
+    }
+
     [[nodiscard]] operator hgn::physical_device&() noexcept { return get(); }
 
   private:

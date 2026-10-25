@@ -10,17 +10,16 @@
 #include <hgn/surface.hpp>
 #include <kgm/window.hpp>
 
-#include "sui/detail/hardware/instance.hpp"
 #include "sui/error.hpp"
 
 namespace sui {
 class surface final {
   public:
-    [[nodiscard]] static auto try_make(kgm::window& win, instance& inst) noexcept
+    [[nodiscard]] static auto try_make(kgm::window& win, hgn::instance& inst) noexcept
         -> std::expected<surface, error> {
-        auto native = kgm::try_make_window_surface(inst.get(), win);
+        auto native = kgm::try_make_window_surface(inst, win);
         if (not native) return make_error(runtime_error, "Failed to make window surface");
-        return surface{native->get(), inst.get()};
+        return surface{native->get(), inst};
     }
 
     surface(const surface&) noexcept                    = delete;

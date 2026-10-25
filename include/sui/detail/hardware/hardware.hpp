@@ -10,6 +10,7 @@
 #include <hgn/sync.hpp>
 #include <kgm/window.hpp>
 
+#include "hgn/enums.hpp"
 #include "sui/detail/hardware/device.hpp"
 #include "sui/detail/hardware/instance.hpp"
 #include "sui/detail/hardware/physical_device.hpp"
@@ -34,7 +35,7 @@ class hardware final {
         auto inst = instance::try_make();
         if (not inst) return make_error(runtime_error, "Failed to make instance.", inst.error());
 
-        auto sur = surface::try_make(win, *inst);
+        auto sur = surface::try_make(win, inst->get());
         if (not sur) return make_error(runtime_error, "Failed to make surface.", sur.error());
 
         auto physical_devices_res = inst->try_enumerate_physical_devices();
@@ -60,13 +61,13 @@ class hardware final {
         auto dev = device::try_make(physical);
         if (not dev) return make_error(runtime_error, "Failed to make device.", dev.error());
 
-        auto graphics_queue = queue::try_make(*dev, physical.graphics_family());
+        auto graphics_queue = queue::try_make(dev->get(), physical.graphics_family());
         if (not graphics_queue)
             return make_error(
                 runtime_error, "Failed to make graphics queue.", graphics_queue.error()
             );
 
-        auto present_queue = queue::try_make(*dev, physical.present_family());
+        auto present_queue = queue::try_make(dev->get(), physical.present_family());
         if (not present_queue)
             return make_error(
                 runtime_error, "Failed to make present queue.", present_queue.error()
@@ -87,6 +88,28 @@ class hardware final {
     hardware(hardware&&) noexcept                         = default;
     auto operator=(hardware&&) noexcept -> hardware&      = default;
     ~hardware() noexcept                                  = default;
+
+    [[nodiscard]] auto try_get_physical_device_surface_capabilities() noexcept
+        -> std::optional<hgn::surface_capabilities_khr> {
+        const auto res = hgn::try_get_physical_device_surface_capabilities_khr(physical_, surface_);
+        if (not res) return std::nullopt;
+        return *res;
+    }
+
+    [[nodiscard]] auto try_get_physical_device_surface_formats() noexcept
+        -> std::optional<std::vector<hgn::surface_format_khr>> {
+        const auto res = hgn::try_get_physical_device_surface_formats_khr(physical_, surface_);
+        if (not res) return std::nullopt;
+        return *res;
+    }
+
+    [[nodiscard]] auto try_get_physical_device_surface_present_modes() noexcept
+        -> std::optional<std::vector<hgn::present_mode_khr>> {
+        const auto res =
+            hgn::try_get_physical_device_surface_present_modes_khr(physical_, surface_);
+        if (not res) return std::nullopt;
+        return *res;
+    }
 
     [[nodiscard]] auto get_surface() noexcept -> surface& { return surface_; }
     [[nodiscard]] auto get_physical() noexcept -> physical_device& { return physical_; }
