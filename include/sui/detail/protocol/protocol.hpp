@@ -10,6 +10,7 @@
 #include <hgn/submit.hpp>
 #include <hgn/sync.hpp>
 
+#include "sui/detail/debug_impl.hpp"
 #include "sui/detail/hardware/device.hpp"
 #include "sui/detail/protocol/command.hpp"
 #include "sui/detail/protocol/sync.hpp"
@@ -40,10 +41,7 @@ class protocol final {
 
     [[nodiscard]] auto try_wait(hgn::device& dev) noexcept -> bool {
         const auto res = sync_.try_wait_fence(dev);
-        if (not res) {
-            detail::debugger::notify("Therefore, Failed to sync.");
-            return false;
-        }
+        if (not res) return fail("Therefore, Failed to sync.");
         return true;
     }
 

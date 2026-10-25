@@ -12,6 +12,7 @@
 #include <hgn/sync.hpp>
 
 #include "sui/debugger.hpp"
+#include "sui/detail/debug_impl.hpp"
 #include "sui/detail/hardware/device.hpp"
 #include "sui/error.hpp"
 
@@ -133,15 +134,10 @@ class sync final {
 
     [[nodiscard]] auto try_wait_fence(hgn::device& dev) noexcept -> bool {
         auto wait_res = hgn::try_wait_for_fence(dev, in_flight_fence());
-        if (not wait_res) {
-            detail::debugger::notify("Failed to wait for fence.");
-            return false;
-        }
+        if (not wait_res) return fail("Failed to wait for fence.");
 
         auto reset_res = hgn::try_reset_fence(dev, in_flight_fence());
-        if (not reset_res) {
-            detail::debugger::notify("Failed to reset fence.");
-        }
+        if (not reset_res) return fail("Failed to reset fence.");
 
         return true;
     }
