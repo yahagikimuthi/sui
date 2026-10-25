@@ -110,11 +110,10 @@ class vk_context final {
 
         const auto scissor = hgn::rect2d{}.offset(0, 0).extent(800, 600);
         hgn::command_set_scissor(protocol_.get_command_buffer(), scissor);
-        hgn::command_bind_vertex_buffers(protocol_.get_command_buffer(), renderer_.get_buffer());
         return true;
     }
 
-    void try_rendering(const std::span<const float> vertices) noexcept {
+    void try_rendering(const std::span<const vertex> vertices) noexcept {
         renderer_.update(vertices);
         hgn::command_bind_vertex_buffers(protocol_.get_command_buffer(), renderer_.get_buffer());
         const auto vertex_count = static_cast<std::uint32_t>(vertices.size());

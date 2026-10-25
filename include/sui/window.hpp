@@ -8,6 +8,7 @@
 
 #include "sui/detail/window_impl.hpp"
 #include "sui/error.hpp"
+#include "sui/vertex.hpp"
 
 namespace sui {
 class window final {
@@ -30,7 +31,7 @@ class window final {
 
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool;
 
-    void rendering(const std::span<const float> vertices) noexcept;
+    void rendering(const std::span<const vertex> vertices) noexcept;
 
     [[nodiscard]] auto try_end_rendering() noexcept -> bool;
 
@@ -70,7 +71,7 @@ inline void window::pool_events() const noexcept {
     return impl_.try_begin_rendering();
 }
 
-inline void window::rendering(const std::span<const float> vertices) noexcept {
+inline void window::rendering(const std::span<const vertex> vertices) noexcept {
     impl_.rendering(vertices);
 }
 

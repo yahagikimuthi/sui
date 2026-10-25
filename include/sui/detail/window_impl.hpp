@@ -11,6 +11,7 @@
 #include "sui/detail/native_window.hpp"
 #include "sui/detail/vk_context.hpp"
 #include "sui/error.hpp"
+#include "sui/vertex.hpp"
 
 namespace sui::detail {
 class window_impl final {
@@ -41,7 +42,9 @@ class window_impl final {
 
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool { return ctx_.try_begin_rendering(); }
 
-    void rendering(const std::span<const float> vertices) noexcept { ctx_.try_rendering(vertices); }
+    void rendering(const std::span<const vertex> vertices) noexcept {
+        ctx_.try_rendering(vertices);
+    }
 
     [[nodiscard]] auto try_end_rendering() noexcept -> bool { return ctx_.try_end_rendering(); }
 

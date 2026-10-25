@@ -43,7 +43,7 @@ class renderer final {
     auto operator=(renderer&&) noexcept -> renderer&      = default;
     ~renderer() noexcept                                  = default;
 
-    void update(const std::span<const float> vertices) noexcept { buf_.update(vertices); }
+    void update(const std::span<const vertex> vertices) noexcept { buf_.update(vertices); }
 
     [[nodiscard]] auto get_buffer() noexcept -> hgn::buffer& { return buf_.get_buffer(); }
 

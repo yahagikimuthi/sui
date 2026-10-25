@@ -13,6 +13,7 @@
 #include <hgn/physical_device.hpp>
 
 #include "sui/error.hpp"
+#include "sui/vertex.hpp"
 
 namespace sui {
 class device_memory final {
@@ -85,7 +86,7 @@ class native_buffer final {
 
 class buffer final {
     static constexpr auto max_vertices    = 5000;
-    static constexpr auto max_buffer_size = sizeof(float) * max_vertices;
+    static constexpr auto max_buffer_size = sizeof(vertex) * max_vertices;
 
   public:
     [[nodiscard]] static auto try_make(hgn::device& dev, hgn::physical_device& physical) noexcept
@@ -128,9 +129,9 @@ class buffer final {
     auto operator=(buffer&&) noexcept -> buffer&      = default;
     ~buffer() noexcept                                = default;
 
-    void update(const std::span<const float> vertices) noexcept {
+    void update(const std::span<const vertex> vertices) noexcept {
         assert(vertices.size() <= max_vertices);
-        std::memcpy(data_.data(), vertices.data(), sizeof(float) * vertices.size());
+        std::memcpy(data_.data(), vertices.data(), sizeof(vertex) * vertices.size());
     }
 
     [[nodiscard]] auto get_buffer() noexcept -> hgn::buffer& { return buffer_.get(); }
