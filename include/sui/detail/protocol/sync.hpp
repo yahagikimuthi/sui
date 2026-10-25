@@ -11,7 +11,6 @@
 #include <hgn/device.hpp>
 #include <hgn/sync.hpp>
 
-#include "sui/debugger.hpp"
 #include "sui/detail/debug_impl.hpp"
 #include "sui/detail/hardware/device.hpp"
 #include "sui/error.hpp"
