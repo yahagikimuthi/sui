@@ -47,6 +47,37 @@ class pipeline_layout final {
     std::reference_wrapper<hgn::device>  dev_;
 };
 
+class pipeline final {
+  public:
+    explicit pipeline(hgn::pipeline& native, hgn::device& dev) noexcept
+        : native_{native}, dev_{std::ref(dev)} {}
+
+    pipeline(const pipeline&) noexcept                    = delete;
+    auto operator=(const pipeline&) noexcept -> pipeline& = delete;
+
+    pipeline(pipeline&& other) noexcept
+        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
+
+    auto operator=(pipeline&& other) noexcept -> pipeline& {
+        if (this == &other) return *this;
+
+        native_ = std::exchange(other.native_, std::nullopt);
+        dev_    = other.dev_;
+
+        return *this;
+    }
+
+    ~pipeline() noexcept { destroy(); }
+
+  private:
+    void destroy() noexcept {
+        if (native_) hgn::destroy_pipeline(dev_.get(), *native_);
+    }
+
+    std::optional<hgn::pipeline&>       native_;
+    std::reference_wrapper<hgn::device> dev_;
+};
+
 class graphics_pipeline final {
     struct vertex final {
         float position[2];  // NOLINT
@@ -130,43 +161,22 @@ class graphics_pipeline final {
         const auto res = hgn::try_make_graphics_pipeline(dev, pipeline_info);
         if (not res) return make_error(runtime_error, "Failed to make graphics pipeline.");
 
-        return graphics_pipeline{res->get(), pipeline_layout{pipe_layout->get(), dev}, dev};
+        return graphics_pipeline{
+            pipeline_layout{pipe_layout->get(), dev}, pipeline{res->get(), dev}
+        };
     }
 
-    graphics_pipeline(const graphics_pipeline&) noexcept                    = delete;
-    auto operator=(const graphics_pipeline&) noexcept -> graphics_pipeline& = delete;
-
-    graphics_pipeline(graphics_pipeline&& other) noexcept
-        : layout_{std::move(other.layout_)},
-          native_{std::exchange(other.native_, std::nullopt)},
-          dev_{other.dev_} {}
-
-    auto operator=(graphics_pipeline&& other) noexcept -> graphics_pipeline& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        layout_ = std::move(other.layout_);
-        native_ = std::exchange(other.native_, std::nullopt);
-        dev_    = other.dev_;
-
-        return *this;
-    }
-
-    ~graphics_pipeline() noexcept { destroy(); }
+    graphics_pipeline(const graphics_pipeline&) noexcept                     = delete;
+    auto operator=(const graphics_pipeline&) noexcept -> graphics_pipeline&  = delete;
+    graphics_pipeline(graphics_pipeline&& other) noexcept                    = default;
+    auto operator=(graphics_pipeline&& other) noexcept -> graphics_pipeline& = default;
+    ~graphics_pipeline() noexcept                                            = default;
 
   private:
-    explicit graphics_pipeline(
-        hgn::pipeline& native, pipeline_layout&& layout, hgn::device& dev
-    ) noexcept
-        : layout_{std::move(layout)}, native_{native}, dev_{std::ref(dev)} {}
+    explicit graphics_pipeline(pipeline_layout&& layout, pipeline&& pipe) noexcept
+        : layout_{std::move(layout)}, pipe_{std::move(pipe)} {}
 
-    void destroy() noexcept {
-        if (native_) hgn::destroy_pipeline(dev_.get(), *native_);
-    }
-
-    pipeline_layout                     layout_;
-    std::optional<hgn::pipeline&>       native_;
-    std::reference_wrapper<hgn::device> dev_;
+    pipeline_layout layout_;
+    pipeline        pipe_;
 };
 }  // namespace sui
