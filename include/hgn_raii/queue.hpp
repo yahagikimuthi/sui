@@ -12,7 +12,7 @@ class queue final {
         return queue{std::move(native)};
     }
 
-    explicit queue(hgn::queue&& native) noexcept : native_{native} {}
+    explicit queue(hgn::queue&& native) noexcept : native_{std::ref(native)} {}
 
     [[nodiscard]] auto get() noexcept -> hgn::queue& { return native_; }
 
