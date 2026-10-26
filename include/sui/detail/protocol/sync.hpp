@@ -51,7 +51,7 @@ class semaphore final {
 
     void destroy() noexcept {
         if (not native_) return;
-        hgn::destroy_semaphore(dev_.get(), *native_);
+        hgn::destroy_semaphore(dev_, *native_);
     }
 
     std::optional<hgn::semaphore&>      native_;

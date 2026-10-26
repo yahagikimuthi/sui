@@ -134,7 +134,7 @@ class swapchain final {
 
     void destroy() noexcept {
         if (not native_) return;
-        hgn::destroy_swapchain_khr(device_.get(), *native_);
+        hgn::destroy_swapchain_khr(device_, get());
     }
 
     std::optional<hgn::swapchain_khr&>  native_;

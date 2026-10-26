@@ -61,6 +61,8 @@ class native_window final {
 
     [[nodiscard]] auto get() noexcept -> kgm::window& { return *native_; }
 
+    [[nodiscard]] operator kgm::window&() noexcept { return get(); }
+
   private:
     explicit native_window(kgm::window& native, const extent size) noexcept
         : native_{native}, size_{size} {

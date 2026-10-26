@@ -52,7 +52,7 @@ class hardware final {
         if (suitable_physicals.empty())
             return make_error(runtime_error, "Failed to find a suitable GPU.");
 
-        const auto indices = find_queue_families(suitable_physicals.front(), sur->get());
+        const auto indices = find_queue_families(suitable_physicals.front(), *sur);
 
         auto physical = physical_device{
             suitable_physicals.front(), *indices.graphics_family, *indices.present_family

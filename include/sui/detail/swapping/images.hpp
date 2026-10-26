@@ -91,7 +91,7 @@ class image_view_container final {
 
   private:
     void destroy() noexcept {
-        for (auto view : views_) hgn::destroy_image_view(dev_.get(), view.get());
+        for (auto view : views_) hgn::destroy_image_view(dev_, view.get());
     }
 
     std::vector<ref_w<hgn::image_view>> views_;

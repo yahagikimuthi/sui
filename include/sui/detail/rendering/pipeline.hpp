@@ -75,7 +75,7 @@ class pipeline final {
 
   private:
     void destroy() noexcept {
-        if (native_) hgn::destroy_pipeline(dev_.get(), *native_);
+        if (native_) hgn::destroy_pipeline(dev_, *native_);
     }
 
     std::optional<hgn::pipeline&>       native_;
@@ -160,7 +160,7 @@ class graphics_pipeline final {
         const auto res = hgn::try_make_graphics_pipeline(dev, pipeline_info);
         if (not res) return make_error(runtime_error, "Failed to make graphics pipeline.");
 
-        return graphics_pipeline{pipeline_layout{*pipe_layout, dev}, pipeline{res->get(), dev}};
+        return graphics_pipeline{pipeline_layout{*pipe_layout, dev}, pipeline{*res, dev}};
     }
 
     graphics_pipeline(const graphics_pipeline&) noexcept                     = delete;

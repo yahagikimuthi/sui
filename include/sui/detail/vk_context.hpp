@@ -83,12 +83,10 @@ class vk_context final {
     ~vk_context() noexcept { destroy(); }
 
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool {
-        if (not protocol_.try_wait(hard_.get_device().get())) return false;
+        if (not protocol_.try_wait(hard_.get_device())) return false;
 
         const auto image_index_res = hgn::try_acquire_next_image_khr(
-            hard_.get_device().get(),
-            swapper_.native_swapchain(),
-            protocol_.image_available_semaphore()
+            hard_.get_device(), swapper_.native_swapchain(), protocol_.image_available_semaphore()
         );
 
         if (not image_index_res) return false;

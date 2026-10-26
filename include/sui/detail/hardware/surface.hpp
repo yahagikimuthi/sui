@@ -19,7 +19,7 @@ class surface final {
         -> std::expected<surface, error> {
         auto native = kgm::try_make_window_surface(inst, win);
         if (not native) return make_error(runtime_error, "Failed to make window surface");
-        return surface{native->get(), inst};
+        return surface{*native, inst};
     }
 
     surface(const surface&) noexcept                    = delete;
@@ -51,7 +51,7 @@ class surface final {
 
     void destroy() noexcept {
         if (not native_) return;
-        hgn::destroy_surface_khr(instance_.get(), *native_);
+        hgn::destroy_surface_khr(instance_, *native_);
     }
 
     std::optional<hgn::surface_khr&>      native_;

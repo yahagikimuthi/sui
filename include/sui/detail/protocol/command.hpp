@@ -50,12 +50,14 @@ class command_pool final {
 
     [[nodiscard]] auto get() noexcept -> hgn::command_pool& { return *native_; }
 
+    [[nodiscard]] operator hgn::command_pool&() noexcept { return get(); }
+
   private:
     explicit command_pool(hgn::command_pool& native, hgn::device& dev) noexcept
         : native_{native}, dev_{std::ref(dev)} {}
 
     void destroy() noexcept {
-        if (native_) hgn::destroy_command_pool(dev_.get(), *native_);
+        if (native_) hgn::destroy_command_pool(dev_, *native_);
     }
 
     std::optional<hgn::command_pool&>   native_;
@@ -111,7 +113,7 @@ class command_buffer final {
         return res.has_value();
     }
 
-    [[nodiscard]] auto get() noexcept -> hgn::command_buffer& { return native_.get(); }
+    [[nodiscard]] auto get() noexcept -> hgn::command_buffer& { return native_; }
 
   private:
     explicit command_buffer(hgn::command_buffer& native) noexcept : native_{native} {}
@@ -128,7 +130,7 @@ class command final {
         if (not pool)
             return make_error(runtime_error, "Failed to make command pool.", pool.error());
 
-        auto buffer = command_buffer::try_make(dev, pool->get());
+        auto buffer = command_buffer::try_make(dev, *pool);
         if (not buffer)
             return make_error(runtime_error, "Failed to make command buffer.", buffer.error());
 

@@ -78,6 +78,6 @@ template <typename T, typename E>
 ) noexcept -> std::optional<T&> {
     auto out = std::optional<T&>{std::nullopt};
     if (not reference) return out;
-    return out.emplace(reference->get());
+    return out.emplace(*reference);
 }
 }  // namespace sui::detail

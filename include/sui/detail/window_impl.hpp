@@ -23,7 +23,7 @@ class window_impl final {
         if (not win_res)
             return make_error(runtime_error, "Failed to make native window.", win_res.error());
 
-        auto ctx_res = vk_context::try_make(win_res->get());
+        auto ctx_res = vk_context::try_make(*win_res);
         if (not ctx_res)
             return make_error(runtime_error, "Failed to make vulkan context.", ctx_res.error());
 

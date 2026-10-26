@@ -52,7 +52,7 @@ class shader_module final {
         : native_{native}, dev_{std::ref(dev)} {}
 
     void destroy() noexcept {
-        if (native_) hgn::destroy_shader_module(dev_.get(), *native_);
+        if (native_) hgn::destroy_shader_module(dev_, get());
     }
 
     std::optional<hgn::shader_module&>  native_;
