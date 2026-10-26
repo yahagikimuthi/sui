@@ -83,7 +83,7 @@ class shader_module_create_info final {
 ) noexcept -> std::expected<std::reference_wrapper<shader_module>, result> {
     auto* shader_ptr = static_cast<shader_module*>(nullptr);
 
-    const auto res = vkCreateShaderModule(&dev, &info.get(), nullptr, &shader_ptr);
+    const auto res = vkCreateShaderModule(&dev.get(), &info.get(), nullptr, &shader_ptr);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(shader_ptr != nullptr);
@@ -91,6 +91,6 @@ class shader_module_create_info final {
 }
 
 inline void destroy_shader_module(device& dev, shader_module& target) noexcept {
-    vkDestroyShaderModule(&dev, &target, nullptr);
+    vkDestroyShaderModule(&dev.get(), &target, nullptr);
 }
 }  // namespace hgn

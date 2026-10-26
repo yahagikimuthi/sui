@@ -21,12 +21,12 @@ using image = VkImage_T;
 [[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain_khr& chain) noexcept
     -> std::expected<std::vector<std::reference_wrapper<image>>, result> {
     auto       count = std::uint32_t{};
-    const auto res1  = vkGetSwapchainImagesKHR(&dev, &chain, &count, nullptr);
+    const auto res1  = vkGetSwapchainImagesKHR(&dev.get(), &chain, &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 
     auto images = std::vector<image*>(count);
 
-    const auto res2 = vkGetSwapchainImagesKHR(&dev, &chain, &count, images.data());
+    const auto res2 = vkGetSwapchainImagesKHR(&dev.get(), &chain, &count, images.data());
     if (res2 != VK_SUCCESS) return make_result(res2);
 
     auto out = std::vector<std::reference_wrapper<image>>{};
@@ -81,7 +81,7 @@ using image_view = VkImageView_T;
 ) noexcept -> std::expected<std::reference_wrapper<image_view>, result> {
     auto*      view        = static_cast<image_view*>(nullptr);
     auto       native_info = std::bit_cast<VkImageViewCreateInfo>(info);
-    const auto res         = vkCreateImageView(&dev, &native_info, nullptr, &view);
+    const auto res         = vkCreateImageView(&dev.get(), &native_info, nullptr, &view);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(view != nullptr);
@@ -89,7 +89,7 @@ using image_view = VkImageView_T;
 }
 
 inline void destroy_image_view(device& dev, image_view& view) noexcept {
-    vkDestroyImageView(&dev, &view, nullptr);
+    vkDestroyImageView(&dev.get(), &view, nullptr);
 }
 
 [[nodiscard]] inline auto try_acquire_next_image_khr(
@@ -99,7 +99,7 @@ inline void destroy_image_view(device& dev, image_view& view) noexcept {
     const std::uint32_t timeout = std::numeric_limits<std::uint32_t>::max()
 ) noexcept -> std::expected<std::uint32_t, result> {
     auto       index = std::uint32_t{};
-    const auto res   = vkAcquireNextImageKHR(&dev, &chain, timeout, &semaph, nullptr, &index);
+    const auto res   = vkAcquireNextImageKHR(&dev.get(), &chain, timeout, &semaph, nullptr, &index);
     if (res != VK_SUCCESS) return make_result(res);
     return index;
 }

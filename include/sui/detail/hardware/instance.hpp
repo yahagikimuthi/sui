@@ -16,39 +16,6 @@
 
 namespace sui::detail {
 class instance final {
-    class native_instance final {
-      public:
-        explicit native_instance(hgn::instance& native) noexcept : native_{native} {}
-
-        native_instance(const native_instance&) noexcept                    = delete;
-        auto operator=(const native_instance&) noexcept -> native_instance& = delete;
-
-        native_instance(native_instance&& other) noexcept
-            : native_{std::exchange(other.native_, std::nullopt)} {}
-
-        auto operator=(native_instance&& other) noexcept -> native_instance& {
-            if (this == &other) return *this;
-
-            destroy();
-
-            native_ = std::exchange(other.native_, std::nullopt);
-            return *this;
-        }
-
-        ~native_instance() noexcept { destroy(); }
-
-        [[nodiscard]] auto get() noexcept -> hgn::instance& { return *native_; }
-
-        [[nodiscard]] operator hgn::instance&() noexcept { return get(); }
-
-      private:
-        void destroy() noexcept {
-            if (native_) hgn::destroy_instance(get());
-        }
-
-        std::optional<hgn::instance&> native_;
-    };
-
   public:
     [[nodiscard]] static auto try_make() noexcept -> std::expected<instance, error> {
         const auto app_info = hgn::application_info{}
@@ -68,7 +35,7 @@ class instance final {
         auto native = hgn::try_make_instance(info);
         if (not native) return make_error(runtime_error, "Failed to make hagane instance\n");
 
-        return instance{*native};
+        return instance{std::move(*native)};
     }
 
     instance(const instance&) noexcept                    = delete;
@@ -86,7 +53,7 @@ class instance final {
     [[nodiscard]] operator hgn::instance&() noexcept { return native_; }
 
   private:
-    explicit instance(hgn::instance& native) noexcept : native_{native} {}
+    explicit instance(hgn::instance&& native) noexcept : native_{std::move(native)} {}
 
     [[nodiscard]] static auto required_extensions() noexcept -> std::vector<std::string_view> {
         auto extensions = kgm::get_required_instance_extensions();
@@ -97,6 +64,6 @@ class instance final {
         return extensions;
     }
 
-    native_instance native_;
+    hgn::instance native_;
 };
 }  // namespace sui::detail

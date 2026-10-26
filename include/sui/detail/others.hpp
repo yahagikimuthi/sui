@@ -69,7 +69,8 @@ template <typename T, typename E>
 [[nodiscard]] constexpr auto to_optional(std::expected<T, E> value) noexcept -> std::optional<T> {
     auto out = std::optional<T>{std::nullopt};
     if (not value) return out;
-    return out.emplace(*value);
+    out = std::move(*value);
+    return out;
 }
 
 template <typename T, typename E>

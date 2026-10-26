@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <cstring>
 #include <expected>
-#include <functional>
 #include <optional>
 #include <span>
 #include <utility>
@@ -20,89 +19,39 @@
 namespace sui::detail {
 class device_memory final {
   public:
-    explicit device_memory(hgn::device_memory& native, hgn::device& dev) noexcept
-        : native_{native}, dev_{std::ref(dev)} {}
-
-    device_memory(const device_memory&) noexcept              = delete;
-    auto operator=(device_memory&) noexcept -> device_memory& = delete;
-
-    device_memory(device_memory&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
-
-    auto operator=(device_memory&& other) noexcept -> device_memory& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        native_ = std::exchange(other.native_, std::nullopt);
-        dev_    = other.dev_;
-
-        return *this;
-    }
-
-    ~device_memory() noexcept { destroy(); }
+    explicit device_memory(hgn::device_memory&& native) noexcept : native_{std::move(native)} {}
 
     template <std::size_t N>
     [[nodiscard]] auto try_map_memory(hgn::device& dev) noexcept
         -> std::optional<std::span<std::byte, N>> {
-        const auto res = hgn::try_map_memory<N>(dev, *native_);
+        const auto res = hgn::try_map_memory<N>(dev, native_);
         if (not res) return std::nullopt;
         return *res;
     }
 
-    [[nodiscard]] auto get() noexcept -> hgn::device_memory& { return *native_; }
+    [[nodiscard]] auto get() noexcept -> hgn::device_memory& { return native_; }
 
     [[nodiscard]] operator hgn::device_memory&() noexcept { return get(); }
 
   private:
-    void destroy() noexcept {
-        if (native_) hgn::free_memory(dev_, get());
-    }
-
-    std::optional<hgn::device_memory&>  native_;
-    std::reference_wrapper<hgn::device> dev_;
+    hgn::device_memory native_;
 };
 
 class native_buffer final {
   public:
-    explicit native_buffer(hgn::buffer& native, hgn::device& dev) noexcept
-        : native_{native}, dev_{std::ref(dev)} {}
-
-    native_buffer(const native_buffer&) noexcept                    = delete;
-    auto operator=(const native_buffer&) noexcept -> native_buffer& = delete;
-
-    native_buffer(native_buffer&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
-
-    auto operator=(native_buffer&& other) noexcept -> native_buffer& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        native_ = std::exchange(other.native_, std::nullopt);
-        dev_    = other.dev_;
-
-        return *this;
-    }
-
-    ~native_buffer() noexcept { destroy(); }
+    explicit native_buffer(hgn::buffer&& native) noexcept : native_{std::move(native)} {}
 
     [[nodiscard]] auto get_buffer_memory_requirements(hgn::device& dev) noexcept
         -> hgn::memory_requirements {
-        return hgn::get_buffer_memory_requirements(dev, *native_);
+        return hgn::get_buffer_memory_requirements(dev, native_);
     }
 
-    [[nodiscard]] auto get() noexcept -> hgn::buffer& { return *native_; }
+    [[nodiscard]] auto get() noexcept -> hgn::buffer& { return native_; }
 
     [[nodiscard]] operator hgn::buffer&() noexcept { return get(); }
 
   private:
-    void destroy() noexcept {
-        if (native_) hgn::destroy_buffer(dev_, get());
-    }
-
-    std::optional<hgn::buffer&>         native_;
-    std::reference_wrapper<hgn::device> dev_;
+    hgn::buffer native_;
 };
 
 class buffer final {
@@ -117,7 +66,7 @@ class buffer final {
 
         auto native_buf_res = hard.get_device().try_make_buffer(info);
         if (not native_buf_res) return make_error(runtime_error, "Failed to make buffer.");
-        auto native_buf = native_buffer{*native_buf_res, hard.get_device()};
+        auto native_buf = native_buffer{std::move(*native_buf_res)};
 
         const auto mem_requirements = native_buf.get_buffer_memory_requirements(hard.get_device());
 
@@ -134,7 +83,7 @@ class buffer final {
 
         auto dev_mem_res = hard.get_device().try_allocate_memory(alloc_info);
         if (not dev_mem_res) return make_error(runtime_error, "Failed to allocate device memory.");
-        auto dev_mem = device_memory{*dev_mem_res, hard.get_device()};
+        auto dev_mem = device_memory{std::move(*dev_mem_res)};
 
         if (not try_bind_buffer_memory(hard, native_buf, dev_mem))
             return make_error(runtime_error, "Failed to bind buffer and device memory.");

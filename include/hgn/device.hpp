@@ -3,7 +3,6 @@
 #include <cassert>
 #include <cstdint>
 #include <expected>
-#include <functional>
 #include <optional>
 #include <ranges>
 #include <span>
@@ -210,26 +209,56 @@ class device_create_info final {
     std::vector<const char*>                   extensions_;
 };
 
-using device = VkDevice_T;
+class device final {
+  public:
+    [[nodiscard]] static auto try_make(
+        physical_device& physical, const device_create_info& info
+    ) noexcept -> std::expected<device, result> {
+        auto*      native = static_cast<VkDevice_T*>(nullptr);
+        const auto res    = vkCreateDevice(&physical, &info.get(), nullptr, &native);
+        if (res != VK_SUCCESS) return make_result(res);
+
+        assert(native != nullptr);
+        return device{*native};
+    }
+
+    device(const device&) noexcept                    = delete;
+    auto operator=(const device&) noexcept -> device& = delete;
+
+    device(device&& other) noexcept : native_{std::exchange(other.native_, std::nullopt)} {}
+
+    auto operator=(device&& other) noexcept -> device& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        native_ = std::exchange(other.native_, std::nullopt);
+        return *this;
+    }
+
+    ~device() noexcept { destroy(); }
+
+    [[nodiscard]] auto get() noexcept -> VkDevice_T& { return *native_; }
+
+  private:
+    explicit device(VkDevice_T& native) noexcept : native_{native} {}
+
+    void destroy() noexcept {
+        if (native_) vkDestroyDevice(&get(), nullptr);
+    }
+
+    std::optional<VkDevice_T&> native_;
+};
 
 [[nodiscard]] inline auto try_make_device(
     physical_device& physical, const device_create_info& info
-) noexcept -> std::expected<std::reference_wrapper<device>, result> {
-    auto*      dev = static_cast<device*>(nullptr);
-    const auto res = vkCreateDevice(&physical, &info.get(), nullptr, &dev);
-    if (res != VK_SUCCESS) return make_result(res);
-
-    assert(dev != nullptr);
-    return std::ref(*dev);
-}
-
-inline void destroy_device(device& dev) noexcept {
-    vkDestroyDevice(&dev, nullptr);
+) noexcept -> std::expected<device, result> {
+    return device::try_make(physical, info);
 }
 
 [[nodiscard]] inline auto try_device_wait_idle(device& dev) noexcept
     -> std::expected<void, result> {
-    const auto res = vkDeviceWaitIdle(&dev);
+    const auto res = vkDeviceWaitIdle(&dev.get());
     if (res != VK_SUCCESS) return make_result(res);
     return {};
 }
@@ -240,7 +269,7 @@ using queue = VkQueue_T;
     device& dev, const std::uint32_t family_indices
 ) noexcept -> std::optional<queue&> {
     auto* out = static_cast<queue*>(nullptr);
-    vkGetDeviceQueue(&dev, family_indices, 0, &out);
+    vkGetDeviceQueue(&dev.get(), family_indices, 0, &out);
     if (out == nullptr) return std::nullopt;
     return *out;
 }

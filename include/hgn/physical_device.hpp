@@ -22,12 +22,12 @@ using physical_device = VkPhysicalDevice_T;
     -> std::expected<std::vector<std::reference_wrapper<physical_device>>, result> {
     auto count = std::uint32_t{};
 
-    const auto res1 = vkEnumeratePhysicalDevices(&instance_ref, &count, nullptr);
+    const auto res1 = vkEnumeratePhysicalDevices(&instance_ref.get(), &count, nullptr);
     if (res1 != VK_SUCCESS) return make_result(res1);
 
     auto devices = std::vector<physical_device*>(count);
 
-    const auto res2 = vkEnumeratePhysicalDevices(&instance_ref, &count, devices.data());
+    const auto res2 = vkEnumeratePhysicalDevices(&instance_ref.get(), &count, devices.data());
     if (res2 != VK_SUCCESS) return make_result(res2);
 
     auto out = std::vector<std::reference_wrapper<physical_device>>{};
