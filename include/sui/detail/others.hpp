@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include <hgn/enums.hpp>
+
 namespace sui::detail {
 static_assert(sizeof(float) == 4);
 static_assert(sizeof(double) == 8);
@@ -65,24 +67,25 @@ class scope_exit final {
     return buffer;
 }
 
-template <typename T, typename E>
-[[nodiscard]] constexpr auto to_optional(const std::expected<T, E>& value) noexcept
+template <typename T>
+[[nodiscard]] constexpr auto to_optional(const std::expected<T, hgn::result>& value) noexcept
     -> std::optional<T> {
     auto out = std::optional<T>{std::nullopt};
     if (not value) return out;
     return out.emplace(*value);
 }
 
-template <typename T, typename E>
-[[nodiscard]] constexpr auto to_optional(std::expected<T, E>&& value) noexcept -> std::optional<T> {
+template <typename T>
+[[nodiscard]] constexpr auto to_optional(std::expected<T, hgn::result>&& value) noexcept
+    -> std::optional<T> {
     auto out = std::optional<T>{std::nullopt};
     if (not value) return out;
     return std::move(out.emplace(std::move(*value)));
 }
 
-template <typename T, typename E>
+template <typename T>
 [[nodiscard]] constexpr auto to_optional(
-    std::expected<std::reference_wrapper<T>, E> reference
+    std::expected<std::reference_wrapper<T>, hgn::result> reference
 ) noexcept -> std::optional<T&> {
     auto out = std::optional<T&>{std::nullopt};
     if (not reference) return out;
