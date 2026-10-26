@@ -85,9 +85,8 @@ class vk_context final {
     [[nodiscard]] auto try_begin_rendering() noexcept -> bool {
         if (not protocol_.try_wait(hard_.get_device())) return false;
 
-        const auto image_index_res = hgn::try_acquire_next_image_khr(
-            hard_.get_device(), swapper_.native_swapchain(), protocol_.image_available_semaphore()
-        );
+        const auto image_index_res =
+            protocol_.acquire_next_image(hard_.get_device(), swapper_.native_swapchain());
 
         if (not image_index_res) return false;
         image_index_ = *image_index_res;
@@ -97,20 +96,20 @@ class vk_context final {
             ))
             return false;
 
-        hgn::command_bind_pipeline(protocol_.get_command_buffer(), renderer_.get_pipeline());
+        protocol_.command_bind_pipeline(renderer_.get_pipeline());
         const auto viewport = hgn::viewport{}.width(800).height(600).min_depth(0.f).max_depth(1.f);
-        hgn::command_set_viewport(protocol_.get_command_buffer(), viewport);
+        protocol_.command_set_viewport(viewport);
 
         const auto scissor = hgn::rect2d{}.offset(0, 0).extent(800, 600);
-        hgn::command_set_scissor(protocol_.get_command_buffer(), scissor);
+        protocol_.command_set_scissor(scissor);
         return true;
     }
 
     void try_rendering(const std::span<const vertex> vertices) noexcept {
         renderer_.update(vertices);
-        hgn::command_bind_vertex_buffers(protocol_.get_command_buffer(), renderer_.get_buffer());
+        protocol_.command_bind_vertex_buffer(renderer_.get_buffer());
         const auto vertex_count = static_cast<std::uint32_t>(vertices.size());
-        hgn::command_draw(protocol_.get_command_buffer(), vertex_count, 1);
+        protocol_.command_draw(vertex_count, 1);
     }
 
     [[nodiscard]] auto try_end_rendering() noexcept -> bool {

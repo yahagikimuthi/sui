@@ -191,7 +191,7 @@ inline void command_pipeline_barrier(
     return {};
 }
 
-inline void command_bind_vertex_buffers(command_buffer& cmd_buf, buffer& buf) noexcept {
+inline void command_bind_vertex_buffer(command_buffer& cmd_buf, buffer& buf) noexcept {
     constexpr auto offsets = std::array<std::uint64_t, 1>{0};
     auto*          buf_ptr = &buf;
     vkCmdBindVertexBuffers(&cmd_buf, 0, 1, &buf_ptr, offsets.data());
@@ -267,11 +267,5 @@ class rect2d final {
 
 inline void command_set_scissor(command_buffer& buf, const rect2d& scissor) noexcept {
     vkCmdSetScissor(&buf, 0, 1, &scissor.get());
-}
-
-inline void command_bind_vertex_buffer(command_buffer& cmd_buf, buffer& buf) noexcept {
-    const auto offsets = std::size_t{};
-    auto*      buf_ptr = &buf;
-    vkCmdBindVertexBuffers(&cmd_buf, 0, 1, &buf_ptr, &offsets);
 }
 }  // namespace hgn
