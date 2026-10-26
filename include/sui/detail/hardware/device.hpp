@@ -14,6 +14,7 @@
 #include <hgn/swapchain.hpp>
 #include <hgn/sync.hpp>
 #include <hgn_raii/device.hpp>
+#include <hgn_raii/queue.hpp>
 
 #include "sui/detail/hardware/physical_device.hpp"
 #include "sui/detail/others.hpp"
@@ -134,9 +135,9 @@ class device final {
         return to_optional(res);
     }
 
-    [[nodiscard]] auto try_get_device_queue(const std::uint32_t family_indices) noexcept
-        -> std::optional<hgn::queue&> {
-        return hgn::try_get_device_queue(native_, family_indices);
+    [[nodiscard]] auto try_get_queue(const std::uint32_t family_indices) noexcept
+        -> std::optional<hgn::raii::queue> {
+        return hgn::raii::try_get_queue(native_, family_indices);
     }
 
     [[nodiscard]] auto try_make_command_pool(const hgn::command_pool_create_info& info) noexcept
