@@ -66,10 +66,18 @@ class scope_exit final {
 }
 
 template <typename T, typename E>
-[[nodiscard]] constexpr auto to_optional(std::expected<T, E> value) noexcept -> std::optional<T> {
+[[nodiscard]] constexpr auto to_optional(const std::expected<T, E>& value) noexcept
+    -> std::optional<T> {
     auto out = std::optional<T>{std::nullopt};
     if (not value) return out;
     return out.emplace(*value);
+}
+
+template <typename T, typename E>
+[[nodiscard]] constexpr auto to_optional(std::expected<T, E>&& value) noexcept -> std::optional<T> {
+    auto out = std::optional<T>{std::nullopt};
+    if (not value) return out;
+    return std::move(out.emplace(std::move(*value)));
 }
 
 template <typename T, typename E>

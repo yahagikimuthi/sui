@@ -8,12 +8,13 @@
 #include <hgn/command.hpp>
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
+#include <hgn/image.hpp>
 #include <hgn/pipeline.hpp>
 #include <hgn/shader.hpp>
 #include <hgn/swapchain.hpp>
 #include <hgn/sync.hpp>
+#include <hgn_raii/device.hpp>
 
-#include "hgn/image.hpp"
 #include "sui/detail/hardware/physical_device.hpp"
 #include "sui/detail/others.hpp"
 #include "sui/error.hpp"
@@ -68,7 +69,7 @@ class device final {
 
         auto res = physical.try_make_device(info);
         if (not res) return make_error(runtime_error, "Failed to make logical device\n");
-        return device{*res};
+        return device{std::move(*res)};
     }
 
     device(const device&) noexcept                    = delete;
@@ -153,8 +154,8 @@ class device final {
     [[nodiscard]] operator hgn::device&() noexcept { return native_; }
 
   private:
-    explicit device(hgn::device& native) noexcept : native_{native} {}
+    explicit device(hgn::raii::device&& native) noexcept : native_{std::move(native)} {}
 
-    native_device native_;
+    hgn::raii::device native_;
 };
 }  // namespace sui::detail
