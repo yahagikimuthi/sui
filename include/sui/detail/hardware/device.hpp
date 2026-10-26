@@ -13,6 +13,7 @@
 #include <hgn/swapchain.hpp>
 #include <hgn/sync.hpp>
 
+#include "hgn/image.hpp"
 #include "sui/detail/hardware/physical_device.hpp"
 #include "sui/detail/others.hpp"
 #include "sui/error.hpp"
@@ -121,6 +122,12 @@ class device final {
         return to_optional(res);
     }
 
+    [[nodiscard]] auto try_make_image_view(const hgn::image_view_create_info& info) noexcept
+        -> std::optional<hgn::image_view&> {
+        auto res = hgn::try_make_image_view(get(), info);
+        return to_optional(res);
+    }
+
     [[nodiscard]] auto get() noexcept -> hgn::device& { return *native_; }
 
     [[nodiscard]] operator hgn::device&() noexcept { return get(); }
@@ -129,7 +136,7 @@ class device final {
     explicit device(hgn::device& native) noexcept : native_{native} {}
 
     void destroy() noexcept {
-        if (native_) hgn::destroy_device(*native_);
+        if (native_) hgn::destroy_device(get());
     }
 
     std::optional<hgn::device&> native_;
