@@ -28,9 +28,9 @@ class queue final {
         return res;
     }
 
-    [[nodiscard]] auto get() noexcept -> hgn::queue& { return native_; }
+    [[nodiscard]] auto get() noexcept -> hgn::raii::queue& { return native_; }
 
-    [[nodiscard]] operator hgn::queue&() noexcept { return get(); }
+    [[nodiscard]] operator hgn::raii::queue&() noexcept { return get(); }
 
   private:
     explicit queue(hgn::raii::queue& native) noexcept : native_{native} {}
