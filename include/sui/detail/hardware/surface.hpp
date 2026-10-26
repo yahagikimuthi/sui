@@ -50,8 +50,7 @@ class surface final {
         : native_{native}, instance_{inst} {}
 
     void destroy() noexcept {
-        if (not native_) return;
-        hgn::destroy_surface_khr(instance_, *native_);
+        if (native_) hgn::destroy_surface_khr(instance_, *native_);
     }
 
     std::optional<hgn::surface_khr&>      native_;
