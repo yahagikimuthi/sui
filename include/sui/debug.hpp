@@ -7,6 +7,20 @@
 #include "sui/detail/debug_impl.hpp"
 
 namespace sui {
+inline void set_debug_function(void (&fn)(std::string_view)) noexcept;
+
+template <typename F>
+    requires std::is_invocable_r_v<void, F, const std::string_view>
+inline void set_debug_function(F&& fn) noexcept;
+
+inline void reset_debug_function() noexcept;
+}  // namespace sui
+
+// ==================================================
+// Implementation details only below here
+// ==================================================
+
+namespace sui {
 inline void set_debug_function(void (&fn)(std::string_view)) noexcept {
     detail::debugger::set(fn);
 }
