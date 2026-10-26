@@ -85,7 +85,7 @@ template <typename T>
 
 template <typename T>
 [[nodiscard]] constexpr auto to_optional(
-    std::expected<std::reference_wrapper<T>, hgn::result> reference
+    const std::expected<std::reference_wrapper<T>, hgn::result>& reference
 ) noexcept -> std::optional<T&> {
     auto out = std::optional<T&>{std::nullopt};
     if (not reference) return out;
