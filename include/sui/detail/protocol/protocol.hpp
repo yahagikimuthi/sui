@@ -60,12 +60,6 @@ class protocol final {
         return sync_.image_available_semaphore();
     }
 
-    [[nodiscard]] auto render_finished_semaphore() noexcept -> hgn::semaphore& {
-        return sync_.render_finished_semaphore();
-    }
-
-    [[nodiscard]] auto in_flight_fence() noexcept -> hgn::fence& { return sync_.in_flight_fence(); }
-
     [[nodiscard]] auto try_begin_rendering(hgn::image& image, hgn::image_view& view) noexcept
         -> bool {
         return command_.try_begin_rendering(image, view);
@@ -73,13 +67,6 @@ class protocol final {
 
     [[nodiscard]] auto try_end_rendering(hgn::image& image) noexcept -> bool {
         return command_.try_end_rendering(image);
-    }
-
-    [[nodiscard]] auto make_submit_info() noexcept -> hgn::submit_info {
-        return hgn::submit_info{}
-            .setting_command_buffer(command_.buffer())
-            .wait_semaphore(sync_.image_available_semaphore())
-            .signal_semaphore(sync_.render_finished_semaphore());
     }
 
     [[nodiscard]] auto get_command_buffer() noexcept -> hgn::command_buffer& {
@@ -98,6 +85,20 @@ class protocol final {
         const std::uint32_t vertex_count, const std::uint32_t instance_count
     ) noexcept {
         command_.draw(vertex_count, instance_count);
+    }
+
+    [[nodiscard]] auto try_submit(hgn::queue& graphics_queue) noexcept -> bool {
+        const auto info = hgn::submit_info{}
+                              .setting_command_buffer(command_.buffer())
+                              .wait_semaphore(sync_.image_available_semaphore())
+                              .signal_semaphore(sync_.render_finished_semaphore());
+        return sync_.try_submit(graphics_queue, info);
+    }
+
+    [[nodiscard]] auto make_present_info(
+        hgn::swapchain_khr& chain, const std::uint32_t image_index
+    ) noexcept -> hgn::present_info_khr {
+        return sync_.make_present_info(chain, image_index);
     }
 
   private:

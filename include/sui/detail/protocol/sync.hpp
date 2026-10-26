@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstdint>
 #include <exception>
 #include <expected>
 #include <functional>
@@ -9,6 +10,8 @@
 #include <utility>
 
 #include <hgn/device.hpp>
+#include <hgn/submit.hpp>
+#include <hgn/swapchain.hpp>
 #include <hgn/sync.hpp>
 
 #include "sui/detail/debug_impl.hpp"
@@ -44,6 +47,8 @@ class semaphore final {
     ~semaphore() noexcept { destroy(); }
 
     [[nodiscard]] auto get() noexcept -> hgn::semaphore& { return native_.value(); }
+
+    [[nodiscard]] operator hgn::semaphore&() noexcept { return get(); }
 
   private:
     explicit semaphore(hgn::semaphore& native, hgn::device& dev) noexcept
@@ -87,6 +92,8 @@ class fence final {
     ~fence() noexcept { destroy(); }
 
     [[nodiscard]] auto get() noexcept -> hgn::fence& { return native_.value(); }
+
+    [[nodiscard]] operator hgn::fence&() noexcept { return get(); }
 
   private:
     explicit fence(hgn::fence& native, hgn::device& dev) noexcept
@@ -139,6 +146,20 @@ class sync final {
         if (not reset_res) return fail("Failed to reset fence.");
 
         return true;
+    }
+
+    [[nodiscard]] auto try_submit(hgn::queue& graphics_queue, const hgn::submit_info& info) noexcept
+        -> bool {
+        return hgn::try_queue_submit(graphics_queue, info, fence_).has_value();
+    }
+
+    [[nodiscard]] auto make_present_info(
+        hgn::swapchain_khr& chain, const std::uint32_t image_index
+    ) noexcept -> hgn::present_info_khr {
+        return hgn::present_info_khr{}
+            .setting_swapchain(chain)
+            .image_indices(image_index)
+            .wait_semaphore(render_finished_);
     }
 
     [[nodiscard]] auto image_available_semaphore() noexcept -> hgn::semaphore& {

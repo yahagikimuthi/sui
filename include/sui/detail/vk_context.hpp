@@ -115,14 +115,10 @@ class vk_context final {
     [[nodiscard]] auto try_end_rendering() noexcept -> bool {
         if (not protocol_.try_end_rendering(swapper_.native_image(image_index_))) return false;
 
-        const auto submit_info = protocol_.make_submit_info();
-        if (not hard_.get_graphics_queue().try_submit(submit_info, protocol_.in_flight_fence()))
-            return false;
+        if (not protocol_.try_submit(hard_.get_graphics_queue())) return false;
 
-        const auto present_info = hgn::present_info_khr{}
-                                      .wait_semaphore(protocol_.render_finished_semaphore())
-                                      .setting_swapchain(swapper_.native_swapchain())
-                                      .image_indices(image_index_);
+        const auto present_info =
+            protocol_.make_present_info(swapper_.native_swapchain(), image_index_);
 
         const auto res = hard_.get_present_queue().try_present(present_info);
         if (res) return true;
