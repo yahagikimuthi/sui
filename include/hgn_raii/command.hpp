@@ -61,10 +61,10 @@ class command_pool final {
 
 class command_buffer final {
   public:
-    [[nodiscard]] static auto try_allocate_command_buffer(
+    [[nodiscard]] static auto try_allocate(
         const hgn::command_buffer_allocate_info& info, hgn::device& dev
     ) noexcept -> std::expected<command_buffer, hgn::result> {
-        auto res = hgn::try_allocate_command_buffers(dev, info);
+        auto res = hgn::try_allocate_command_buffer(dev, info);
         if (not res) return std::unexpected{res.error()};
         return command_buffer{*res};
     }
@@ -78,4 +78,10 @@ class command_buffer final {
 
     std::reference_wrapper<hgn::command_buffer> native_;
 };
+
+[[nodiscard]] inline auto try_allocate_command_buffer(
+    const hgn::command_buffer_allocate_info& info, hgn::device& dev
+) noexcept -> std::expected<command_buffer, hgn::result> {
+    return command_buffer::try_allocate(info, dev);
+}
 }  // namespace hgn::raii
