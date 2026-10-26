@@ -32,7 +32,7 @@ class physical_device final {
 class device final {
   public:
     [[nodiscard]] static auto try_make(
-        hgn::physical_device& physical, const hgn::device_create_info& info
+        const hgn::device_create_info& info, hgn::physical_device& physical
     ) noexcept -> std::expected<device, hgn::result> {
         auto res = hgn::try_make_device(physical, info);
         if (not res) return std::unexpected{res.error()};
@@ -68,8 +68,8 @@ class device final {
 };
 
 [[nodiscard]] inline auto try_make_device(
-    hgn::physical_device& physical, const hgn::device_create_info& info
+    const hgn::device_create_info& info, hgn::physical_device& physical
 ) noexcept -> std::expected<device, hgn::result> {
-    return device::try_make(physical, info);
+    return device::try_make(info, physical);
 }
 }  // namespace hgn::raii
