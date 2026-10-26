@@ -16,7 +16,6 @@
 
 #include "sui/detail/debug_impl.hpp"
 #include "sui/detail/hardware/device.hpp"
-#include "sui/detail/others.hpp"
 #include "sui/detail/protocol/command.hpp"
 #include "sui/detail/protocol/sync.hpp"
 #include "sui/error.hpp"
@@ -52,12 +51,7 @@ class protocol final {
 
     [[nodiscard]] auto acquire_next_image(hgn::device& dev, hgn::swapchain_khr& chain) noexcept
         -> std::optional<std::uint32_t> {
-        auto res = hgn::try_acquire_next_image_khr(dev, chain, image_available_semaphore());
-        return to_optional(res);
-    }
-
-    [[nodiscard]] auto image_available_semaphore() noexcept -> hgn::semaphore& {
-        return sync_.image_available_semaphore();
+        return sync_.try_acquire_next_image_khr(dev, chain);
     }
 
     [[nodiscard]] auto try_begin_rendering(hgn::image& image, hgn::image_view& view) noexcept
