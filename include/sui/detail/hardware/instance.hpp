@@ -83,7 +83,7 @@ class instance final {
         return to_optional(res);
     }
 
-    [[nodiscard]] operator hgn::instance&() noexcept { return native_; }
+    [[nodiscard]] operator hgn::raii::instance&() noexcept { return native_; }
 
   private:
     explicit instance(hgn::raii::instance&& native) noexcept : native_{std::move(native)} {}
