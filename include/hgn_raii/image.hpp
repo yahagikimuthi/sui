@@ -84,4 +84,10 @@ class image_view final {
     std::optional<hgn::image_view&>     native_;
     std::reference_wrapper<hgn::device> dev_;
 };
+
+[[nodiscard]] inline auto try_make_image_view(
+    const hgn::image_view_create_info& info, hgn::device& dev
+) noexcept -> std::expected<image_view, hgn::result> {
+    return image_view::try_make(info, dev);
+}
 }  // namespace hgn::raii
