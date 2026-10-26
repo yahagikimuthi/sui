@@ -5,7 +5,7 @@
 #include <functional>
 #include <utility>
 
-#include <hgn/instance.hpp>
+#include <hgn_raii/instance.hpp>
 #include <hgn_raii/surface.hpp>
 #include <kgm/window.hpp>
 
@@ -14,7 +14,7 @@
 namespace sui::detail {
 class surface final {
   public:
-    [[nodiscard]] static auto try_make(kgm::window& win, hgn::instance& inst) noexcept
+    [[nodiscard]] static auto try_make(kgm::window& win, hgn::raii::instance& inst) noexcept
         -> std::expected<surface, error> {
         auto native = kgm::try_make_window_surface(inst, win);
         if (not native) return make_error(runtime_error, "Failed to make window surface");
