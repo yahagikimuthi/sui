@@ -2,12 +2,11 @@
 
 #include <cstdint>
 #include <expected>
-#include <functional>
 
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/submit.hpp>
-#include <hgn/sync.hpp>
+#include <hgn_raii/queue.hpp>
 
 #include "sui/detail/hardware/device.hpp"
 #include "sui/error.hpp"
@@ -17,7 +16,7 @@ class queue final {
   public:
     [[nodiscard]] static auto try_make(device& dev, const std::uint32_t family_indices) noexcept
         -> std::expected<queue, error> {
-        auto res = dev.try_get_device_queue(family_indices);
+        auto res = dev.try_get_queue(family_indices);
         if (not res) return make_error(runtime_error, "Failed to make queue.");
 
         return queue{*res};
@@ -34,8 +33,8 @@ class queue final {
     [[nodiscard]] operator hgn::queue&() noexcept { return get(); }
 
   private:
-    explicit queue(hgn::queue& native) noexcept : native_{native} {}
+    explicit queue(hgn::raii::queue& native) noexcept : native_{native} {}
 
-    std::reference_wrapper<hgn::queue> native_;
+    hgn::raii::queue native_;
 };
 }  // namespace sui::detail
