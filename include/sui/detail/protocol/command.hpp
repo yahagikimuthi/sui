@@ -30,8 +30,7 @@ class command_pool final {
         return command_pool{*res, dev};
     }
 
-    command_pool(const command_pool&) noexcept = delete;
-
+    command_pool(const command_pool&) noexcept                    = delete;
     auto operator=(const command_pool&) noexcept -> command_pool& = delete;
 
     command_pool(command_pool&& other) noexcept
