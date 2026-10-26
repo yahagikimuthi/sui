@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include <hgn/app_instance_info.hpp>
 #include <hgn/instance.hpp>
 #include <hgn/physical_device.hpp>
 #include <kgm/kgm.hpp>
