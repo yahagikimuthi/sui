@@ -14,6 +14,7 @@
 #include <hgn/swapchain.hpp>
 #include <hgn/sync.hpp>
 #include <hgn_raii/device.hpp>
+#include <hgn_raii/image.hpp>
 #include <hgn_raii/queue.hpp>
 
 #include "sui/detail/hardware/physical_device.hpp"
@@ -114,9 +115,9 @@ class device final {
     }
 
     [[nodiscard]] auto try_make_image_view(const hgn::image_view_create_info& info) noexcept
-        -> std::optional<hgn::image_view&> {
-        auto res = hgn::try_make_image_view(native_, info);
-        return to_optional(res);
+        -> std::optional<hgn::raii::image_view> {
+        auto res = hgn::raii::try_make_image_view(info, get());
+        return to_optional(std::move(res));
     }
 
     [[nodiscard]] auto get() noexcept -> hgn::raii::device& { return native_; }

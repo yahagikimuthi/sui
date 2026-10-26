@@ -10,6 +10,7 @@
 #include <hgn/enums.hpp>
 #include <hgn/image.hpp>
 #include <hgn/swapchain.hpp>
+#include <hgn_raii/image.hpp>
 
 #include "sui/detail/hardware/device.hpp"
 #include "sui/detail/swapping/swapchain.hpp"
@@ -50,7 +51,7 @@ class image_view_container final {
     [[nodiscard]] static auto try_make(
         image_container& images, device& dev, const hgn::format format
     ) noexcept -> std::expected<image_view_container, error> {
-        auto views = std::vector<ref_w<hgn::image_view>>{};
+        auto views = std::vector<hgn::raii::image_view>{};
         views.reserve(images.size());
 
         for (const auto i : std::views::indices(images.size())) {
@@ -58,44 +59,22 @@ class image_view_container final {
 
             auto res = dev.try_make_image_view(info);
             if (not res) return make_error(runtime_error, "Failed to make swapchain image view.");
-            views.emplace_back(std::ref(*res));
+            views.emplace_back(std::move(*res));
         }
 
-        return image_view_container{std::move(views), dev};
+        return image_view_container{std::move(views)};
     }
-
-    image_view_container(const image_view_container&) noexcept                    = delete;
-    auto operator=(const image_view_container&) noexcept -> image_view_container& = delete;
-    image_view_container(image_view_container&& other) noexcept                   = default;
-
-    auto operator=(image_view_container&& other) noexcept -> image_view_container& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        views_ = std::move(other.views_);
-        return *this;
-    }
-
-    ~image_view_container() noexcept { destroy(); }
 
     [[nodiscard]] auto size() const noexcept -> std::size_t { return views_.size(); }
 
-    [[nodiscard]] auto operator[](const std::size_t i) noexcept -> hgn::image_view& {
-        return views_[i].get();
+    [[nodiscard]] auto operator[](const std::size_t i) noexcept -> hgn::raii::image_view& {
+        return views_[i];
     }
 
-    explicit image_view_container(
-        std::vector<ref_w<hgn::image_view>>&& views, hgn::device& dev
-    ) noexcept
-        : views_{std::move(views)}, dev_{std::ref(dev)} {}
+    explicit image_view_container(std::vector<hgn::raii::image_view>&& views) noexcept
+        : views_{std::move(views)} {}
 
   private:
-    void destroy() noexcept {
-        for (auto view : views_) hgn::destroy_image_view(dev_, view.get());
-    }
-
-    std::vector<ref_w<hgn::image_view>> views_;
-    ref_w<hgn::device>                  dev_;
+    std::vector<hgn::raii::image_view> views_;
 };
 }  // namespace sui::detail
