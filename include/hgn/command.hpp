@@ -35,7 +35,7 @@ class command_pool_create_info final {
 };
 
 [[nodiscard]] inline auto try_make_command_pool(
-    device& dev, command_pool_create_info& info
+    device& dev, const command_pool_create_info& info
 ) noexcept -> std::expected<std::reference_wrapper<command_pool>, result> {
     auto* pool        = static_cast<command_pool*>(nullptr);
     auto  native_info = std::bit_cast<VkCommandPoolCreateInfo>(info);
