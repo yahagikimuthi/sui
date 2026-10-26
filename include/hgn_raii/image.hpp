@@ -17,7 +17,7 @@ class image_container final {
     using ref_w = std::reference_wrapper<T>;
 
   public:
-    [[nodiscard]] static auto try_make(hgn::swapchain_khr& chain, hgn::device& dev) noexcept
+    [[nodiscard]] static auto try_get(hgn::swapchain_khr& chain, hgn::device& dev) noexcept
         -> std::expected<image_container, hgn::result> {
         auto res = hgn::try_get_swapchain_images_khr(dev, chain);
         if (not res) return std::unexpected{res.error()};
@@ -36,9 +36,10 @@ class image_container final {
     std::vector<ref_w<hgn::image>> natives_;
 };
 
-[[nodiscard]] inline auto try_make_images(hgn::swapchain_khr& chain, hgn::device& dev) noexcept
-    -> std::expected<image_container, hgn::result> {
-    return image_container::try_make(chain, dev);
+[[nodiscard]] inline auto try_get_swapchain_images_khr(
+    hgn::swapchain_khr& chain, hgn::device& dev
+) noexcept -> std::expected<image_container, hgn::result> {
+    return image_container::try_get(chain, dev);
 }
 
 class image_view final {
