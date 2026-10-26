@@ -42,7 +42,7 @@ class pipeline_layout final {
 
   private:
     void destroy() noexcept {
-        if (native_) hgn::destroy_pipeline_layout(dev_.get(), *native_);
+        if (native_) hgn::destroy_pipeline_layout(dev_, *native_);
     }
 
     std::optional<hgn::pipeline_layout&> native_;
