@@ -32,9 +32,9 @@ class device final {
                 .extensions({hgn::khr_swapchain_extention_name})
                 .dynamic_rendering_features(hgn::physical_device_dynamic_rendering_features{});
 
-        auto res = hgn::try_make_device(physical.get(), info);
+        auto res = physical.try_make_device(info);
         if (not res) return make_error(runtime_error, "Failed to make logical device\n");
-        return device{res->get()};
+        return device{*res};
     }
 
     device(const device&) noexcept                    = delete;
