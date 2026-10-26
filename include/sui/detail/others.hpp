@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <expected>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -62,5 +63,21 @@ class scope_exit final {
     file.close();
 
     return buffer;
+}
+
+template <typename T, typename E>
+[[nodiscard]] constexpr auto to_optional(std::expected<T, E> value) noexcept -> std::optional<T> {
+    auto out = std::optional<T>{std::nullopt};
+    if (not value) return out;
+    return out.emplace(*value);
+}
+
+template <typename T, typename E>
+[[nodiscard]] constexpr auto to_optional(
+    std::expected<std::reference_wrapper<T>, E> reference
+) noexcept -> std::optional<T&> {
+    auto out = std::optional<T&>{std::nullopt};
+    if (not reference) return out;
+    return out.emplace(reference->get());
 }
 }  // namespace sui::detail
