@@ -43,7 +43,7 @@ class renderer final {
 
     void update(const std::span<const vertex> vertices) noexcept { buf_.update(vertices); }
 
-    [[nodiscard]] auto get_buffer() noexcept -> hgn::buffer& { return buf_.get_buffer(); }
+    [[nodiscard]] auto get_buffer() noexcept -> hgn::buffer& { return buf_.get(); }
 
     [[nodiscard]] auto get_pipeline() noexcept -> hgn::pipeline& { return pipe_.get_pipeline(); }
 

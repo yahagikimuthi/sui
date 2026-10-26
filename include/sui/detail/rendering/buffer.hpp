@@ -156,7 +156,7 @@ class buffer final {
         std::memcpy(data_.data(), vertices.data(), sizeof(vertex) * vertices.size());
     }
 
-    [[nodiscard]] auto get_buffer() noexcept -> hgn::buffer& { return buffer_.get(); }
+    [[nodiscard]] auto get() noexcept -> hgn::buffer& { return buffer_.get(); }
 
   private:
     explicit buffer(
