@@ -24,13 +24,13 @@ class queue final {
     }
 
     [[nodiscard]] auto try_submit(const hgn::submit_info& info, hgn::fence& fen) noexcept -> bool {
-        const auto res = hgn::try_queue_submit(native_.get(), info, fen);
+        const auto res = hgn::try_queue_submit(native_, info, fen);
         return res.has_value();
     }
 
     [[nodiscard]] auto try_present(const hgn::present_info_khr& info) noexcept
         -> std::expected<void, hgn::result> {
-        const auto res = hgn::try_queue_present_khr(native_.get(), info);
+        const auto res = hgn::try_queue_present_khr(native_, info);
         return res;
     }
 
