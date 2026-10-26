@@ -35,7 +35,7 @@ class hardware final {
         auto inst = instance::try_make();
         if (not inst) return make_error(runtime_error, "Failed to make instance.", inst.error());
 
-        auto sur = surface::try_make(win, inst->get());
+        auto sur = surface::try_make(win, *inst);
         if (not sur) return make_error(runtime_error, "Failed to make surface.", sur.error());
 
         auto physical_devices_res = inst->try_enumerate_physical_devices();
@@ -46,7 +46,7 @@ class hardware final {
         auto suitable_physicals =
             native_physical_devices |
             std::views::filter([&](hgn::physical_device& physical) noexcept -> bool {
-                return is_device_suitable(physical, sur->get());
+                return is_device_suitable(physical, *sur);
             });
 
         if (suitable_physicals.empty())
