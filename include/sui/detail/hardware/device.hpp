@@ -16,6 +16,7 @@
 #include <hgn_raii/device.hpp>
 #include <hgn_raii/image.hpp>
 #include <hgn_raii/queue.hpp>
+#include <hgn_raii/swapchain.hpp>
 
 #include "sui/detail/hardware/physical_device.hpp"
 #include "sui/detail/others.hpp"
@@ -79,9 +80,9 @@ class device final {
     }
 
     [[nodiscard]] auto try_make_swapchain(const hgn::swapchain_create_info_khr& info) noexcept
-        -> std::optional<hgn::swapchain_khr&> {
-        auto res = hgn::try_make_swapchain(native_, info);
-        return to_optional(res);
+        -> std::optional<hgn::raii::swapchain_khr> {
+        auto res = hgn::raii::try_make_swapchain(info, get());
+        return to_optional(std::move(res));
     }
 
     [[nodiscard]] auto try_make_semaphore(const hgn::semaphore_create_info& info) noexcept
