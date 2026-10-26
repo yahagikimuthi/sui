@@ -11,6 +11,7 @@
 #include <hgn/physical_device.hpp>
 #include <kgm/kgm.hpp>
 
+#include "sui/detail/others.hpp"
 #include "sui/error.hpp"
 
 namespace sui::detail {
@@ -56,10 +57,8 @@ class instance final {
 
     [[nodiscard]] auto try_enumerate_physical_devices() noexcept
         -> std::optional<std::vector<std::reference_wrapper<hgn::physical_device>>> {
-        if (not native_) return std::nullopt;
-        auto res = hgn::try_enumerate_physical_devices(*native_);
-        if (not res) return std::nullopt;
-        return *res;
+        auto res = hgn::try_enumerate_physical_devices(get());
+        return to_optional(res);
     }
 
     [[nodiscard]] auto get() noexcept -> hgn::instance& { return *native_; }
