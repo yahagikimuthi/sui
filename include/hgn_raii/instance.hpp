@@ -7,15 +7,13 @@
 #include <hgn/enums.hpp>
 #include <hgn/instance.hpp>
 
-#include "hgn_raii/detail/others.hpp"
-
 namespace hgn::raii {
 class instance final {
   public:
     [[nodiscard]] static auto try_make(hgn::instance_create_info& info) noexcept
         -> std::expected<instance, result> {
         auto res = hgn::try_make_instance(info);
-        if (not res) return detail::make_unexpected(res);
+        if (not res) return std::unexpected{res.error()};
 
         return instance{*res};
     }
