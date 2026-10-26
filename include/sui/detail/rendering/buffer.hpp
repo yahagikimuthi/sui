@@ -56,7 +56,7 @@ class device_memory final {
 
   private:
     void destroy() noexcept {
-        if (native_) hgn::free_memory(dev_.get(), *native_);
+        if (native_) hgn::free_memory(dev_, get());
     }
 
     std::optional<hgn::device_memory&>  native_;
@@ -98,7 +98,7 @@ class native_buffer final {
 
   private:
     void destroy() noexcept {
-        if (native_) hgn::destroy_buffer(dev_.get(), *native_);
+        if (native_) hgn::destroy_buffer(dev_, get());
     }
 
     std::optional<hgn::buffer&>         native_;
