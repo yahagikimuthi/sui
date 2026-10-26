@@ -11,7 +11,7 @@ namespace hgn::raii {
 class instance final {
   public:
     [[nodiscard]] static auto try_make(hgn::instance_create_info& info) noexcept
-        -> std::expected<instance, result> {
+        -> std::expected<instance, hgn::result> {
         auto res = hgn::try_make_instance(info);
         if (not res) return std::unexpected{res.error()};
 
