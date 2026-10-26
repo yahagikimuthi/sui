@@ -9,8 +9,10 @@
 #include <hgn/submit.hpp>
 #include <hgn/surface.hpp>
 #include <hgn/sync.hpp>
+#include <hgn_raii/surface.hpp>
 #include <kgm/window.hpp>
 
+#include "hgn_raii/device.hpp"
 #include "sui/detail/hardware/device.hpp"
 #include "sui/detail/hardware/instance.hpp"
 #include "sui/detail/hardware/physical_device.hpp"
@@ -54,8 +56,11 @@ class hardware final {
 
         const auto indices = find_queue_families(suitable_physicals.front(), *sur);
 
-        auto physical = physical_device{
-            suitable_physicals.front(), *indices.graphics_family, *indices.present_family
+        auto& native_physical = native_physical_devices.front().get();
+        auto  physical        = physical_device{
+            hgn::raii::make_physical(std::move(native_physical)),
+            *indices.graphics_family,
+            *indices.present_family
         };
 
         auto dev = device::try_make(physical);
@@ -91,14 +96,16 @@ class hardware final {
 
     [[nodiscard]] auto try_get_physical_device_surface_capabilities() noexcept
         -> std::optional<hgn::surface_capabilities_khr> {
-        const auto res = hgn::try_get_physical_device_surface_capabilities_khr(physical_, surface_);
+        const auto res =
+            hgn::try_get_physical_device_surface_capabilities_khr(physical_.get(), surface_.get());
         if (not res) return std::nullopt;
         return *res;
     }
 
     [[nodiscard]] auto try_get_physical_device_surface_formats() noexcept
         -> std::optional<std::vector<hgn::surface_format_khr>> {
-        const auto res = hgn::try_get_physical_device_surface_formats_khr(physical_, surface_);
+        const auto res =
+            hgn::try_get_physical_device_surface_formats_khr(physical_.get(), surface_.get());
         if (not res) return std::nullopt;
         return *res;
     }
@@ -106,7 +113,7 @@ class hardware final {
     [[nodiscard]] auto try_get_physical_device_surface_present_modes() noexcept
         -> std::optional<std::vector<hgn::present_mode_khr>> {
         const auto res =
-            hgn::try_get_physical_device_surface_present_modes_khr(physical_, surface_);
+            hgn::try_get_physical_device_surface_present_modes_khr(physical_.get(), surface_.get());
         if (not res) return std::nullopt;
         return *res;
     }
@@ -134,7 +141,7 @@ class hardware final {
           present_{present} {}
 
     [[nodiscard]] static auto find_queue_families(
-        hgn::physical_device& device, hgn::surface_khr& surface
+        hgn::physical_device& device, hgn::raii::surface_khr& surface
     ) noexcept -> queue_family_indices {
         auto indices = queue_family_indices{};
 
@@ -159,7 +166,7 @@ class hardware final {
     }
 
     [[nodiscard]] static auto is_device_suitable(
-        hgn::physical_device& device, hgn::surface_khr& surface
+        hgn::physical_device& device, hgn::raii::surface_khr& surface
     ) noexcept -> bool {
         return find_queue_families(device, surface).is_complete();
     }
