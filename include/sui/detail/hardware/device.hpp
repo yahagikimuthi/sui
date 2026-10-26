@@ -22,39 +22,6 @@
 
 namespace sui::detail {
 class device final {
-    class native_device final {
-      public:
-        explicit native_device(hgn::device& dev) noexcept : native_{dev} {}
-
-        native_device(const native_device&) noexcept                    = delete;
-        auto operator=(const native_device&) noexcept -> native_device& = delete;
-
-        native_device(native_device&& other) noexcept
-            : native_{std::exchange(other.native_, std::nullopt)} {}
-
-        auto operator=(native_device&& other) noexcept -> native_device& {
-            if (this == &other) return *this;
-
-            destroy();
-
-            native_ = std::exchange(other.native_, std::nullopt);
-            return *this;
-        }
-
-        ~native_device() noexcept { destroy(); }
-
-        [[nodiscard]] auto get() noexcept -> hgn::device& { return *native_; }
-
-        [[nodiscard]] operator hgn::device&() noexcept { return get(); }
-
-      private:
-        void destroy() noexcept {
-            if (native_) hgn::destroy_device(get());
-        }
-
-        std::optional<hgn::device&> native_;
-    };
-
   public:
     [[nodiscard]] static auto try_make(physical_device& physical) noexcept
         -> std::expected<device, error> {
@@ -152,7 +119,9 @@ class device final {
         return to_optional(res);
     }
 
-    [[nodiscard]] operator hgn::device&() noexcept { return native_; }
+    [[nodiscard]] auto get() noexcept -> hgn::raii::device& { return native_; }
+
+    [[nodiscard]] operator hgn::raii::device&() noexcept { return get(); }
 
   private:
     explicit device(hgn::raii::device&& native) noexcept : native_{std::move(native)} {}
