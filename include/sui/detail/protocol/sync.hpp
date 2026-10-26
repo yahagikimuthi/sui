@@ -10,12 +10,14 @@
 #include <utility>
 
 #include <hgn/device.hpp>
+#include <hgn/image.hpp>
 #include <hgn/submit.hpp>
 #include <hgn/swapchain.hpp>
 #include <hgn/sync.hpp>
 
 #include "sui/detail/debug_impl.hpp"
 #include "sui/detail/hardware/device.hpp"
+#include "sui/detail/others.hpp"
 #include "sui/error.hpp"
 
 namespace sui::detail {
@@ -139,10 +141,10 @@ class sync final {
     ~sync() noexcept                              = default;
 
     [[nodiscard]] auto try_wait_fence(hgn::device& dev) noexcept -> bool {
-        auto wait_res = hgn::try_wait_for_fence(dev, in_flight_fence());
+        auto wait_res = hgn::try_wait_for_fence(dev, fence_);
         if (not wait_res) return fail("Failed to wait for fence.");
 
-        auto reset_res = hgn::try_reset_fence(dev, in_flight_fence());
+        auto reset_res = hgn::try_reset_fence(dev, fence_);
         if (not reset_res) return fail("Failed to reset fence.");
 
         return true;
@@ -170,7 +172,12 @@ class sync final {
         return render_finished_.get();
     }
 
-    [[nodiscard]] auto in_flight_fence() noexcept -> hgn::fence& { return fence_.get(); }
+    [[nodiscard]] auto try_acquire_next_image_khr(
+        hgn::device& dev, hgn::swapchain_khr& chain
+    ) noexcept -> std::optional<std::uint32_t> {
+        auto res = hgn::try_acquire_next_image_khr(dev, chain, image_available_);
+        return to_optional(res);
+    }
 
   private:
     explicit sync(semaphore&& image, semaphore&& render, fence&& fen) noexcept
