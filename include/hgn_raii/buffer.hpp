@@ -1,0 +1,63 @@
+#pragma once
+
+#include <expected>
+#include <functional>
+#include <optional>
+#include <utility>
+
+#include <hgn/buffer.hpp>
+#include <hgn/device.hpp>
+#include <hgn/enums.hpp>
+
+namespace hgn::raii {
+class device_memory final {
+  public:
+    [[nodiscard]] static auto try_allocate(
+        const hgn::memory_allocate_info& info, hgn::device& dev
+    ) noexcept -> std::expected<device_memory, hgn::result> {
+        auto res = hgn::try_allocate_memory(dev, info);
+        if (not res) return std::unexpected{res.error()};
+
+        return device_memory{*res, dev};
+    }
+
+    device_memory(const device_memory&) noexcept                    = default;
+    auto operator=(const device_memory&) noexcept -> device_memory& = delete;
+
+    device_memory(device_memory&& other) noexcept
+        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
+
+    auto operator=(device_memory&& other) noexcept -> device_memory& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        native_ = std::exchange(other.native_, std::nullopt);
+        dev_    = other.dev_;
+        return *this;
+    }
+
+    ~device_memory() noexcept { destroy(); }
+
+    [[nodiscard]] auto get() noexcept -> hgn::device_memory& { return *native_; }
+
+    [[nodiscard]] operator hgn::device_memory&() noexcept { return get(); }
+
+  private:
+    explicit device_memory(hgn::device_memory& native, hgn::device& dev) noexcept
+        : native_{native}, dev_{std::ref(dev)} {}
+
+    void destroy() noexcept {
+        if (native_) hgn::free_memory(dev_, get());
+    }
+
+    std::optional<hgn::device_memory&>  native_;
+    std::reference_wrapper<hgn::device> dev_;
+};
+
+[[nodiscard]] inline auto try_allocate_memory(
+    const hgn::memory_allocate_info& info, hgn::device& dev
+) noexcept -> std::expected<device_memory, hgn::result> {
+    return device_memory::try_allocate(info, dev);
+}
+}  // namespace hgn::raii
