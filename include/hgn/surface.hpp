@@ -16,7 +16,7 @@ namespace hgn {
 using surface_khr = VkSurfaceKHR_T;
 
 inline void destroy_surface_khr(instance& ins, surface_khr& target) noexcept {
-    vkDestroySurfaceKHR(&ins.get(), &target, nullptr);
+    vkDestroySurfaceKHR(&ins, &target, nullptr);
 }
 
 [[nodiscard]] inline auto is_physical_device_surface_support_khr(

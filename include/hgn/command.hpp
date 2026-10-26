@@ -40,7 +40,7 @@ class command_pool_create_info final {
     auto* pool        = static_cast<command_pool*>(nullptr);
     auto  native_info = std::bit_cast<VkCommandPoolCreateInfo>(info);
 
-    auto res = vkCreateCommandPool(&dev.get(), &native_info, nullptr, &pool);
+    auto res = vkCreateCommandPool(&dev, &native_info, nullptr, &pool);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(pool != nullptr);
@@ -48,7 +48,7 @@ class command_pool_create_info final {
 }
 
 inline void destroy_command_pool(device& dev, command_pool& target) noexcept {
-    vkDestroyCommandPool(&dev.get(), &target, nullptr);
+    vkDestroyCommandPool(&dev, &target, nullptr);
 }
 
 class command_buffer_allocate_info final {
@@ -79,7 +79,7 @@ class command_buffer_allocate_info final {
     auto* buffers     = static_cast<command_buffer*>(nullptr);
     auto  native_info = std::bit_cast<VkCommandBufferAllocateInfo>(info);
 
-    auto res = vkAllocateCommandBuffers(&dev.get(), &native_info, &buffers);
+    auto res = vkAllocateCommandBuffers(&dev, &native_info, &buffers);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(buffers != nullptr);
@@ -193,7 +193,7 @@ inline void command_pipeline_barrier(
 
 inline void command_bind_vertex_buffer(command_buffer& cmd_buf, buffer& buf) noexcept {
     constexpr auto offsets = std::array<std::uint64_t, 1>{0};
-    auto*          buf_ptr = &buf.get();
+    auto*          buf_ptr = &buf;
     vkCmdBindVertexBuffers(&cmd_buf, 0, 1, &buf_ptr, offsets.data());
 }
 

@@ -20,6 +20,39 @@
 
 namespace sui::detail {
 class device final {
+    class native_device final {
+      public:
+        explicit native_device(hgn::device& dev) noexcept : native_{dev} {}
+
+        native_device(const native_device&) noexcept                    = delete;
+        auto operator=(const native_device&) noexcept -> native_device& = delete;
+
+        native_device(native_device&& other) noexcept
+            : native_{std::exchange(other.native_, std::nullopt)} {}
+
+        auto operator=(native_device&& other) noexcept -> native_device& {
+            if (this == &other) return *this;
+
+            destroy();
+
+            native_ = std::exchange(other.native_, std::nullopt);
+            return *this;
+        }
+
+        ~native_device() noexcept { destroy(); }
+
+        [[nodiscard]] auto get() noexcept -> hgn::device& { return *native_; }
+
+        [[nodiscard]] operator hgn::device&() noexcept { return get(); }
+
+      private:
+        void destroy() noexcept {
+            if (native_) hgn::destroy_device(get());
+        }
+
+        std::optional<hgn::device&> native_;
+    };
+
   public:
     [[nodiscard]] static auto try_make(physical_device& physical) noexcept
         -> std::expected<device, error> {
@@ -35,7 +68,7 @@ class device final {
 
         auto res = physical.try_make_device(info);
         if (not res) return make_error(runtime_error, "Failed to make logical device\n");
-        return device{std::move(*res)};
+        return device{*res};
     }
 
     device(const device&) noexcept                    = delete;
@@ -50,15 +83,16 @@ class device final {
     }
 
     [[nodiscard]] auto try_make_buffer(const hgn::buffer_create_info& info) noexcept
-        -> std::optional<hgn::buffer> {
-        auto res = hgn::try_make_buffer(native_, info);
-        return to_optional(std::move(res));
+        -> std::optional<hgn::buffer&> {
+        const auto res = hgn::try_make_buffer(native_, info);
+        if (not res) return std::nullopt;
+        return *res;
     }
 
     [[nodiscard]] auto try_allocate_memory(const hgn::memory_allocate_info& info) noexcept
-        -> std::optional<hgn::device_memory> {
+        -> std::optional<hgn::device_memory&> {
         auto res = hgn::try_allocate_memory(native_, info);
-        return to_optional(std::move(res));
+        return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_pipeline_layout(
@@ -119,8 +153,8 @@ class device final {
     [[nodiscard]] operator hgn::device&() noexcept { return native_; }
 
   private:
-    explicit device(hgn::device&& native) noexcept : native_{std::move(native)} {}
+    explicit device(hgn::device& native) noexcept : native_{native} {}
 
-    hgn::device native_;
+    native_device native_;
 };
 }  // namespace sui::detail

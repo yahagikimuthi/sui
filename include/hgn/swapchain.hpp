@@ -142,7 +142,7 @@ using swapchain_khr = VkSwapchainKHR_T;
     device& dev, const swapchain_create_info_khr& info
 ) noexcept -> std::expected<std::reference_wrapper<swapchain_khr>, result> {
     auto*      chain = static_cast<swapchain_khr*>(nullptr);
-    const auto res   = vkCreateSwapchainKHR(&dev.get(), &info.get(), nullptr, &chain);
+    const auto res   = vkCreateSwapchainKHR(&dev, &info.get(), nullptr, &chain);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(chain != nullptr);
@@ -151,6 +151,6 @@ using swapchain_khr = VkSwapchainKHR_T;
 }
 
 inline void destroy_swapchain_khr(device& dev, swapchain_khr& target) noexcept {
-    vkDestroySwapchainKHR(&dev.get(), &target, nullptr);
+    vkDestroySwapchainKHR(&dev, &target, nullptr);
 }
 }  // namespace hgn

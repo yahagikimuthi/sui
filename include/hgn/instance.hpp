@@ -4,10 +4,9 @@
 #include <cassert>
 #include <cstdint>
 #include <expected>
-#include <optional>
+#include <functional>
 #include <ranges>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -16,49 +15,16 @@
 #include "hgn/enums.hpp"
 
 namespace hgn {
-class instance final {
-  public:
-    [[nodiscard]] static auto try_make(const instance_create_info& info) noexcept
-        -> std::expected<instance, result> {
-        auto*      native = static_cast<VkInstance_T*>(nullptr);
-        const auto res    = vkCreateInstance(&info.get(), nullptr, &native);
-        if (res != VK_SUCCESS) return make_result(res);
-
-        assert(native != nullptr);
-        return instance{*native};
-    }
-
-    instance(const instance&) noexcept                    = delete;
-    auto operator=(const instance&) noexcept -> instance& = delete;
-
-    instance(instance&& other) noexcept : native_{std::exchange(other.native_, std::nullopt)} {}
-
-    auto operator=(instance&& other) noexcept -> instance& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        native_ = std::exchange(other.native_, std::nullopt);
-        return *this;
-    }
-
-    ~instance() { destroy(); }
-
-    [[nodiscard]] auto get() noexcept -> VkInstance_T& { return *native_; }
-
-  private:
-    explicit instance(VkInstance_T& native) noexcept : native_{native} {}
-
-    void destroy() noexcept {
-        if (native_) vkDestroyInstance(&get(), nullptr);
-    }
-
-    std::optional<VkInstance_T&> native_;
-};
+using instance = VkInstance_T;
 
 [[nodiscard]] inline auto try_make_instance(const instance_create_info& info) noexcept
-    -> std::expected<instance, result> {
-    return instance::try_make(info);
+    -> std::expected<std::reference_wrapper<instance>, result> {
+    auto*      ins = static_cast<instance*>(nullptr);
+    const auto res = vkCreateInstance(&info.get(), nullptr, &ins);
+    if (res != VK_SUCCESS) return make_result(res);
+
+    assert(ins != nullptr);
+    return std::ref(*ins);
 }
 
 class layer_properties final {
@@ -92,5 +58,9 @@ class layer_properties final {
     );
 
     return out;
+}
+
+inline void destroy_instance(instance& ins) noexcept {
+    vkDestroyInstance(&ins, nullptr);
 }
 }  // namespace hgn

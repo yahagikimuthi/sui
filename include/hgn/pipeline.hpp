@@ -428,7 +428,7 @@ class pipeline_layout_create_info final {
 ) noexcept -> std::expected<std::reference_wrapper<pipeline_layout>, result> {
     auto*      layout_ptr  = static_cast<pipeline_layout*>(nullptr);
     auto       native_info = std::bit_cast<VkPipelineLayoutCreateInfo>(info);
-    const auto res         = vkCreatePipelineLayout(&dev.get(), &native_info, nullptr, &layout_ptr);
+    const auto res         = vkCreatePipelineLayout(&dev, &native_info, nullptr, &layout_ptr);
 
     if (res != VK_SUCCESS) return make_result(res);
 
@@ -437,7 +437,7 @@ class pipeline_layout_create_info final {
 }
 
 inline void destroy_pipeline_layout(device& dev, pipeline_layout& target) noexcept {
-    vkDestroyPipelineLayout(&dev.get(), &target, nullptr);
+    vkDestroyPipelineLayout(&dev, &target, nullptr);
 }
 
 class pipeline_rendering_create_info final {
@@ -726,8 +726,7 @@ using pipeline = VkPipeline_T;
 ) noexcept -> std::expected<std::reference_wrapper<pipeline>, result> {
     auto* pipe_ptr = static_cast<pipeline*>(nullptr);
 
-    const auto res =
-        vkCreateGraphicsPipelines(&dev.get(), nullptr, 1, &info.get(), nullptr, &pipe_ptr);
+    const auto res = vkCreateGraphicsPipelines(&dev, nullptr, 1, &info.get(), nullptr, &pipe_ptr);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(pipe_ptr != nullptr);
@@ -735,7 +734,7 @@ using pipeline = VkPipeline_T;
 }
 
 inline void destroy_pipeline(device& dev, pipeline& target) noexcept {
-    vkDestroyPipeline(&dev.get(), &target, nullptr);
+    vkDestroyPipeline(&dev, &target, nullptr);
 }
 
 inline void command_bind_pipeline(command_buffer& buf, pipeline& pipe) noexcept {

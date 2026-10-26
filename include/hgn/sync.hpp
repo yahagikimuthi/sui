@@ -45,7 +45,7 @@ class fence_create_info final {
     auto* sem         = static_cast<semaphore*>(nullptr);
     auto  native_info = std::bit_cast<VkSemaphoreCreateInfo>(info);
 
-    auto res = vkCreateSemaphore(&dev.get(), &native_info, nullptr, &sem);
+    auto res = vkCreateSemaphore(&dev, &native_info, nullptr, &sem);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(sem != nullptr);
@@ -53,7 +53,7 @@ class fence_create_info final {
 }
 
 inline void destroy_semaphore(device& dev, semaphore& target) noexcept {
-    vkDestroySemaphore(&dev.get(), &target, nullptr);
+    vkDestroySemaphore(&dev, &target, nullptr);
 }
 
 [[nodiscard]] inline auto try_make_fence(device& dev, const fence_create_info& info) noexcept
@@ -61,7 +61,7 @@ inline void destroy_semaphore(device& dev, semaphore& target) noexcept {
     auto* in_fence    = static_cast<fence*>(nullptr);
     auto  native_info = std::bit_cast<VkFenceCreateInfo>(info);
 
-    auto res = vkCreateFence(&dev.get(), &native_info, nullptr, &in_fence);
+    auto res = vkCreateFence(&dev, &native_info, nullptr, &in_fence);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(in_fence != nullptr);
@@ -102,7 +102,7 @@ template <std::size_t N>
 ) noexcept -> std::expected<void, result> {
     auto*      fen_ptr = &fen;
     const auto res =
-        vkWaitForFences(&dev.get(), 1, &fen_ptr, static_cast<VkBool32>(is_wait_all), timeout);
+        vkWaitForFences(&dev, 1, &fen_ptr, static_cast<VkBool32>(is_wait_all), timeout);
 
     if (res != VK_SUCCESS) return make_result(res);
     return {};
@@ -111,12 +111,12 @@ template <std::size_t N>
 [[nodiscard]] inline auto try_reset_fence(device& dev, fence& fen) noexcept
     -> std::expected<void, result> {
     auto*      ptr = &fen;
-    const auto res = vkResetFences(&dev.get(), 1, &ptr);
+    const auto res = vkResetFences(&dev, 1, &ptr);
     if (res != VK_SUCCESS) return make_result(res);
     return {};
 }
 
 inline void destroy_fence(device& dev, fence& target) noexcept {
-    vkDestroyFence(&dev.get(), &target, nullptr);
+    vkDestroyFence(&dev, &target, nullptr);
 }
 }  // namespace hgn

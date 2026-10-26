@@ -32,9 +32,9 @@ class physical_device final {
     }
 
     [[nodiscard]] auto try_make_device(const hgn::device_create_info& info) noexcept
-        -> std::optional<hgn::device> {
+        -> std::optional<hgn::device&> {
         auto res = hgn::try_make_device(get(), info);
-        return to_optional(std::move(res));
+        return to_optional(res);
     }
 
     [[nodiscard]] auto graphics_family() const noexcept -> std::uint32_t {

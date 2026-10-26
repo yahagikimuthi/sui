@@ -6,9 +6,7 @@
 #include <cstdint>
 #include <expected>
 #include <functional>
-#include <optional>
 #include <span>
-#include <utility>
 
 #include <vulkan/vulkan.h>
 
@@ -16,6 +14,9 @@
 #include "hgn/enums.hpp"
 
 namespace hgn {
+using buffer        = VkBuffer_T;
+using device_memory = VkDeviceMemory_T;
+
 class buffer_create_info final {
   public:
     explicit buffer_create_info() noexcept {
@@ -41,53 +42,18 @@ class buffer_create_info final {
     VkBufferCreateInfo native_{};
 };
 
-class buffer final {
-  public:
-    [[nodiscard]] static auto try_make(device& dev, const buffer_create_info& info) noexcept
-        -> std::expected<buffer, result> {
-        auto*      native = static_cast<VkBuffer_T*>(nullptr);
-        const auto res    = vkCreateBuffer(&dev.get(), &info.get(), nullptr, &native);
-        if (res != VK_SUCCESS) return make_result(res);
-
-        assert(native != nullptr);
-        return buffer{*native, dev.get()};
-    }
-
-    buffer(const buffer&) noexcept                    = delete;
-    auto operator=(const buffer&) noexcept -> buffer& = delete;
-
-    buffer(buffer&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
-
-    auto operator=(buffer&& other) noexcept -> buffer& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        native_ = std::exchange(other.native_, std::nullopt);
-        dev_    = other.dev_;
-
-        return *this;
-    }
-
-    ~buffer() noexcept { destroy(); }
-
-    [[nodiscard]] auto get() noexcept -> VkBuffer_T& { return *native_; }
-
-  private:
-    explicit buffer(VkBuffer_T& native, VkDevice_T& dev) : native_{native}, dev_{std::ref(dev)} {}
-
-    void destroy() noexcept {
-        if (native_) vkDestroyBuffer(&dev_.get(), &get(), nullptr);
-    }
-
-    std::optional<VkBuffer_T&>         native_;
-    std::reference_wrapper<VkDevice_T> dev_;
-};
-
 [[nodiscard]] inline auto try_make_buffer(device& dev, const buffer_create_info& info) noexcept
-    -> std::expected<buffer, result> {
-    return buffer::try_make(dev, info);
+    -> std::expected<std::reference_wrapper<buffer>, result> {
+    auto*      ptr = static_cast<buffer*>(nullptr);
+    const auto res = vkCreateBuffer(&dev, &info.get(), nullptr, &ptr);
+    if (res != VK_SUCCESS) return make_result(res);
+
+    assert(ptr != nullptr);
+    return std::ref(*ptr);
+}
+
+inline void destroy_buffer(device& dev, buffer& target) noexcept {
+    vkDestroyBuffer(&dev, &target, nullptr);
 }
 
 class memory_requirements final {
@@ -105,7 +71,7 @@ class memory_requirements final {
 [[nodiscard]] inline auto get_buffer_memory_requirements(device& dev, buffer& buffer_ref) noexcept
     -> memory_requirements {
     auto native = VkMemoryRequirements{};
-    vkGetBufferMemoryRequirements(&dev.get(), &buffer_ref.get(), &native);
+    vkGetBufferMemoryRequirements(&dev, &buffer_ref, &native);
     return std::bit_cast<memory_requirements>(native);
 }
 
@@ -131,60 +97,21 @@ class memory_allocate_info final {
     VkMemoryAllocateInfo native_{};
 };
 
-class device_memory final {
-  public:
-    [[nodiscard]] static auto try_allocate(device& dev, const memory_allocate_info& info) noexcept
-        -> std::expected<device_memory, result> {
-        auto*      native = static_cast<VkDeviceMemory_T*>(nullptr);
-        const auto res    = vkAllocateMemory(&dev.get(), &info.get(), nullptr, &native);
-        if (res != VK_SUCCESS) return make_result(res);
-
-        assert(native != nullptr);
-        return device_memory{*native, dev.get()};
-    }
-
-    device_memory(const device_memory&) noexcept                    = delete;
-    auto operator=(const device_memory&) noexcept -> device_memory& = delete;
-
-    device_memory(device_memory&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
-
-    auto operator=(device_memory&& other) noexcept -> device_memory& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        native_ = std::exchange(other.native_, std::nullopt);
-        dev_    = other.dev_;
-        return *this;
-    }
-
-    ~device_memory() noexcept { destroy(); }
-
-    [[nodiscard]] auto get() noexcept -> VkDeviceMemory_T& { return *native_; }
-
-  private:
-    explicit device_memory(VkDeviceMemory_T& native, VkDevice_T& dev) noexcept
-        : native_{native}, dev_{std::ref(dev)} {}
-
-    void destroy() noexcept {
-        if (native_) vkFreeMemory(&dev_.get(), &get(), nullptr);
-    }
-
-    std::optional<VkDeviceMemory_T&>   native_;
-    std::reference_wrapper<VkDevice_T> dev_;
-};
-
 [[nodiscard]] inline auto try_allocate_memory(
     device& dev, const memory_allocate_info& info
-) noexcept -> std::expected<device_memory, result> {
-    return device_memory::try_allocate(dev, info);
+) noexcept -> std::expected<std::reference_wrapper<device_memory>, result> {
+    auto*      dev_mem = static_cast<device_memory*>(nullptr);
+    const auto res     = vkAllocateMemory(&dev, &info.get(), nullptr, &dev_mem);
+    if (res != VK_SUCCESS) return make_result(res);
+
+    assert(dev_mem != nullptr);
+    return std::ref(*dev_mem);
 }
 
 [[nodiscard]] inline auto try_bind_buffer_memory(
     device& dev, buffer& buffer_ref, device_memory& dev_mem
 ) noexcept -> std::expected<void, result> {
-    const auto res = vkBindBufferMemory(&dev.get(), &buffer_ref.get(), &dev_mem.get(), 0);
+    const auto res = vkBindBufferMemory(&dev, &buffer_ref, &dev_mem, 0);
     if (res != VK_SUCCESS) return make_result(res);
 
     return {};
@@ -194,7 +121,7 @@ class device_memory final {
     device& dev, device_memory& dev_mem, const std::uint64_t buffer_size
 ) noexcept -> std::expected<std::span<std::byte>, result> {
     auto*      data = static_cast<void*>(nullptr);
-    const auto res  = vkMapMemory(&dev.get(), &dev_mem.get(), 0, buffer_size, 0, &data);
+    const auto res  = vkMapMemory(&dev, &dev_mem, 0, buffer_size, 0, &data);
     if (res != VK_SUCCESS) return make_result(res);
 
     assert(data != nullptr);
@@ -210,6 +137,10 @@ template <std::uint64_t BufferSize>
 }
 
 inline void unmap_memory(device& dev, device_memory& dev_mem) noexcept {
-    vkUnmapMemory(&dev.get(), &dev_mem.get());
+    vkUnmapMemory(&dev, &dev_mem);
+}
+
+inline void free_memory(device& dev, device_memory& target) noexcept {
+    vkFreeMemory(&dev, &target, nullptr);
 }
 }  // namespace hgn
