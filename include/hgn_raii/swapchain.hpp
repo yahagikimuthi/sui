@@ -39,6 +39,8 @@ class swapchain_khr final {
 
     [[nodiscard]] auto get() noexcept -> hgn::swapchain_khr& { return *native_; }
 
+    [[nodiscard]] operator hgn::swapchain_khr&() noexcept { return get(); }
+
   private:
     explicit swapchain_khr(hgn::swapchain_khr& native, hgn::device& dev) noexcept
         : native_{native}, dev_{std::ref(dev)} {}
