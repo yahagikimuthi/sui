@@ -6,10 +6,9 @@
 #include <utility>
 #include <vector>
 
-#include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/image.hpp>
-#include <hgn/swapchain.hpp>
+#include <hgn_raii/device.hpp>
 #include <hgn_raii/image.hpp>
 
 #include "sui/detail/hardware/device.hpp"
@@ -22,7 +21,7 @@ class image_container final {
     using ref_w = std::reference_wrapper<T>;
 
   public:
-    [[nodiscard]] static auto try_make(hgn::device& dev, swapchain& chain) noexcept
+    [[nodiscard]] static auto try_make(hgn::raii::device& dev, swapchain& chain) noexcept
         -> std::expected<image_container, error> {
         auto res = chain.try_get_swapchain_images(dev);
         if (not res) return make_error(runtime_error, "Failed to make swapchain images");
@@ -33,14 +32,14 @@ class image_container final {
     [[nodiscard]] auto size() const noexcept -> std::size_t { return images_.size(); }
 
     [[nodiscard]] auto operator[](const std::size_t i) noexcept -> hgn::image& {
-        return images_[i].get();
+        return images_.get(i);
     }
 
   private:
-    explicit image_container(std::vector<ref_w<hgn::image>>&& images) noexcept
+    explicit image_container(hgn::raii::image_container&& images) noexcept
         : images_{std::move(images)} {}
 
-    std::vector<ref_w<hgn::image>> images_;
+    hgn::raii::image_container images_;
 };
 
 class image_view_container final {

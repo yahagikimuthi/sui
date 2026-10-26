@@ -3,7 +3,6 @@
 #include <array>
 #include <cassert>
 #include <expected>
-#include <functional>
 #include <limits>
 #include <optional>
 #include <ranges>
@@ -13,11 +12,14 @@
 #include <hgn/enums.hpp>
 #include <hgn/surface.hpp>
 #include <hgn/swapchain.hpp>
+#include <hgn_raii/device.hpp>
+#include <hgn_raii/image.hpp>
 
-#include "hgn/image.hpp"
+#include "hgn_raii/swapchain.hpp"
 #include "sui/detail/hardware/device.hpp"
 #include "sui/detail/hardware/hardware.hpp"
 #include "sui/detail/hardware/physical_device.hpp"
+#include "sui/detail/others.hpp"
 #include "sui/error.hpp"
 
 namespace sui::detail {
@@ -69,7 +71,7 @@ class swapchain final {
         }
 
         auto info = hgn::swapchain_create_info_khr{}
-                        .surface(hard.get_surface())
+                        .surface(hard.get_surface().get())
                         .min_image_count(image_count)
                         .image_format(surface_format.setting_format())
                         .image_color_space(surface_format.color_space())
@@ -89,55 +91,26 @@ class swapchain final {
         auto res = hard.get_device().try_make_swapchain(info);
         if (not res) return make_error(runtime_error, "Failed to make swapchain");
 
-        return swapchain{*res, hard.get_device(), surface_format.setting_format()};
+        return swapchain{std::move(*res), surface_format.setting_format()};
     }
-
-    swapchain(const swapchain&) noexcept                    = delete;
-    auto operator=(const swapchain&) noexcept -> swapchain& = delete;
-
-    swapchain(swapchain&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)},
-          device_{other.device_},
-          setting_format_{other.setting_format_} {}
-
-    auto operator=(swapchain&& other) noexcept -> swapchain& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        native_         = std::exchange(other.native_, std::nullopt);
-        device_         = other.device_;
-        setting_format_ = other.setting_format_;
-
-        return *this;
-    }
-
-    ~swapchain() noexcept { destroy(); }
 
     [[nodiscard]] auto setting_format() const noexcept -> hgn::format { return setting_format_; }
 
-    [[nodiscard]] auto try_get_swapchain_images(hgn::device& dev) noexcept
-        -> std::optional<std::vector<std::reference_wrapper<hgn::image>>> {
-        const auto res = hgn::try_get_swapchain_images_khr(dev, get());
-        if (not res) return std::nullopt;
-        return *res;
+    [[nodiscard]] auto try_get_swapchain_images(hgn::raii::device& dev) noexcept
+        -> std::optional<hgn::raii::image_container> {
+        auto res = hgn::raii::try_get_swapchain_images_khr(get(), dev);
+        return to_optional(std::move(res));
     }
 
-    [[nodiscard]] auto get() noexcept -> hgn::swapchain_khr& { return *native_; }
+    [[nodiscard]] auto get() noexcept -> hgn::raii::swapchain_khr& { return native_; }
+
+    [[nodiscard]] operator hgn::raii::swapchain_khr&() noexcept { return get(); }
 
   private:
-    explicit swapchain(
-        hgn::swapchain_khr& native, hgn::device& device, const hgn::format setting_format
-    ) noexcept
-        : native_{native}, device_{device}, setting_format_{setting_format} {}
+    explicit swapchain(hgn::raii::swapchain_khr&& native, const hgn::format setting_format) noexcept
+        : native_{std::move(native)}, setting_format_{setting_format} {}
 
-    void destroy() noexcept {
-        if (not native_) return;
-        hgn::destroy_swapchain_khr(device_, get());
-    }
-
-    std::optional<hgn::swapchain_khr&>  native_;
-    std::reference_wrapper<hgn::device> device_;
-    hgn::format                         setting_format_;
+    hgn::raii::swapchain_khr native_;
+    hgn::format              setting_format_;
 };
 }  // namespace sui::detail
