@@ -18,12 +18,11 @@ namespace sui::detail {
 class command_pool final {
   public:
     [[nodiscard]] static auto try_make(
-        hgn::device& dev, const std::uint32_t queue_family_indices
+        device& dev, const std::uint32_t queue_family_indices
     ) noexcept -> std::expected<command_pool, error> {
-        auto info = hgn::command_pool_create_info{};
-        info.queue_family_index(queue_family_indices);
+        const auto info = hgn::command_pool_create_info{}.queue_family_index(queue_family_indices);
 
-        auto res = hgn::try_make_command_pool(dev, info);
+        auto res = dev.try_make_command_pool(info);
         if (not res) return make_error(runtime_error, "Failed to make command pool.");
 
         return command_pool{*res, dev};
@@ -76,8 +75,7 @@ class command_buffer final {
 
     [[nodiscard]] auto try_begin_rendering(hgn::image& image, hgn::image_view& view) noexcept
         -> bool {
-        const auto res =
-            hgn::try_begin_command_buffer(native_.get(), hgn::command_buffer_begin_info{});
+        const auto res = hgn::try_begin_command_buffer(get(), hgn::command_buffer_begin_info{});
         if (not res) return false;
 
         const auto barrier =
@@ -85,7 +83,7 @@ class command_buffer final {
                 .layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
                 .setting_image(image);
 
-        hgn::command_pipeline_barrier(native_.get(), barrier);
+        hgn::command_pipeline_barrier(get(), barrier);
 
         const auto color_attachment =
             hgn::rendering_attachment_info{}.setting_image_view(view).clear_color(
@@ -95,21 +93,21 @@ class command_buffer final {
         const auto render_info =
             hgn::rendering_info{}.extent(800, 600).color_attachment(color_attachment);
 
-        hgn::command_begin_rendering(native_.get(), render_info);
+        hgn::command_begin_rendering(get(), render_info);
         return true;
     }
 
     [[nodiscard]] auto try_end_rendering(hgn::image& image) noexcept -> bool {
-        hgn::command_end_rendering(native_.get());
+        hgn::command_end_rendering(get());
 
         auto barrier = hgn::image_memory_barrier{};
         barrier
             .layout(hgn::image_layout::color_attachment_optimal, hgn::image_layout::present_src_khr)
             .setting_image(image);
 
-        hgn::command_pipeline_barrier(native_.get(), barrier);
+        hgn::command_pipeline_barrier(get(), barrier);
 
-        auto res = hgn::try_end_command_buffer(native_.get());
+        auto res = hgn::try_end_command_buffer(get());
         return res.has_value();
     }
 
