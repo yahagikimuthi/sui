@@ -94,11 +94,11 @@ class fence final {
 
     void destroy() noexcept {
         if (not native_) return;
-        if (not hgn::try_wait_for_fence(dev_.get(), *native_)) {
+        if (not hgn::try_wait_for_fence(dev_, get())) {
             std::cerr << "Failed to wait fence\n";
             std::terminate();
         }
-        hgn::destroy_fence(dev_.get(), *native_);
+        hgn::destroy_fence(dev_, get());
     }
 
     std::optional<hgn::fence&>          native_;
