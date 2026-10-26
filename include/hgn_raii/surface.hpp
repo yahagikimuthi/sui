@@ -10,6 +10,11 @@
 namespace hgn::raii {
 class surface_khr final {
   public:
+    [[nodiscard]] static auto make(hgn::surface_khr&& native, hgn::instance& inst) noexcept
+        -> surface_khr {
+        return surface_khr{std::move(native), inst};
+    }
+
     explicit surface_khr(hgn::surface_khr&& native, hgn::instance& inst) noexcept
         : native_{native}, instance_{inst} {}
 
@@ -42,4 +47,9 @@ class surface_khr final {
     std::optional<hgn::surface_khr&>      native_;
     std::reference_wrapper<hgn::instance> instance_;
 };
+
+[[nodiscard]] inline auto make_surface_khr(hgn::surface_khr&& native, hgn::instance& inst) noexcept
+    -> surface_khr {
+    return surface_khr::make(std::move(native), inst);
+}
 }  // namespace hgn::raii

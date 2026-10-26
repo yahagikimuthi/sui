@@ -10,7 +10,7 @@
 namespace hgn::raii {
 class instance final {
   public:
-    [[nodiscard]] static auto try_make(hgn::instance_create_info& info) noexcept
+    [[nodiscard]] static auto try_make(const hgn::instance_create_info& info) noexcept
         -> std::expected<instance, hgn::result> {
         auto res = hgn::try_make_instance(info);
         if (not res) return std::unexpected{res.error()};
@@ -46,4 +46,9 @@ class instance final {
 
     std::optional<hgn::instance&> native_;
 };
+
+[[nodiscard]] inline auto try_make_instance(const hgn::instance_create_info& info) noexcept
+    -> std::expected<instance, hgn::result> {
+    return instance::try_make(info);
+}
 }  // namespace hgn::raii
