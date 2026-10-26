@@ -62,13 +62,13 @@ class shader_module final {
 class shader final {
   public:
     [[nodiscard]] static auto try_make(device& dev) noexcept -> std::expected<shader, error> {
-        const auto vert_source = detail::read_file("../include/sui/detail/rendering/vert.spv");
+        const auto vert_source = read_file("../include/sui/detail/rendering/vert.spv");
         if (not vert_source) return make_error(logic_error, "Failed to read vertex source file.");
         auto vert = shader_module::try_make(dev, *vert_source);
         if (not vert)
             return make_error(runtime_error, "Failed to make vertex shader module.", vert.error());
 
-        const auto frag_source = detail::read_file("../include/sui/detail/rendering/frag.spv");
+        const auto frag_source = read_file("../include/sui/detail/rendering/frag.spv");
         if (not frag_source) return make_error(logic_error, "Failed to read fragment source file.");
         auto frag = shader_module::try_make(dev, *frag_source);
         if (not frag)
