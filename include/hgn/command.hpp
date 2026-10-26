@@ -73,7 +73,7 @@ class command_buffer_allocate_info final {
     VkCommandBufferAllocateInfo native_{};
 };
 
-[[nodiscard]] inline auto try_allocate_command_buffers(
+[[nodiscard]] inline auto try_allocate_command_buffer(
     device& dev, const command_buffer_allocate_info& info
 ) noexcept -> std::expected<std::reference_wrapper<command_buffer>, result> {
     auto* buffers     = static_cast<command_buffer*>(nullptr);

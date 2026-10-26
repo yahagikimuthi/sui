@@ -129,7 +129,7 @@ class device final {
     [[nodiscard]] auto try_allocate_command_buffer(
         const hgn::command_buffer_allocate_info& info
     ) noexcept -> std::optional<hgn::command_buffer&> {
-        auto res = hgn::try_allocate_command_buffers(native_, info);
+        auto res = hgn::try_allocate_command_buffer(native_, info);
         return to_optional(res);
     }
 
