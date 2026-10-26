@@ -2,10 +2,14 @@
 
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <string>
 
+#include <hgn/device.hpp>
 #include <hgn/physical_device.hpp>
 #include <hgn/surface.hpp>
+
+#include "sui/detail/others.hpp"
 
 namespace sui::detail {
 class physical_device final {
@@ -25,6 +29,12 @@ class physical_device final {
     [[nodiscard]] auto get_physical_device_memory_properties() noexcept
         -> hgn::physical_device_memory_properties {
         return hgn::get_physical_device_memory_properties(get());
+    }
+
+    [[nodiscard]] auto try_make_device(const hgn::device_create_info& info) noexcept
+        -> std::optional<hgn::device&> {
+        auto res = hgn::try_make_device(get(), info);
+        return to_optional(res);
     }
 
     [[nodiscard]] auto graphics_family() const noexcept -> std::uint32_t {
