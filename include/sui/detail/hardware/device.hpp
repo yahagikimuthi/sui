@@ -14,6 +14,7 @@
 #include <hgn/sync.hpp>
 
 #include "sui/detail/hardware/physical_device.hpp"
+#include "sui/detail/others.hpp"
 #include "sui/error.hpp"
 
 namespace sui::detail {
@@ -54,66 +55,70 @@ class device final {
     ~device() noexcept { destroy(); }
 
     [[nodiscard]] auto try_wait_idle() noexcept -> bool {
-        const auto res = hgn::try_device_wait_idle(*native_);
+        const auto res = hgn::try_device_wait_idle(get());
         return res.has_value();
     }
 
     [[nodiscard]] auto try_make_buffer(const hgn::buffer_create_info& info) noexcept
         -> std::optional<hgn::buffer&> {
-        const auto res = hgn::try_make_buffer(*native_, info);
+        const auto res = hgn::try_make_buffer(get(), info);
         if (not res) return std::nullopt;
         return *res;
     }
 
     [[nodiscard]] auto try_allocate_memory(const hgn::memory_allocate_info& info) noexcept
         -> std::optional<hgn::device_memory&> {
-        auto res = hgn::try_allocate_memory(*native_, info);
-        if (not res) return std::nullopt;
-        return *res;
+        auto res = hgn::try_allocate_memory(get(), info);
+        return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_pipeline_layout(
         const hgn::pipeline_layout_create_info& info
     ) noexcept -> std::optional<hgn::pipeline_layout&> {
-        auto res = hgn::try_make_pipeline_layout(*native_, info);
-        if (not res) return std::nullopt;
-        return *res;
+        auto res = hgn::try_make_pipeline_layout(get(), info);
+        return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_shader_module(const hgn::shader_module_create_info& info) noexcept
         -> std::optional<hgn::shader_module&> {
-        auto res = hgn::try_make_shader_module(*native_, info);
-        if (not res) return std::nullopt;
-        return *res;
+        auto res = hgn::try_make_shader_module(get(), info);
+        return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_swapchain(const hgn::swapchain_create_info_khr& info) noexcept
         -> std::optional<hgn::swapchain_khr&> {
-        auto res = hgn::try_make_swapchain(*native_, info);
-        if (not res) return std::nullopt;
-        return *res;
+        auto res = hgn::try_make_swapchain(get(), info);
+        return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_semaphore(const hgn::semaphore_create_info& info) noexcept
         -> std::optional<hgn::semaphore&> {
-        auto res = hgn::try_make_semaphore(*native_, info);
-        if (not res) return std::nullopt;
-        return *res;
+        auto res = hgn::try_make_semaphore(get(), info);
+        return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_fence(const hgn::fence_create_info& info) noexcept
         -> std::optional<hgn::fence&> {
-        auto res = hgn::try_make_fence(*native_, info);
-        if (not res) return std::nullopt;
-        return *res;
+        auto res = hgn::try_make_fence(get(), info);
+        return to_optional(res);
     }
 
     [[nodiscard]] auto try_allocate_command_buffer(
         const hgn::command_buffer_allocate_info& info
     ) noexcept -> std::optional<hgn::command_buffer&> {
-        auto res = hgn::try_allocate_command_buffers(*native_, info);
-        if (not res) return std::nullopt;
-        return *res;
+        auto res = hgn::try_allocate_command_buffers(get(), info);
+        return to_optional(res);
+    }
+
+    [[nodiscard]] auto try_get_device_queue(const std::uint32_t family_indices) noexcept
+        -> std::optional<hgn::queue&> {
+        return hgn::try_get_device_queue(get(), family_indices);
+    }
+
+    [[nodiscard]] auto try_make_command_pool(const hgn::command_pool_create_info& info) noexcept
+        -> std::optional<hgn::command_pool&> {
+        auto res = hgn::try_make_command_pool(get(), info);
+        return to_optional(res);
     }
 
     [[nodiscard]] auto get() noexcept -> hgn::device& { return *native_; }
