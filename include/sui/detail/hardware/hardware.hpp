@@ -61,13 +61,13 @@ class hardware final {
         auto dev = device::try_make(physical);
         if (not dev) return make_error(runtime_error, "Failed to make device.", dev.error());
 
-        auto graphics_queue = queue::try_make(dev->get(), physical.graphics_family());
+        auto graphics_queue = queue::try_make(*dev, physical.graphics_family());
         if (not graphics_queue)
             return make_error(
                 runtime_error, "Failed to make graphics queue.", graphics_queue.error()
             );
 
-        auto present_queue = queue::try_make(dev->get(), physical.present_family());
+        auto present_queue = queue::try_make(*dev, physical.present_family());
         if (not present_queue)
             return make_error(
                 runtime_error, "Failed to make present queue.", present_queue.error()
