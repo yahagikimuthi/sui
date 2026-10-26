@@ -6,6 +6,7 @@
 #include <utility>
 
 #include <hgn/device.hpp>
+#include <hgn/enums.hpp>
 #include <hgn/physical_device.hpp>
 
 namespace hgn::raii {
