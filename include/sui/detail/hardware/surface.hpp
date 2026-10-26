@@ -3,11 +3,10 @@
 #include <cassert>
 #include <expected>
 #include <functional>
-#include <optional>
 #include <utility>
 
 #include <hgn/instance.hpp>
-#include <hgn/surface.hpp>
+#include <hgn_raii/surface.hpp>
 #include <kgm/window.hpp>
 
 #include "sui/error.hpp"
@@ -19,41 +18,16 @@ class surface final {
         -> std::expected<surface, error> {
         auto native = kgm::try_make_window_surface(inst, win);
         if (not native) return make_error(runtime_error, "Failed to make window surface");
-        return surface{*native, inst};
+        return surface{hgn::raii::make_surface_khr(std::move(native->get()), inst)};
     }
 
-    surface(const surface&) noexcept                    = delete;
-    auto operator=(const surface&) noexcept -> surface& = delete;
+    [[nodiscard]] auto get() noexcept -> hgn::raii::surface_khr& { return native_; }
 
-    surface(surface&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)}, instance_{other.instance_} {}
-
-    auto operator=(surface&& other) noexcept -> surface& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        native_   = std::exchange(other.native_, std::nullopt);
-        instance_ = other.instance_;
-
-        return *this;
-    }
-
-    ~surface() noexcept { destroy(); }
-
-    [[nodiscard]] auto get() noexcept -> hgn::surface_khr& { return *native_; }
-
-    [[nodiscard]] operator hgn::surface_khr&() noexcept { return get(); }
+    [[nodiscard]] operator hgn::raii::surface_khr&() noexcept { return get(); }
 
   private:
-    explicit surface(hgn::surface_khr& native, hgn::instance& inst) noexcept
-        : native_{native}, instance_{inst} {}
+    explicit surface(hgn::raii::surface_khr&& native) noexcept : native_{std::move(native)} {}
 
-    void destroy() noexcept {
-        if (native_) hgn::destroy_surface_khr(instance_, *native_);
-    }
-
-    std::optional<hgn::surface_khr&>      native_;
-    std::reference_wrapper<hgn::instance> instance_;
+    hgn::raii::surface_khr native_;
 };
 }  // namespace sui::detail
