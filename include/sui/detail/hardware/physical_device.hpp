@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
 #include <optional>
 #include <string>
 
@@ -15,9 +14,9 @@ namespace sui::detail {
 class physical_device final {
   public:
     explicit physical_device(
-        hgn::physical_device& native,
-        const std::uint32_t   graphics_family,
-        const std::uint32_t   present_family
+        const hgn::raii::physical_device& native,
+        const std::uint32_t               graphics_family,
+        const std::uint32_t               present_family
     ) noexcept
         : native_{native}, graphics_family_{graphics_family}, present_family_{present_family} {}
 
@@ -43,13 +42,13 @@ class physical_device final {
 
     [[nodiscard]] auto present_family() const noexcept -> std::uint32_t { return present_family_; }
 
-    [[nodiscard]] auto get() noexcept -> hgn::physical_device& { return native_.get(); }
+    [[nodiscard]] auto get() noexcept -> hgn::raii::physical_device& { return native_; }
 
-    [[nodiscard]] operator hgn::physical_device&() noexcept { return get(); }
+    [[nodiscard]] operator hgn::raii::physical_device&() noexcept { return get(); }
 
   private:
-    std::reference_wrapper<hgn::physical_device> native_;
-    std::uint32_t                                graphics_family_;
-    std::uint32_t                                present_family_;
+    hgn::raii::physical_device native_;
+    std::uint32_t              graphics_family_;
+    std::uint32_t              present_family_;
 };
 }  // namespace sui::detail
