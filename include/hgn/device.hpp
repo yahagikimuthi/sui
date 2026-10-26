@@ -237,10 +237,10 @@ inline void destroy_device(device& dev) noexcept {
 using queue = VkQueue_T;
 
 [[nodiscard]] inline auto try_get_device_queue(
-    device& dev, const std::uint32_t graphic_family
+    device& dev, const std::uint32_t family_indices
 ) noexcept -> std::optional<queue&> {
     auto* out = static_cast<queue*>(nullptr);
-    vkGetDeviceQueue(&dev, graphic_family, 0, &out);
+    vkGetDeviceQueue(&dev, family_indices, 0, &out);
     if (out == nullptr) return std::nullopt;
     return *out;
 }
