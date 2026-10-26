@@ -7,7 +7,6 @@
 
 #include <hgn/device.hpp>
 #include <hgn/physical_device.hpp>
-#include <hgn/surface.hpp>
 #include <hgn_raii/device.hpp>
 
 #include "sui/detail/others.hpp"
@@ -34,7 +33,7 @@ class physical_device final {
 
     [[nodiscard]] auto try_make_device(const hgn::device_create_info& info) noexcept
         -> std::optional<hgn::raii::device> {
-        auto res = hgn::raii::device::try_make(info, get());
+        auto res = hgn::raii::try_make_device(info, get());
         return to_optional(std::move(res));
     }
 
