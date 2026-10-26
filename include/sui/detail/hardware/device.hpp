@@ -20,6 +20,39 @@
 
 namespace sui::detail {
 class device final {
+    class native_device final {
+      public:
+        explicit native_device(hgn::device& dev) noexcept : native_{dev} {}
+
+        native_device(const native_device&) noexcept                    = delete;
+        auto operator=(const native_device&) noexcept -> native_device& = delete;
+
+        native_device(native_device&& other) noexcept
+            : native_{std::exchange(other.native_, std::nullopt)} {}
+
+        auto operator=(native_device&& other) noexcept -> native_device& {
+            if (this == &other) return *this;
+
+            destroy();
+
+            native_ = std::exchange(other.native_, std::nullopt);
+            return *this;
+        }
+
+        ~native_device() noexcept { destroy(); }
+
+        [[nodiscard]] auto get() noexcept -> hgn::device& { return *native_; }
+
+        [[nodiscard]] operator hgn::device&() noexcept { return get(); }
+
+      private:
+        void destroy() noexcept {
+            if (native_) hgn::destroy_device(get());
+        }
+
+        std::optional<hgn::device&> native_;
+    };
+
   public:
     [[nodiscard]] static auto try_make(physical_device& physical) noexcept
         -> std::expected<device, error> {
@@ -40,105 +73,88 @@ class device final {
 
     device(const device&) noexcept                    = delete;
     auto operator=(const device&) noexcept -> device& = delete;
-
-    device(device&& other) noexcept : native_{std::exchange(other.native_, std::nullopt)} {}
-
-    auto operator=(device&& other) noexcept -> device& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        native_ = std::exchange(other.native_, std::nullopt);
-
-        return *this;
-    }
-
-    ~device() noexcept { destroy(); }
+    device(device&&) noexcept                         = default;
+    auto operator=(device&&) noexcept -> device&      = default;
+    ~device() noexcept                                = default;
 
     [[nodiscard]] auto try_wait_idle() noexcept -> bool {
-        const auto res = hgn::try_device_wait_idle(get());
+        const auto res = hgn::try_device_wait_idle(native_);
         return res.has_value();
     }
 
     [[nodiscard]] auto try_make_buffer(const hgn::buffer_create_info& info) noexcept
         -> std::optional<hgn::buffer&> {
-        const auto res = hgn::try_make_buffer(get(), info);
+        const auto res = hgn::try_make_buffer(native_, info);
         if (not res) return std::nullopt;
         return *res;
     }
 
     [[nodiscard]] auto try_allocate_memory(const hgn::memory_allocate_info& info) noexcept
         -> std::optional<hgn::device_memory&> {
-        auto res = hgn::try_allocate_memory(get(), info);
+        auto res = hgn::try_allocate_memory(native_, info);
         return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_pipeline_layout(
         const hgn::pipeline_layout_create_info& info
     ) noexcept -> std::optional<hgn::pipeline_layout&> {
-        auto res = hgn::try_make_pipeline_layout(get(), info);
+        auto res = hgn::try_make_pipeline_layout(native_, info);
         return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_shader_module(const hgn::shader_module_create_info& info) noexcept
         -> std::optional<hgn::shader_module&> {
-        auto res = hgn::try_make_shader_module(get(), info);
+        auto res = hgn::try_make_shader_module(native_, info);
         return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_swapchain(const hgn::swapchain_create_info_khr& info) noexcept
         -> std::optional<hgn::swapchain_khr&> {
-        auto res = hgn::try_make_swapchain(get(), info);
+        auto res = hgn::try_make_swapchain(native_, info);
         return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_semaphore(const hgn::semaphore_create_info& info) noexcept
         -> std::optional<hgn::semaphore&> {
-        auto res = hgn::try_make_semaphore(get(), info);
+        auto res = hgn::try_make_semaphore(native_, info);
         return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_fence(const hgn::fence_create_info& info) noexcept
         -> std::optional<hgn::fence&> {
-        auto res = hgn::try_make_fence(get(), info);
+        auto res = hgn::try_make_fence(native_, info);
         return to_optional(res);
     }
 
     [[nodiscard]] auto try_allocate_command_buffer(
         const hgn::command_buffer_allocate_info& info
     ) noexcept -> std::optional<hgn::command_buffer&> {
-        auto res = hgn::try_allocate_command_buffers(get(), info);
+        auto res = hgn::try_allocate_command_buffers(native_, info);
         return to_optional(res);
     }
 
     [[nodiscard]] auto try_get_device_queue(const std::uint32_t family_indices) noexcept
         -> std::optional<hgn::queue&> {
-        return hgn::try_get_device_queue(get(), family_indices);
+        return hgn::try_get_device_queue(native_, family_indices);
     }
 
     [[nodiscard]] auto try_make_command_pool(const hgn::command_pool_create_info& info) noexcept
         -> std::optional<hgn::command_pool&> {
-        auto res = hgn::try_make_command_pool(get(), info);
+        auto res = hgn::try_make_command_pool(native_, info);
         return to_optional(res);
     }
 
     [[nodiscard]] auto try_make_image_view(const hgn::image_view_create_info& info) noexcept
         -> std::optional<hgn::image_view&> {
-        auto res = hgn::try_make_image_view(get(), info);
+        auto res = hgn::try_make_image_view(native_, info);
         return to_optional(res);
     }
 
-    [[nodiscard]] auto get() noexcept -> hgn::device& { return *native_; }
-
-    [[nodiscard]] operator hgn::device&() noexcept { return get(); }
+    [[nodiscard]] operator hgn::device&() noexcept { return native_; }
 
   private:
     explicit device(hgn::device& native) noexcept : native_{native} {}
 
-    void destroy() noexcept {
-        if (native_) hgn::destroy_device(get());
-    }
-
-    std::optional<hgn::device&> native_;
+    native_device native_;
 };
 }  // namespace sui::detail
