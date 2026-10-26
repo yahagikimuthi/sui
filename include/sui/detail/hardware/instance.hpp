@@ -32,10 +32,10 @@ class instance final {
 #ifndef NDEBUG
         info.layer("VK_LAYER_KHRONOS_validation");
 #endif
-        auto ins = hgn::try_make_instance(info);
-        if (not ins) return make_error(runtime_error, "Failed to make hagane instance\n");
+        auto native = hgn::try_make_instance(info);
+        if (not native) return make_error(runtime_error, "Failed to make hagane instance\n");
 
-        return instance{ins->get()};
+        return instance{*native};
     }
 
     instance(const instance&) noexcept                    = delete;
@@ -78,7 +78,7 @@ class instance final {
     }
 
     void destroy() noexcept {
-        if (native_) hgn::destroy_instance(*native_);
+        if (native_) hgn::destroy_instance(get());
     }
 
     std::optional<hgn::instance&> native_;
