@@ -42,22 +42,21 @@ class swapchain final {
         const auto& present_modes = *present_modes_res;
 
         if (formats.empty()) return make_error(runtime_error, "Format size is required positive.");
-        auto surface_format = formats.front();
         auto aligned_formats =
             formats |
             std::views::filter([](const hgn::surface_format_khr available_format) noexcept -> bool {
                 return available_format.setting_format() == hgn::format::b8g8r8a8_srgb and
                        available_format.color_space() == hgn::color_space_khr::srgb_nonlinear;
             });
-        if (not aligned_formats.empty()) surface_format = aligned_formats.front();
+        auto surface_format = aligned_formats.empty() ? formats.front() : aligned_formats.front();
 
-        auto present_mode = hgn::present_mode_khr::fifo;
         auto aligned_modes =
             present_modes |
             std::views::filter([](const hgn::present_mode_khr available_mode) noexcept -> bool {
                 return available_mode == hgn::present_mode_khr::mailbox;
             });
-        if (not aligned_modes.empty()) present_mode = aligned_modes.front();
+        auto present_mode =
+            aligned_modes.empty() ? hgn::present_mode_khr::fifo : aligned_modes.front();
 
         auto extent = capabilities.current_extent();
         if (extent.width == std::numeric_limits<std::uint32_t>::max()) {
@@ -119,7 +118,7 @@ class swapchain final {
 
     [[nodiscard]] auto try_get_swapchain_images(hgn::device& dev) noexcept
         -> std::optional<std::vector<std::reference_wrapper<hgn::image>>> {
-        const auto res = hgn::try_get_swapchain_images_khr(dev, *native_);
+        const auto res = hgn::try_get_swapchain_images_khr(dev, get());
         if (not res) return std::nullopt;
         return *res;
     }
