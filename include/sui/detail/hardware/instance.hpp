@@ -8,6 +8,7 @@
 
 #include <hgn/instance.hpp>
 #include <hgn/physical_device.hpp>
+#include <hgn_raii/instance.hpp>
 #include <kgm/kgm.hpp>
 
 #include "sui/detail/others.hpp"
@@ -64,10 +65,10 @@ class instance final {
 #ifndef NDEBUG
         info.layer("VK_LAYER_KHRONOS_validation");
 #endif
-        auto native = hgn::try_make_instance(info);
+        auto native = hgn::raii::try_make_instance(info);
         if (not native) return make_error(runtime_error, "Failed to make hagane instance\n");
 
-        return instance{*native};
+        return instance{std::move(*native)};
     }
 
     instance(const instance&) noexcept                    = delete;
@@ -85,7 +86,7 @@ class instance final {
     [[nodiscard]] operator hgn::instance&() noexcept { return native_; }
 
   private:
-    explicit instance(hgn::instance& native) noexcept : native_{native} {}
+    explicit instance(hgn::raii::instance&& native) noexcept : native_{std::move(native)} {}
 
     [[nodiscard]] static auto required_extensions() noexcept -> std::vector<std::string_view> {
         auto extensions = kgm::get_required_instance_extensions();
@@ -96,6 +97,6 @@ class instance final {
         return extensions;
     }
 
-    native_instance native_;
+    hgn::raii::instance native_;
 };
 }  // namespace sui::detail
