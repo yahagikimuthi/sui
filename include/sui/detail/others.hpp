@@ -76,11 +76,11 @@ template <typename T>
 }
 
 template <typename T>
-[[nodiscard]] constexpr auto to_optional(std::expected<T, hgn::result>&& value) noexcept
+[[nodiscard]] constexpr auto to_optional(std::expected<T, hgn::result>&& rvalue) noexcept
     -> std::optional<T> {
     auto out = std::optional<T>{std::nullopt};
-    if (not value) return out;
-    return std::move(out.emplace(std::move(*value)));
+    if (not rvalue) return out;
+    return std::move(out.emplace(std::move(*rvalue)));
 }
 
 template <typename T>
