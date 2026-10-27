@@ -204,6 +204,10 @@ class instance_create_info final {
     return std::ref(*ins);
 }
 
+inline void destroy_instance(instance& ins) noexcept {
+    vkDestroyInstance(&ins, nullptr);
+}
+
 class layer_properties final {
   public:
     [[nodiscard]] auto name() const noexcept -> std::string_view {
@@ -235,9 +239,5 @@ class layer_properties final {
     );
 
     return out;
-}
-
-inline void destroy_instance(instance& ins) noexcept {
-    vkDestroyInstance(&ins, nullptr);
 }
 }  // namespace hgn
