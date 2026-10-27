@@ -10,10 +10,16 @@
 #include <hgn/enums.hpp>
 #include <hgn/instance.hpp>
 #include <hgn/physical_device.hpp>
+#include <hgn/submit.hpp>
 #include <hgn/surface.hpp>
+#include <hgn/sync.hpp>
 #include <hgn_raii/device.hpp>
 #include <hgn_raii/instance.hpp>
+#include <hgn_raii/queue.hpp>
 #include <hgn_raii/surface.hpp>
+#include <hgn_raii/sync.hpp>
+
+#include "hgn_oop/sync.hpp"
 
 namespace hgn::oop {
 class instance final {
@@ -134,6 +140,22 @@ class device final {
 
     [[nodiscard]] auto get() noexcept -> raii::device& { return native_; }
 
+    [[nodiscard]] auto try_make_semaphore(const hgn::semaphore_create_info& info) noexcept
+        -> std::expected<oop::semaphore, hgn::result> {
+        auto native = hgn::raii::try_make_semaphore(info, native_);
+        if (not native) return std::unexpected{native.error()};
+
+        return oop::semaphore{std::move(*native)};
+    }
+
+    [[nodiscard]] auto try_make_fence(const hgn::fence_create_info& info) noexcept
+        -> std::expected<oop::fence, hgn::result> {
+        auto native = hgn::raii::try_make_fence(info, native_);
+        if (not native) return std::unexpected{native.error()};
+
+        return oop::fence{std::move(*native)};
+    }
+
   private:
     explicit device(raii::device&& native) noexcept : native_{std::move(native)} {}
 
@@ -144,5 +166,34 @@ class device final {
     const hgn::device_create_info& info, oop::physical_device& physical
 ) noexcept -> std::expected<oop::device, hgn::result> {
     return oop::device::try_make(info, physical);
+}
+
+class queue final {
+  public:
+    [[nodiscard]] static auto try_make(
+        oop::device& dev, const std::uint32_t family_indices
+    ) noexcept -> std::optional<queue> {
+        auto native = raii::try_get_queue(dev.get(), family_indices);
+        if (not native) return std::nullopt;
+        return oop::queue{*native};
+    }
+
+    [[nodiscard]] auto try_submit(const hgn::submit_info& info, oop::fence& fence_ref) noexcept
+        -> std::expected<void, hgn::result> {
+        return hgn::try_queue_submit(native_, info, fence_ref.get());
+    }
+
+    [[nodiscard]] auto get() noexcept -> raii::queue& { return native_; }
+
+  private:
+    explicit queue(const raii::queue& native) noexcept : native_{native} {}
+
+    raii::queue native_;
+};
+
+[[nodiscard]] inline auto try_make_queue(
+    oop::device& dev, const std::uint32_t family_indices
+) noexcept -> std::optional<queue> {
+    return oop::queue::try_make(dev, family_indices);
 }
 }  // namespace hgn::oop
