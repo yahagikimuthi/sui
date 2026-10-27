@@ -8,13 +8,11 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/instance.hpp"
 #include "hgn/physical_device.hpp"
 
 namespace hgn {
-using surface_khr = VkSurfaceKHR_T;
-
 inline void destroy_surface_khr(instance& ins, surface_khr& target) noexcept {
     vkDestroySurfaceKHR(&ins, &target, nullptr);
 }

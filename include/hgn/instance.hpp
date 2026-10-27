@@ -14,6 +14,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/declaration.hpp"
 #include "hgn/detail/others.hpp"
 #include "hgn/enums.hpp"
 
@@ -192,8 +193,6 @@ class instance_create_info final {
     const char*              layer_{};
     std::vector<const char*> extensions_;
 };
-
-using instance = VkInstance_T;
 
 [[nodiscard]] inline auto try_make_instance(const instance_create_info& info) noexcept
     -> std::expected<std::reference_wrapper<instance>, result> {

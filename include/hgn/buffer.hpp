@@ -10,13 +10,11 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/declaration.hpp"
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
 
 namespace hgn {
-using buffer        = VkBuffer_T;
-using device_memory = VkDeviceMemory_T;
-
 class buffer_create_info final {
   public:
     explicit buffer_create_info() noexcept {
