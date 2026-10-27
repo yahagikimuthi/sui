@@ -72,7 +72,7 @@ class physical_device final {
     [[nodiscard]] auto is_surface_supporting_khr(
         const std::uint32_t family_indices, surface_khr& surface
     ) noexcept -> bool {
-        return hgn::is_physical_device_surface_support_khr(get(), family_indices, surface.get());
+        return hgn::is_physical_device_surface_supporting_khr(get(), family_indices, surface.get());
     }
 
     [[nodiscard]] auto get_memory_properties() noexcept -> physical_device_memory_properties {

@@ -16,7 +16,7 @@ inline void destroy_surface_khr(instance& ins, surface_khr& target) noexcept {
     vkDestroySurfaceKHR(&ins, &target, nullptr);
 }
 
-[[nodiscard]] inline auto is_physical_device_surface_support_khr(
+[[nodiscard]] inline auto is_physical_device_surface_supporting_khr(
     physical_device& physical, const std::uint32_t indices, surface_khr& surface
 ) noexcept -> bool {
     auto present_support = VK_FALSE;

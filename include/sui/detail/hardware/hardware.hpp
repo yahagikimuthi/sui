@@ -184,7 +184,7 @@ class hardware final {
                 indices.graphics_family = i;
             }
 
-            if (hgn::is_physical_device_surface_support_khr(
+            if (hgn::is_physical_device_surface_supporting_khr(
                     device, static_cast<std::uint32_t>(i), surface
                 )) {
                 indices.present_family = i;
