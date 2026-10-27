@@ -11,6 +11,7 @@
 #include <hgn/pipeline.hpp>
 #include <hgn/render.hpp>
 #include <hgn_raii/command.hpp>
+#include <hgn_raii/device.hpp>
 
 #include "sui/error.hpp"
 
