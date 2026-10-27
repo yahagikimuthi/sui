@@ -14,6 +14,7 @@
 #include <hgn/submit.hpp>
 #include <kgm/window.hpp>
 
+#include "hgn/device.hpp"
 #include "sui/detail/hardware/hardware.hpp"
 #include "sui/detail/protocol/protocol.hpp"
 #include "sui/detail/rendering/renderer.hpp"
@@ -120,7 +121,7 @@ class vk_context final {
         const auto present_info =
             protocol_.make_present_info(swapper_.native_swapchain(), image_index_);
 
-        const auto res = hard_.get_present_queue().try_present(present_info);
+        const auto res = hgn::try_queue_present_khr(hard_.get_present_queue(), present_info);
         if (res) return true;
 
         const auto error_code = res.error();
@@ -145,7 +146,7 @@ class vk_context final {
     void destroy() noexcept {
         if (not is_valid_) return;
 
-        if (not hard_.get_device().try_wait_idle()) {
+        if (not hgn::try_device_wait_idle(hard_.get_device())) {
             std::cerr << "Failed to wait device\n";
             std::terminate();
         }

@@ -2,90 +2,26 @@
 
 #include <array>
 #include <expected>
-#include <functional>
-#include <optional>
 #include <utility>
 
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/pipeline.hpp>
 #include <hgn/shader.hpp>
+#include <hgn_raii/device.hpp>
+#include <hgn_raii/pipeline.hpp>
 
-#include "sui/detail/hardware/device.hpp"
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
 
 namespace sui::detail {
-class pipeline_layout final {
-  public:
-    explicit pipeline_layout(hgn::pipeline_layout& native, hgn::device& dev) noexcept
-        : native_{native}, dev_{std::ref(dev)} {}
-
-    pipeline_layout(const pipeline_layout&) noexcept                    = delete;
-    auto operator=(const pipeline_layout&) noexcept -> pipeline_layout& = delete;
-
-    pipeline_layout(pipeline_layout&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
-
-    auto operator=(pipeline_layout&& other) noexcept -> pipeline_layout& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        native_ = std::exchange(other.native_, std::nullopt);
-        dev_    = other.dev_;
-
-        return *this;
-    }
-
-    ~pipeline_layout() noexcept { destroy(); }
-
-  private:
-    void destroy() noexcept {
-        if (native_) hgn::destroy_pipeline_layout(dev_, *native_);
-    }
-
-    std::optional<hgn::pipeline_layout&> native_;
-    std::reference_wrapper<hgn::device>  dev_;
-};
-
-class pipeline final {
-  public:
-    explicit pipeline(hgn::pipeline& native, hgn::device& dev) noexcept
-        : native_{native}, dev_{std::ref(dev)} {}
-
-    pipeline(const pipeline&) noexcept                    = delete;
-    auto operator=(const pipeline&) noexcept -> pipeline& = delete;
-
-    pipeline(pipeline&& other) noexcept
-        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
-
-    auto operator=(pipeline&& other) noexcept -> pipeline& {
-        if (this == &other) return *this;
-
-        native_ = std::exchange(other.native_, std::nullopt);
-        dev_    = other.dev_;
-
-        return *this;
-    }
-
-    ~pipeline() noexcept { destroy(); }
-
-    [[nodiscard]] auto get() noexcept -> hgn::pipeline& { return *native_; }
-
-  private:
-    void destroy() noexcept {
-        if (native_) hgn::destroy_pipeline(dev_, *native_);
-    }
-
-    std::optional<hgn::pipeline&>       native_;
-    std::reference_wrapper<hgn::device> dev_;
-};
-
 class graphics_pipeline final {
   public:
     [[nodiscard]] static auto try_make(
-        device& dev, hgn::shader_module& vert, hgn::shader_module& frag, const hgn::format fmt
+        hgn::raii::device&  dev,
+        hgn::shader_module& vert,
+        hgn::shader_module& frag,
+        const hgn::format   fmt
     ) noexcept -> std::expected<graphics_pipeline, error> {
         const auto binding_description =
             hgn::vertex_input_binding_description{}.stride(sizeof(float) * 5);
@@ -138,9 +74,7 @@ class graphics_pipeline final {
         };
 
         const auto pipeline_layout_info = hgn::pipeline_layout_create_info{};
-
-        const auto pipe_layout = dev.try_make_pipeline_layout(pipeline_layout_info);
-        if (not pipe_layout) return make_error(runtime_error, "Failed to make pipeline layout.");
+        auto pipe_layout = hgn::raii::try_make_pipeline_layout(pipeline_layout_info, dev.get());
 
         const auto pipeline_rendering_info =
             hgn::pipeline_rendering_create_info{}.color_attachment_format(fmt);
@@ -155,12 +89,12 @@ class graphics_pipeline final {
                                        .multisample_state(multisampling)
                                        .color_blend_state(color_blending)
                                        .dynamic_states(dynamic_state)
-                                       .layout(*pipe_layout);
+                                       .layout(pipe_layout->get());
 
-        const auto res = hgn::try_make_graphics_pipeline(dev, pipeline_info);
-        if (not res) return make_error(runtime_error, "Failed to make graphics pipeline.");
+        auto pipe = hgn::raii::try_make_graphics_pipeline(pipeline_info, dev);
+        if (not pipe) return make_error(runtime_error, "Failed to make graphics pipeline.");
 
-        return graphics_pipeline{pipeline_layout{*pipe_layout, dev}, pipeline{*res, dev}};
+        return graphics_pipeline{std::move(*pipe_layout), std::move(*pipe)};
     }
 
     graphics_pipeline(const graphics_pipeline&) noexcept                     = delete;
@@ -172,10 +106,12 @@ class graphics_pipeline final {
     [[nodiscard]] auto get_pipeline() noexcept -> hgn::pipeline& { return pipe_.get(); }
 
   private:
-    explicit graphics_pipeline(pipeline_layout&& layout, pipeline&& pipe) noexcept
+    explicit graphics_pipeline(
+        hgn::raii::pipeline_layout&& layout, hgn::raii::graphics_pipeline&& pipe
+    ) noexcept
         : layout_{std::move(layout)}, pipe_{std::move(pipe)} {}
 
-    pipeline_layout layout_;
-    pipeline        pipe_;
+    hgn::raii::pipeline_layout   layout_;
+    hgn::raii::graphics_pipeline pipe_;
 };
 }  // namespace sui::detail

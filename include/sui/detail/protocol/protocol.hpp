@@ -15,7 +15,6 @@
 #include <hgn/sync.hpp>
 
 #include "sui/detail/debug_impl.hpp"
-#include "sui/detail/hardware/device.hpp"
 #include "sui/detail/protocol/command.hpp"
 #include "sui/detail/protocol/sync.hpp"
 #include "sui/error.hpp"
@@ -24,7 +23,7 @@ namespace sui::detail {
 class protocol final {
   public:
     [[nodiscard]] static auto try_make(
-        device& dev, const std::uint32_t queue_family_indices
+        hgn::raii::device& dev, const std::uint32_t queue_family_indices
     ) noexcept -> std::expected<protocol, error> {
         auto sync_res = sync::try_make(dev);
         if (not sync_res)

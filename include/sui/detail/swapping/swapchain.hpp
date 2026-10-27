@@ -16,7 +16,6 @@
 #include <hgn_raii/image.hpp>
 
 #include "hgn_raii/swapchain.hpp"
-#include "sui/detail/hardware/device.hpp"
 #include "sui/detail/hardware/hardware.hpp"
 #include "sui/detail/hardware/physical_device.hpp"
 #include "sui/detail/others.hpp"
@@ -88,7 +87,7 @@ class swapchain final {
             info.image_sharing_mode(hgn::sharing_mode::exclusive);
         }
 
-        auto res = hard.get_device().try_make_swapchain(info);
+        auto res = hgn::raii::try_make_swapchain(info, hard.get_device().get());
         if (not res) return make_error(runtime_error, "Failed to make swapchain");
 
         return swapchain{std::move(*res), surface_format.setting_format()};
