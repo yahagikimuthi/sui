@@ -33,6 +33,11 @@ class instance final {
     raii::instance native_;
 };
 
+[[nodiscard]] inline auto try_make_instance(const hgn::instance_create_info& info) noexcept
+    -> std::expected<oop::instance, hgn::result> {
+    return oop::instance::try_make(info);
+}
+
 class surface_khr final {
   public:
     [[nodiscard]] static auto make(hgn::surface_khr&& native, oop::instance& instance_ref) noexcept
@@ -47,6 +52,12 @@ class surface_khr final {
 
     raii::surface_khr native_;
 };
+
+[[nodiscard]] inline auto make_surface(
+    hgn::surface_khr&& native, oop::instance& instance_ref
+) noexcept -> oop::surface_khr {
+    return oop::surface_khr::make(std::move(native), instance_ref);
+}
 
 class physical_device final {
   public:
@@ -64,6 +75,10 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
+    [[nodiscard]] auto get_properties() noexcept -> hgn::physical_device_properties {
+        return hgn::get_physical_device_properties(native_);
+    }
+
     [[nodiscard]] auto get_queue_family_properties() noexcept
         -> std::vector<hgn::queue_family_properties> {
         return hgn::get_physical_device_queue_family_properties(get());
@@ -79,6 +94,21 @@ class physical_device final {
         return hgn::get_physical_device_memory_properties(native_);
     }
 
+    [[nodiscard]] auto try_get_surface_capabilities_khr(oop::surface_khr& surface) noexcept
+        -> std::expected<hgn::surface_capabilities_khr, hgn::result> {
+        return hgn::try_get_physical_device_surface_capabilities_khr(native_, surface.get());
+    }
+
+    [[nodiscard]] auto try_get_surface_formats(oop::surface_khr& surface) noexcept
+        -> std::expected<std::vector<hgn::surface_format_khr>, hgn::result> {
+        return hgn::try_get_physical_device_surface_formats_khr(native_, surface.get());
+    }
+
+    [[nodiscard]] auto try_get_surface_present_modes(oop::surface_khr& surface) noexcept
+        -> std::expected<std::vector<hgn::present_mode_khr>, hgn::result> {
+        return hgn::try_get_physical_device_surface_present_modes_khr(native_, surface.get());
+    }
+
     [[nodiscard]] auto get() noexcept -> raii::physical_device& { return native_; }
 
   private:
@@ -86,6 +116,11 @@ class physical_device final {
 
     raii::physical_device native_;
 };
+
+[[nodiscard]] inline auto try_enumerate_physical(oop::instance& instance_ref) noexcept
+    -> std::expected<std::vector<oop::physical_device>, hgn::result> {
+    return oop::physical_device::try_enumerate(instance_ref);
+}
 
 class device final {
   public:
@@ -104,4 +139,10 @@ class device final {
 
     raii::device native_;
 };
+
+[[nodiscard]] inline auto try_make_device(
+    const hgn::device_create_info& info, oop::physical_device& physical
+) noexcept -> std::expected<oop::device, hgn::result> {
+    return oop::device::try_make(info, physical);
+}
 }  // namespace hgn::oop
