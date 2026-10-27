@@ -1,11 +1,11 @@
 #pragma once
 
+#include <array>
 #include <bit>
 #include <cassert>
 #include <cstdint>
 #include <expected>
 #include <functional>
-#include <iostream>
 
 #include <vulkan/vulkan.h>
 
@@ -138,8 +138,6 @@ class image_memory_barrier final {
             destination_          = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
             return *this;
         }
-
-        std::cerr << "We don't expect this pattern. please setting using native method\n";
         return *this;
     }
 

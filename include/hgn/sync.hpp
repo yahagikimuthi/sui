@@ -5,10 +5,7 @@
 #include <cstdint>
 #include <expected>
 #include <functional>
-#include <inplace_vector>
 #include <limits>
-#include <ranges>
-#include <span>
 
 #include <vulkan/vulkan.h>
 
@@ -64,32 +61,6 @@ inline void destroy_semaphore(device& dev, semaphore& target) noexcept {
 
     assert(in_fence != nullptr);
     return std::ref(*in_fence);
-}
-
-template <std::size_t N>
-[[nodiscard]] inline auto try_wait_for_fence(
-    device&                                           dev,
-    const std::span<std::reference_wrapper<fence>, N> fences,
-    const bool                                        is_wait_all = true,
-    std::uint32_t timeout = std::numeric_limits<std::uint32_t>::max()
-) noexcept -> std::expected<void, result> {
-    auto native_fences = std::inplace_vector<fence*, N>{};
-    native_fences.assign_range(
-        fences | std::views::transform([](std::reference_wrapper<fence> ref) noexcept -> fence* {
-            return &ref.get();
-        })
-    );
-
-    const auto res = vkWaitForFences(
-        &dev,
-        static_cast<std::uint32_t>(N),
-        native_fences.data(),
-        static_cast<VkBool32>(is_wait_all),
-        timeout
-    );
-
-    if (res != VK_SUCCESS) return make_result(res);
-    return {};
 }
 
 [[nodiscard]] inline auto try_wait_for_fence(
