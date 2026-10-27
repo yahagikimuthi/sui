@@ -33,9 +33,9 @@ namespace hgn {
     out.assign_range(
         devices |
         std::views::transform(
-            [](physical_device* device) noexcept -> std::reference_wrapper<physical_device> {
-                assert(device != nullptr);
-                return std::ref(*device);
+            [](physical_device* physical) noexcept -> std::reference_wrapper<physical_device> {
+                assert(physical != nullptr);
+                return std::ref(*physical);
             }
         )
     );
@@ -54,10 +54,10 @@ class physical_device_properties final {
     VkPhysicalDeviceProperties native_;
 };
 
-[[nodiscard]] inline auto get_physical_device_properties(physical_device& device) noexcept
+[[nodiscard]] inline auto get_physical_device_properties(physical_device& physical) noexcept
     -> physical_device_properties {
     auto properties = VkPhysicalDeviceProperties{};
-    vkGetPhysicalDeviceProperties(&device, &properties);
+    vkGetPhysicalDeviceProperties(&physical, &properties);
 
     return std::bit_cast<physical_device_properties>(properties);
 }
@@ -73,13 +73,13 @@ class queue_family_properties final {
 };
 
 [[nodiscard]] inline auto get_physical_device_queue_family_properties(
-    physical_device& device
+    physical_device& physical
 ) noexcept -> std::vector<queue_family_properties> {
     auto count = std::uint32_t{};
-    vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(&physical, &count, nullptr);
 
     auto queue_families = std::vector<VkQueueFamilyProperties>(count);
-    vkGetPhysicalDeviceQueueFamilyProperties(&device, &count, queue_families.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(&physical, &count, queue_families.data());
 
     auto out = std::vector<queue_family_properties>{};
     out.reserve(count);
