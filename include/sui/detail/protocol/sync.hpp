@@ -6,7 +6,6 @@
 #include <optional>
 #include <utility>
 
-#include <hgn/device.hpp>
 #include <hgn/image.hpp>
 #include <hgn/submit.hpp>
 #include <hgn/swapchain.hpp>
