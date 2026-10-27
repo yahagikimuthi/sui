@@ -21,7 +21,7 @@ class device_memory final {
         return device_memory{*res, dev};
     }
 
-    device_memory(const device_memory&) noexcept                    = default;
+    device_memory(const device_memory&) noexcept                    = delete;
     auto operator=(const device_memory&) noexcept -> device_memory& = delete;
 
     device_memory(device_memory&& other) noexcept

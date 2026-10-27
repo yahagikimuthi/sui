@@ -1,7 +1,6 @@
 #pragma once
 
 #include <expected>
-#include <functional>
 #include <optional>
 #include <span>
 #include <utility>
