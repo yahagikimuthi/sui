@@ -6,9 +6,9 @@
 #include <ranges>
 #include <utility>
 
+#include <hgn/declaration.hpp>
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
-#include <hgn/instance.hpp>
 #include <hgn/physical_device.hpp>
 
 namespace hgn::raii {

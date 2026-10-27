@@ -1,8 +1,10 @@
 #pragma once
 
+#include <cstdint>
 #include <functional>
 #include <optional>
 
+#include <hgn/declaration.hpp>
 #include <hgn/device.hpp>
 
 namespace hgn::raii {

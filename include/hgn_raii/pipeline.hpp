@@ -5,7 +5,7 @@
 #include <optional>
 #include <utility>
 
-#include <hgn/device.hpp>
+#include <hgn/declaration.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/pipeline.hpp>
 

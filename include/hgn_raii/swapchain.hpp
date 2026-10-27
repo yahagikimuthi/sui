@@ -1,9 +1,10 @@
 #pragma once
 
+#include <expected>
 #include <functional>
 #include <optional>
 
-#include <hgn/device.hpp>
+#include <hgn/declaration.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/swapchain.hpp>
 
@@ -12,20 +13,20 @@ class swapchain_khr final {
   public:
     [[nodiscard]] static auto try_make(
         const hgn::swapchain_create_info_khr& info, hgn::device& dev
-    ) noexcept -> std::expected<swapchain_khr, hgn::result> {
+    ) noexcept -> std::expected<raii::swapchain_khr, hgn::result> {
         auto res = hgn::try_make_swapchain(dev, info);
         if (not res) return std::unexpected{res.error()};
 
-        return swapchain_khr{*res, dev};
+        return raii::swapchain_khr{*res, dev};
     }
 
-    swapchain_khr(const swapchain_khr&) noexcept                    = delete;
-    auto operator=(const swapchain_khr&) noexcept -> swapchain_khr& = delete;
+    swapchain_khr(const raii::swapchain_khr&) noexcept                          = delete;
+    auto operator=(const raii::swapchain_khr&) noexcept -> raii::swapchain_khr& = delete;
 
-    swapchain_khr(swapchain_khr&& other) noexcept
+    swapchain_khr(raii::swapchain_khr&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
-    auto operator=(swapchain_khr&& other) noexcept -> swapchain_khr& {
+    auto operator=(swapchain_khr&& other) noexcept -> raii::swapchain_khr& {
         if (this == &other) return *this;
 
         destroy();
@@ -55,7 +56,7 @@ class swapchain_khr final {
 
 [[nodiscard]] inline auto try_make_swapchain(
     const hgn::swapchain_create_info_khr& info, hgn::device& dev
-) noexcept -> std::expected<swapchain_khr, hgn::result> {
-    return swapchain_khr::try_make(info, dev);
+) noexcept -> std::expected<raii::swapchain_khr, hgn::result> {
+    return raii::swapchain_khr::try_make(info, dev);
 }
 }  // namespace hgn::raii

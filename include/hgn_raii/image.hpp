@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include <hgn/device.hpp>
+#include <hgn/declaration.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/image.hpp>
 #include <hgn/swapchain.hpp>

@@ -5,7 +5,7 @@
 #include <optional>
 #include <utility>
 
-#include <hgn/device.hpp>
+#include <hgn/declaration.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/shader.hpp>
 
@@ -14,20 +14,20 @@ class shader_module final {
   public:
     [[nodiscard]] static auto try_make(
         const hgn::shader_module_create_info& info, hgn::device& dev
-    ) noexcept -> std::expected<shader_module, hgn::result> {
+    ) noexcept -> std::expected<raii::shader_module, hgn::result> {
         auto res = hgn::try_make_shader_module(dev, info);
         if (not res) return std::unexpected{res.error()};
 
-        return shader_module{*res, dev};
+        return raii::shader_module{*res, dev};
     }
 
-    shader_module(const shader_module&) noexcept                    = delete;
-    auto operator=(const shader_module&) noexcept -> shader_module& = delete;
+    shader_module(const raii::shader_module&) noexcept                          = delete;
+    auto operator=(const raii::shader_module&) noexcept -> raii::shader_module& = delete;
 
-    shader_module(shader_module&& other) noexcept
+    shader_module(raii::shader_module&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
-    auto operator=(shader_module&& other) noexcept -> shader_module& {
+    auto operator=(raii::shader_module&& other) noexcept -> raii::shader_module& {
         if (this == &other) return *this;
 
         destroy();
@@ -57,7 +57,7 @@ class shader_module final {
 
 [[nodiscard]] inline auto try_make_shader_module(
     const hgn::shader_module_create_info& info, hgn::device& dev
-) noexcept -> std::expected<shader_module, hgn::result> {
-    return shader_module::try_make(info, dev);
+) noexcept -> std::expected<raii::shader_module, hgn::result> {
+    return raii::shader_module::try_make(info, dev);
 }
 }  // namespace hgn::raii

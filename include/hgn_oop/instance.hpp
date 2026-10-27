@@ -19,46 +19,46 @@ namespace hgn::oop {
 class instance final {
   public:
     [[nodiscard]] static auto try_make(const hgn::instance_create_info& info) noexcept
-        -> std::expected<instance, hgn::result> {
+        -> std::expected<oop::instance, hgn::result> {
         auto native = hgn::raii::try_make_instance(info);
         if (not native) return std::unexpected{native.error()};
-        return instance{std::move(*native)};
+        return oop::instance{std::move(*native)};
     }
 
-    [[nodiscard]] auto get() noexcept -> hgn::raii::instance& { return native_; }
+    [[nodiscard]] auto get() noexcept -> raii::instance& { return native_; }
 
   private:
-    explicit instance(hgn::raii::instance&& native) noexcept : native_{std::move(native)} {}
+    explicit instance(raii::instance&& native) noexcept : native_{std::move(native)} {}
 
-    hgn::raii::instance native_;
+    raii::instance native_;
 };
 
 class surface_khr final {
   public:
-    [[nodiscard]] static auto make(hgn::surface_khr&& native, instance& instance_ref) noexcept
-        -> surface_khr {
-        return surface_khr{hgn::raii::surface_khr::make(std::move(native), instance_ref.get())};
+    [[nodiscard]] static auto make(hgn::surface_khr&& native, oop::instance& instance_ref) noexcept
+        -> oop::surface_khr {
+        return surface_khr{raii::surface_khr::make(std::move(native), instance_ref.get())};
     }
 
-    [[nodiscard]] auto get() noexcept -> hgn::raii::surface_khr& { return native_; }
+    [[nodiscard]] auto get() noexcept -> raii::surface_khr& { return native_; }
 
   private:
-    explicit surface_khr(hgn::raii::surface_khr&& native) noexcept : native_{std::move(native)} {}
+    explicit surface_khr(raii::surface_khr&& native) noexcept : native_{std::move(native)} {}
 
-    hgn::raii::surface_khr native_;
+    raii::surface_khr native_;
 };
 
 class physical_device final {
   public:
     [[nodiscard]] static auto try_enumerate(instance& instance_ref) noexcept
-        -> std::expected<std::vector<physical_device>, hgn::result> {
-        auto natives = hgn::raii::try_enumerate_physical(instance_ref.get());
+        -> std::expected<std::vector<oop::physical_device>, hgn::result> {
+        auto natives = raii::try_enumerate_physical(instance_ref.get());
         if (not natives) return std::unexpected{natives.error()};
 
         return *natives |
                std::views::transform(
-                   [](const hgn::raii::physical_device& native) noexcept -> physical_device {
-                       return physical_device{native};
+                   [](const raii::physical_device& native) noexcept -> oop::physical_device {
+                       return oop::physical_device{native};
                    }
                ) |
                std::ranges::to<std::vector>();
@@ -70,12 +70,12 @@ class physical_device final {
     }
 
     [[nodiscard]] auto is_surface_supporting_khr(
-        const std::uint32_t family_indices, surface_khr& surface
+        const std::uint32_t family_indices, oop::surface_khr& surface
     ) noexcept -> bool {
         return hgn::is_physical_device_surface_supporting_khr(get(), family_indices, surface.get());
     }
 
-    [[nodiscard]] auto get_memory_properties() noexcept -> physical_device_memory_properties {
+    [[nodiscard]] auto get_memory_properties() noexcept -> hgn::physical_device_memory_properties {
         return hgn::get_physical_device_memory_properties(native_);
     }
 

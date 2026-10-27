@@ -6,7 +6,8 @@
 #include <utility>
 
 #include <hgn/buffer.hpp>
-#include <hgn/device.hpp>
+#include <hgn/declaration.hpp>
+#include <hgn/device_memory.hpp>
 #include <hgn/enums.hpp>
 
 namespace hgn::raii {

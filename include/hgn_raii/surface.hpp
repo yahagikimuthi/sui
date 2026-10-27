@@ -4,27 +4,27 @@
 #include <optional>
 #include <utility>
 
-#include <hgn/instance.hpp>
+#include <hgn/declaration.hpp>
 #include <hgn/surface.hpp>
 
 namespace hgn::raii {
 class surface_khr final {
   public:
     [[nodiscard]] static auto make(hgn::surface_khr&& native, hgn::instance& inst) noexcept
-        -> surface_khr {
-        return surface_khr{std::move(native), inst};
+        -> raii::surface_khr {
+        return raii::surface_khr{std::move(native), inst};
     }
 
     explicit surface_khr(hgn::surface_khr&& native, hgn::instance& inst) noexcept
         : native_{native}, instance_{inst} {}
 
-    surface_khr(const surface_khr&) noexcept                    = delete;
-    auto operator=(const surface_khr&) noexcept -> surface_khr& = delete;
+    surface_khr(const raii::surface_khr&) noexcept                          = delete;
+    auto operator=(const raii::surface_khr&) noexcept -> raii::surface_khr& = delete;
 
-    surface_khr(surface_khr&& other) noexcept
+    surface_khr(raii::surface_khr&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)}, instance_{other.instance_} {}
 
-    auto operator=(surface_khr&& other) noexcept -> surface_khr& {
+    auto operator=(raii::surface_khr&& other) noexcept -> raii::surface_khr& {
         if (this == &other) return *this;
 
         destroy();
@@ -49,7 +49,7 @@ class surface_khr final {
 };
 
 [[nodiscard]] inline auto make_surface_khr(hgn::surface_khr&& native, hgn::instance& inst) noexcept
-    -> surface_khr {
-    return surface_khr::make(std::move(native), inst);
+    -> raii::surface_khr {
+    return raii::surface_khr::make(std::move(native), inst);
 }
 }  // namespace hgn::raii
