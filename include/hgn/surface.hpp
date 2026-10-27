@@ -21,7 +21,7 @@ inline void destroy_surface_khr(instance& ins, surface_khr& target) noexcept {
 ) noexcept -> bool {
     auto present_support = VK_FALSE;
     vkGetPhysicalDeviceSurfaceSupportKHR(&physical, indices, &surface, &present_support);
-    return present_support == VK_TRUE;
+    return present_support != VK_FALSE;
 }
 
 class surface_capabilities_khr final {
@@ -47,18 +47,7 @@ class surface_capabilities_khr final {
 [[nodiscard]] inline auto try_get_physical_device_surface_capabilities_khr(
     physical_device& physical, surface_khr& surface
 ) noexcept -> std::expected<surface_capabilities_khr, result> {
-    auto capabilities = VkSurfaceCapabilitiesKHR{
-        .minImageCount           = 0,
-        .maxImageCount           = 0,
-        .currentExtent           = {},
-        .minImageExtent          = {},
-        .maxImageExtent          = {},
-        .maxImageArrayLayers     = 0,
-        .supportedTransforms     = 0,
-        .currentTransform        = static_cast<VkSurfaceTransformFlagBitsKHR>(0),
-        .supportedCompositeAlpha = 0,
-        .supportedUsageFlags     = 0
-    };
+    auto capabilities = VkSurfaceCapabilitiesKHR{};  // NOLINT
 
     auto res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&physical, &surface, &capabilities);
     if (res != VK_SUCCESS) return make_result(res);
