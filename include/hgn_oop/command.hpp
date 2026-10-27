@@ -1,14 +1,16 @@
 #pragma once
 
 #include <cstdint>
+#include <expected>
 #include <utility>
 
 #include <hgn/command.hpp>
+#include <hgn/enums.hpp>
 #include <hgn/pipeline.hpp>
 #include <hgn/render.hpp>
 #include <hgn_raii/command.hpp>
 
-#include "hgn_oop/instance.hpp"
+#include "hgn_oop/hardware.hpp"
 #include "hgn_oop/render.hpp"
 
 namespace hgn::oop {

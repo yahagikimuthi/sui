@@ -7,7 +7,7 @@
 #include <hgn/sync.hpp>
 #include <hgn_raii/sync.hpp>
 
-#include "hgn_oop/instance.hpp"
+#include "hgn_oop/hardware.hpp"
 
 namespace hgn::oop {
 class semaphore final {

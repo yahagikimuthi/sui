@@ -8,7 +8,7 @@
 #include <hgn/swapchain.hpp>
 #include <hgn_raii/swapchain.hpp>
 
-#include "hgn_oop/instance.hpp"
+#include "hgn_oop/hardware.hpp"
 #include "hgn_oop/sync.hpp"
 
 namespace hgn::oop {

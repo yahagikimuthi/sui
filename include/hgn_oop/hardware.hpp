@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <expected>
 #include <ranges>
+#include <utility>
 #include <vector>
 
 #include <hgn/device.hpp>
@@ -12,7 +13,6 @@
 #include <hgn/surface.hpp>
 #include <hgn_raii/device.hpp>
 #include <hgn_raii/instance.hpp>
-#include <hgn_raii/queue.hpp>
 #include <hgn_raii/surface.hpp>
 
 namespace hgn::oop {
@@ -37,7 +37,7 @@ class surface_khr final {
   public:
     [[nodiscard]] static auto make(hgn::surface_khr&& native, oop::instance& instance_ref) noexcept
         -> oop::surface_khr {
-        return surface_khr{raii::surface_khr::make(std::move(native), instance_ref.get())};
+        return oop::surface_khr{raii::surface_khr::make(std::move(native), instance_ref.get())};
     }
 
     [[nodiscard]] auto get() noexcept -> raii::surface_khr& { return native_; }
@@ -50,7 +50,7 @@ class surface_khr final {
 
 class physical_device final {
   public:
-    [[nodiscard]] static auto try_enumerate(instance& instance_ref) noexcept
+    [[nodiscard]] static auto try_enumerate(oop::instance& instance_ref) noexcept
         -> std::expected<std::vector<oop::physical_device>, hgn::result> {
         auto natives = raii::try_enumerate_physical(instance_ref.get());
         if (not natives) return std::unexpected{natives.error()};

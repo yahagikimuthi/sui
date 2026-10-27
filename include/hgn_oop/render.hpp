@@ -7,7 +7,7 @@
 #include <hgn/buffer.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/pipeline.hpp>
-#include <hgn_oop/instance.hpp>
+#include <hgn_oop/hardware.hpp>
 #include <hgn_raii/buffer.hpp>
 #include <hgn_raii/pipeline.hpp>
 
