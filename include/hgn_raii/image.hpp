@@ -18,11 +18,11 @@ class image_container final {
 
   public:
     [[nodiscard]] static auto try_get(hgn::swapchain_khr& chain, hgn::device& dev) noexcept
-        -> std::expected<image_container, hgn::result> {
+        -> std::expected<raii::image_container, hgn::result> {
         auto res = hgn::try_get_swapchain_images_khr(dev, chain);
         if (not res) return std::unexpected{res.error()};
 
-        return image_container{std::move(*res)};
+        return raii::image_container{std::move(*res)};
     }
 
     [[nodiscard]] auto size() const noexcept -> std::size_t { return natives_.size(); }
@@ -38,27 +38,27 @@ class image_container final {
 
 [[nodiscard]] inline auto try_get_swapchain_images_khr(
     hgn::swapchain_khr& chain, hgn::device& dev
-) noexcept -> std::expected<image_container, hgn::result> {
-    return image_container::try_get(chain, dev);
+) noexcept -> std::expected<raii::image_container, hgn::result> {
+    return raii::image_container::try_get(chain, dev);
 }
 
 class image_view final {
   public:
     [[nodiscard]] static auto try_make(
         const hgn::image_view_create_info& info, hgn::device& dev
-    ) noexcept -> std::expected<image_view, hgn::result> {
+    ) noexcept -> std::expected<raii::image_view, hgn::result> {
         auto res = hgn::try_make_image_view(dev, info);
         if (not res) return std::unexpected{res.error()};
-        return image_view{*res, dev};
+        return raii::image_view{*res, dev};
     }
 
-    image_view(const image_view&) noexcept                    = delete;
-    auto operator=(const image_view&) noexcept -> image_view& = delete;
+    image_view(const raii::image_view&) noexcept                          = delete;
+    auto operator=(const raii::image_view&) noexcept -> raii::image_view& = delete;
 
-    image_view(image_view&& other) noexcept
+    image_view(raii::image_view&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
-    auto operator=(image_view&& other) noexcept -> image_view& {
+    auto operator=(raii::image_view&& other) noexcept -> raii::image_view& {
         if (this == &other) return *this;
 
         destroy();
@@ -88,7 +88,7 @@ class image_view final {
 
 [[nodiscard]] inline auto try_make_image_view(
     const hgn::image_view_create_info& info, hgn::device& dev
-) noexcept -> std::expected<image_view, hgn::result> {
-    return image_view::try_make(info, dev);
+) noexcept -> std::expected<raii::image_view, hgn::result> {
+    return raii::image_view::try_make(info, dev);
 }
 }  // namespace hgn::raii

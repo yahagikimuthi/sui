@@ -11,10 +11,10 @@ namespace hgn::raii {
 class queue final {
   public:
     [[nodiscard]] static auto try_get(hgn::device& dev, const std::uint32_t family_indices) noexcept
-        -> std::optional<queue> {
+        -> std::optional<raii::queue> {
         auto res = hgn::try_get_device_queue(dev, family_indices);
         if (not res) return std::nullopt;
-        return queue{*res};
+        return raii::queue{*res};
     }
 
     [[nodiscard]] auto get() noexcept -> hgn::queue& { return native_; }
@@ -29,7 +29,7 @@ class queue final {
 
 [[nodiscard]] inline auto try_get_queue(
     hgn::device& dev, const std::uint32_t family_indices
-) noexcept -> std::optional<queue> {
-    return queue::try_get(dev, family_indices);
+) noexcept -> std::optional<raii::queue> {
+    return raii::queue::try_get(dev, family_indices);
 }
 }  // namespace hgn::raii

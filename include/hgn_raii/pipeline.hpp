@@ -14,20 +14,20 @@ class pipeline_layout final {
   public:
     [[nodiscard]] static auto try_make(
         const hgn::pipeline_layout_create_info& info, hgn::device& dev
-    ) noexcept -> std::expected<pipeline_layout, hgn::result> {
+    ) noexcept -> std::expected<raii::pipeline_layout, hgn::result> {
         auto res = hgn::try_make_pipeline_layout(dev, info);
         if (not res) return std::unexpected{res.error()};
 
-        return pipeline_layout{*res, dev};
+        return raii::pipeline_layout{*res, dev};
     }
 
-    pipeline_layout(const pipeline_layout&) noexcept                    = delete;
-    auto operator=(const pipeline_layout&) noexcept -> pipeline_layout& = delete;
+    pipeline_layout(const raii::pipeline_layout&) noexcept                          = delete;
+    auto operator=(const raii::pipeline_layout&) noexcept -> raii::pipeline_layout& = delete;
 
-    pipeline_layout(pipeline_layout&& other) noexcept
+    pipeline_layout(raii::pipeline_layout&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
-    auto operator=(pipeline_layout&& other) noexcept -> pipeline_layout& {
+    auto operator=(raii::pipeline_layout&& other) noexcept -> raii::pipeline_layout& {
         if (this == &other) return *this;
 
         destroy();
@@ -57,28 +57,28 @@ class pipeline_layout final {
 
 [[nodiscard]] inline auto try_make_pipeline_layout(
     const hgn::pipeline_layout_create_info& info, hgn::device& dev
-) noexcept -> std::expected<pipeline_layout, hgn::result> {
-    return pipeline_layout::try_make(info, dev);
+) noexcept -> std::expected<raii::pipeline_layout, hgn::result> {
+    return raii::pipeline_layout::try_make(info, dev);
 }
 
 class graphics_pipeline final {
   public:
     [[nodiscard]] static auto try_make(
         const hgn::graphics_pipeline_create_info& info, hgn::device& dev
-    ) noexcept -> std::expected<graphics_pipeline, hgn::result> {
+    ) noexcept -> std::expected<raii::graphics_pipeline, hgn::result> {
         auto res = hgn::try_make_graphics_pipeline(dev, info);
         if (not res) return std::unexpected{res.error()};
 
-        return graphics_pipeline{*res, dev};
+        return raii::graphics_pipeline{*res, dev};
     }
 
-    graphics_pipeline(const graphics_pipeline&) noexcept                    = delete;
-    auto operator=(const graphics_pipeline&) noexcept -> graphics_pipeline& = delete;
+    graphics_pipeline(const raii::graphics_pipeline&) noexcept                          = delete;
+    auto operator=(const raii::graphics_pipeline&) noexcept -> raii::graphics_pipeline& = delete;
 
-    graphics_pipeline(graphics_pipeline&& other) noexcept
+    graphics_pipeline(raii::graphics_pipeline&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
-    auto operator=(graphics_pipeline&& other) noexcept -> graphics_pipeline& {
+    auto operator=(raii::graphics_pipeline&& other) noexcept -> raii::graphics_pipeline& {
         if (this == &other) return *this;
 
         destroy();
@@ -108,7 +108,7 @@ class graphics_pipeline final {
 
 [[nodiscard]] inline auto try_make_graphics_pipeline(
     const hgn::graphics_pipeline_create_info& info, hgn::device& dev
-) noexcept -> std::expected<graphics_pipeline, hgn::result> {
-    return graphics_pipeline::try_make(info, dev);
+) noexcept -> std::expected<raii::graphics_pipeline, hgn::result> {
+    return raii::graphics_pipeline::try_make(info, dev);
 }
 }  // namespace hgn::raii

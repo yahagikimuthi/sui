@@ -13,19 +13,19 @@ class command_pool final {
   public:
     [[nodiscard]] static auto try_make(
         const hgn::command_pool_create_info& info, hgn::device& dev
-    ) noexcept -> std::expected<command_pool, hgn::result> {
+    ) noexcept -> std::expected<raii::command_pool, hgn::result> {
         auto res = hgn::try_make_command_pool(dev, info);
         if (not res) return std::unexpected{res.error()};
-        return command_pool{*res, dev};
+        return raii::command_pool{*res, dev};
     }
 
-    command_pool(const command_pool&) noexcept                    = delete;
-    auto operator=(const command_pool&) noexcept -> command_pool& = delete;
+    command_pool(const raii::command_pool&) noexcept                          = delete;
+    auto operator=(const raii::command_pool&) noexcept -> raii::command_pool& = delete;
 
-    command_pool(command_pool&& other) noexcept
+    command_pool(raii::command_pool&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
-    auto operator=(command_pool&& other) noexcept -> command_pool& {
+    auto operator=(raii::command_pool&& other) noexcept -> raii::command_pool& {
         if (this == &other) return *this;
 
         destroy();
@@ -55,18 +55,18 @@ class command_pool final {
 
 [[nodiscard]] inline auto try_make_command_pool(
     const hgn::command_pool_create_info& info, hgn::device& dev
-) noexcept -> std::expected<command_pool, hgn::result> {
-    return command_pool::try_make(info, dev);
+) noexcept -> std::expected<raii::command_pool, hgn::result> {
+    return raii::command_pool::try_make(info, dev);
 }
 
 class command_buffer final {
   public:
     [[nodiscard]] static auto try_allocate(
         const hgn::command_buffer_allocate_info& info, hgn::device& dev
-    ) noexcept -> std::expected<command_buffer, hgn::result> {
+    ) noexcept -> std::expected<raii::command_buffer, hgn::result> {
         auto res = hgn::try_allocate_command_buffer(dev, info);
         if (not res) return std::unexpected{res.error()};
-        return command_buffer{*res};
+        return raii::command_buffer{*res};
     }
 
     [[nodiscard]] auto get() noexcept -> hgn::command_buffer& { return native_; }
@@ -82,6 +82,6 @@ class command_buffer final {
 [[nodiscard]] inline auto try_allocate_command_buffer(
     const hgn::command_buffer_allocate_info& info, hgn::device& dev
 ) noexcept -> std::expected<command_buffer, hgn::result> {
-    return command_buffer::try_allocate(info, dev);
+    return raii::command_buffer::try_allocate(info, dev);
 }
 }  // namespace hgn::raii

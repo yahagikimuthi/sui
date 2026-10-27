@@ -14,20 +14,20 @@ class semaphore final {
   public:
     [[nodiscard]] static auto try_make(
         const hgn::semaphore_create_info& info, hgn::device& dev
-    ) noexcept -> std::expected<semaphore, hgn::result> {
+    ) noexcept -> std::expected<raii::semaphore, hgn::result> {
         auto res = hgn::try_make_semaphore(dev, info);
         if (not res) return std::unexpected{res.error()};
 
-        return semaphore{*res, dev};
+        return raii::semaphore{*res, dev};
     }
 
-    semaphore(const semaphore&) noexcept                    = delete;
-    auto operator=(const semaphore&) noexcept -> semaphore& = delete;
+    semaphore(const raii::semaphore&) noexcept                          = delete;
+    auto operator=(const raii::semaphore&) noexcept -> raii::semaphore& = delete;
 
-    semaphore(semaphore&& other) noexcept
+    semaphore(raii::semaphore&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
-    auto operator=(semaphore&& other) noexcept -> semaphore& {
+    auto operator=(raii::semaphore&& other) noexcept -> raii::semaphore& {
         if (this == &other) return *this;
 
         destroy();
@@ -57,27 +57,28 @@ class semaphore final {
 
 [[nodiscard]] inline auto try_make_semaphore(
     const hgn::semaphore_create_info& info, hgn::device& dev
-) noexcept -> std::expected<semaphore, hgn::result> {
-    return semaphore::try_make(info, dev);
+) noexcept -> std::expected<raii::semaphore, hgn::result> {
+    return raii::semaphore::try_make(info, dev);
 }
 
 class fence final {
   public:
     [[nodiscard]] static auto try_make(
         const hgn::fence_create_info& info, hgn::device& dev
-    ) noexcept -> std::expected<fence, hgn::result> {
+    ) noexcept -> std::expected<raii::fence, hgn::result> {
         auto res = hgn::try_make_fence(dev, info);
         if (not res) return std::unexpected{res.error()};
 
-        return fence{*res, dev};
+        return raii::fence{*res, dev};
     }
 
-    fence(const fence&) noexcept                    = delete;
-    auto operator=(const fence&) noexcept -> fence& = delete;
+    fence(const raii::fence&) noexcept                          = delete;
+    auto operator=(const raii::fence&) noexcept -> raii::fence& = delete;
 
-    fence(fence&& other) noexcept : native_{other.native_}, dev_{other.dev_} {}
+    fence(raii::fence&& other) noexcept
+        : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
-    auto operator=(fence&& other) noexcept -> fence& {
+    auto operator=(raii::fence&& other) noexcept -> raii::fence& {
         if (this == &other) return *this;
 
         destroy();
@@ -107,7 +108,7 @@ class fence final {
 
 [[nodiscard]] inline auto try_make_fence(
     const hgn::fence_create_info& info, hgn::device& dev
-) noexcept -> std::expected<fence, hgn::result> {
-    return fence::try_make(info, dev);
+) noexcept -> std::expected<raii::fence, hgn::result> {
+    return raii::fence::try_make(info, dev);
 }
 }  // namespace hgn::raii

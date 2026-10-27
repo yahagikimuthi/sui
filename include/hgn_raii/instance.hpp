@@ -11,18 +11,19 @@ namespace hgn::raii {
 class instance final {
   public:
     [[nodiscard]] static auto try_make(const hgn::instance_create_info& info) noexcept
-        -> std::expected<instance, hgn::result> {
+        -> std::expected<raii::instance, hgn::result> {
         auto res = hgn::try_create_instance(info);
         if (not res) return std::unexpected{res.error()};
 
-        return instance{*res};
+        return raii::instance{*res};
     }
 
-    instance(const instance&) noexcept                    = delete;
-    auto operator=(const instance&) noexcept -> instance& = delete;
+    instance(const raii::instance&) noexcept                          = delete;
+    auto operator=(const raii::instance&) noexcept -> raii::instance& = delete;
 
-    instance(instance&& other) noexcept : native_{std::exchange(other.native_, std::nullopt)} {}
-    auto operator=(instance&& other) noexcept -> instance& {
+    instance(raii::instance&& other) noexcept
+        : native_{std::exchange(other.native_, std::nullopt)} {}
+    auto operator=(instance&& other) noexcept -> raii::instance& {
         if (this == &other) return *this;
 
         destroy();
@@ -48,7 +49,7 @@ class instance final {
 };
 
 [[nodiscard]] inline auto try_make_instance(const hgn::instance_create_info& info) noexcept
-    -> std::expected<instance, hgn::result> {
-    return instance::try_make(info);
+    -> std::expected<raii::instance, hgn::result> {
+    return raii::instance::try_make(info);
 }
 }  // namespace hgn::raii

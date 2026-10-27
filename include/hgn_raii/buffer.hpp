@@ -15,20 +15,20 @@ class device_memory final {
   public:
     [[nodiscard]] static auto try_allocate(
         const hgn::memory_allocate_info& info, hgn::device& dev
-    ) noexcept -> std::expected<device_memory, hgn::result> {
+    ) noexcept -> std::expected<raii::device_memory, hgn::result> {
         auto res = hgn::try_allocate_memory(dev, info);
         if (not res) return std::unexpected{res.error()};
 
-        return device_memory{*res, dev};
+        return raii::device_memory{*res, dev};
     }
 
-    device_memory(const device_memory&) noexcept                    = delete;
-    auto operator=(const device_memory&) noexcept -> device_memory& = delete;
+    device_memory(const raii::device_memory&) noexcept                          = delete;
+    auto operator=(const raii::device_memory&) noexcept -> raii::device_memory& = delete;
 
-    device_memory(device_memory&& other) noexcept
+    device_memory(raii::device_memory&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
-    auto operator=(device_memory&& other) noexcept -> device_memory& {
+    auto operator=(raii::device_memory&& other) noexcept -> raii::device_memory& {
         if (this == &other) return *this;
 
         destroy();
@@ -58,28 +58,28 @@ class device_memory final {
 
 [[nodiscard]] inline auto try_allocate_memory(
     const hgn::memory_allocate_info& info, hgn::device& dev
-) noexcept -> std::expected<device_memory, hgn::result> {
-    return device_memory::try_allocate(info, dev);
+) noexcept -> std::expected<raii::device_memory, hgn::result> {
+    return raii::device_memory::try_allocate(info, dev);
 }
 
 class buffer final {
   public:
     [[nodiscard]] static auto try_make(
         const hgn::buffer_create_info& info, hgn::device& dev
-    ) noexcept -> std::expected<buffer, hgn::result> {
+    ) noexcept -> std::expected<raii::buffer, hgn::result> {
         auto res = hgn::try_make_buffer(dev, info);
         if (not res) return std::unexpected{res.error()};
 
-        return buffer{*res, dev};
+        return raii::buffer{*res, dev};
     }
 
-    buffer(const buffer&) noexcept                    = delete;
-    auto operator=(const buffer&) noexcept -> buffer& = delete;
+    buffer(const raii::buffer&) noexcept                          = delete;
+    auto operator=(const raii::buffer&) noexcept -> raii::buffer& = delete;
 
-    buffer(buffer&& other) noexcept
+    buffer(raii::buffer&& other) noexcept
         : native_{std::exchange(other.native_, std::nullopt)}, dev_{other.dev_} {}
 
-    auto operator=(buffer&& other) noexcept -> buffer& {
+    auto operator=(raii::buffer&& other) noexcept -> raii::buffer& {
         if (this == &other) return *this;
 
         destroy();
@@ -109,7 +109,7 @@ class buffer final {
 
 [[nodiscard]] inline auto try_make_buffer(
     const hgn::buffer_create_info& info, hgn::device& dev
-) noexcept -> std::expected<buffer, hgn::result> {
-    return buffer::try_make(info, dev);
+) noexcept -> std::expected<raii::buffer, hgn::result> {
+    return raii::buffer::try_make(info, dev);
 }
 }  // namespace hgn::raii
