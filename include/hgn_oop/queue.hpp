@@ -14,8 +14,9 @@
 namespace hgn::oop {
 class queue final {
   public:
-    [[nodiscard]] static auto try_make(oop::device& dev, std::uint32_t family_indices) noexcept
-        -> std::optional<queue> {
+    [[nodiscard]] static auto try_make(
+        oop::device& dev, const std::uint32_t family_indices
+    ) noexcept -> std::optional<queue> {
         auto native = raii::try_get_queue(dev.get(), family_indices);
         if (not native) return std::nullopt;
         return oop::queue{*native};
@@ -33,4 +34,10 @@ class queue final {
 
     raii::queue native_;
 };
+
+[[nodiscard]] inline auto try_make_queue(
+    oop::device& dev, const std::uint32_t family_indices
+) noexcept -> std::optional<queue> {
+    return oop::queue::try_make(dev, family_indices);
+}
 }  // namespace hgn::oop
