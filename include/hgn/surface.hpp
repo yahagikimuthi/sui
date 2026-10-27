@@ -10,7 +10,6 @@
 
 #include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/physical_device.hpp"
 
 namespace hgn {
 inline void destroy_surface_khr(instance& ins, surface_khr& target) noexcept {

@@ -13,8 +13,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/physical_device.hpp"
 
 namespace hgn {
 class device_queue_create_info final {
@@ -210,8 +210,6 @@ class device_create_info final {
     std::vector<const char*>                   extensions_;
 };
 
-using device = VkDevice_T;
-
 [[nodiscard]] inline auto try_make_device(
     physical_device& physical, const device_create_info& info
 ) noexcept -> std::expected<std::reference_wrapper<device>, result> {
@@ -233,8 +231,6 @@ inline void destroy_device(device& dev) noexcept {
     if (res != VK_SUCCESS) return make_result(res);
     return {};
 }
-
-using queue = VkQueue_T;
 
 [[nodiscard]] inline auto try_get_device_queue(
     device& dev, const std::uint32_t family_indices

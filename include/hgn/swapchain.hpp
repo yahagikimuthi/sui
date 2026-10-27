@@ -10,9 +10,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/device.hpp"
+#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/surface.hpp"
 
 namespace hgn {
 class swapchain_create_info_khr final {

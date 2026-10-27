@@ -7,17 +7,15 @@
 #include <functional>
 #include <inplace_vector>
 #include <limits>
+#include <ranges>
 #include <span>
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/device.hpp"
+#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
 
 namespace hgn {
-using semaphore = VkSemaphore_T;
-using fence     = VkFence_T;
-
 class semaphore_create_info final {
   public:
     explicit semaphore_create_info() noexcept {

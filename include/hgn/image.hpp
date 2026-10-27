@@ -6,18 +6,15 @@
 #include <expected>
 #include <functional>
 #include <limits>
+#include <ranges>
 #include <vector>
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/device.hpp"
+#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/swapchain.hpp"
-#include "hgn/sync.hpp"
 
 namespace hgn {
-using image = VkImage_T;
-
 [[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain_khr& chain) noexcept
     -> std::expected<std::vector<std::reference_wrapper<image>>, result> {
     auto       count = std::uint32_t{};
@@ -73,8 +70,6 @@ class image_view_create_info final {
   private:
     VkImageViewCreateInfo native_{};
 };
-
-using image_view = VkImageView_T;
 
 [[nodiscard]] inline auto try_make_image_view(
     device& dev, const image_view_create_info& info

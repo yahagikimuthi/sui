@@ -12,12 +12,10 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/instance.hpp"
 
 namespace hgn {
-using physical_device = VkPhysicalDevice_T;
-
 [[nodiscard]] inline auto try_enumerate_physical_devices(instance& instance_ref) noexcept
     -> std::expected<std::vector<std::reference_wrapper<physical_device>>, result> {
     auto count = std::uint32_t{};

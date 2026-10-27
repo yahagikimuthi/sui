@@ -12,10 +12,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/command.hpp"
-#include "hgn/device.hpp"
+#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/shader.hpp"
 
 namespace hgn {
 class vertex_input_binding_description final {
@@ -409,8 +407,6 @@ class pipeline_shader_stage_create_info final {
     VkPipelineShaderStageCreateInfo native_{};  // NOLINT
 };
 
-using pipeline_layout = VkPipelineLayout_T;
-
 class pipeline_layout_create_info final {
   public:
     explicit pipeline_layout_create_info() noexcept {
@@ -499,20 +495,6 @@ class pipeline_rendering_create_info final {
     VkPipelineRenderingCreateInfo native_{};
     VkFormat                      format_{static_cast<VkFormat>(0)};
 };
-
-/*
-    VkGraphicsPipelineCreateInfo                   native_{};
-    pipeline_rendering_create_info                 rendering_info_;
-    std::vector<pipeline_shader_stage_create_info> shader_stages_;
-    std::vector<VkPipelineShaderStageCreateInfo>   native_shader_stages_;
-    pipeline_vertex_input_state_create_info        vertex_input_info_;
-    pipeline_input_assembly_state_create_info      input_assembly_;
-    pipeline_viewport_state_create_info            viewport_state_;
-    pipeline_rasterization_state_create_info       rasterizer_;
-    pipeline_multisample_state_create_info         multisampling_;
-    pipeline_color_blend_state_create_info         color_blend_;
-    pipeline_dynamic_state_create_info             dynamic_state_;
-*/
 
 class graphics_pipeline_create_info final {
   public:
@@ -718,8 +700,6 @@ class graphics_pipeline_create_info final {
     pipeline_color_blend_state_create_info         color_blend_;
     pipeline_dynamic_state_create_info             dynamic_state_;
 };
-
-using pipeline = VkPipeline_T;
 
 [[nodiscard]] inline auto try_make_graphics_pipeline(
     device& dev, const graphics_pipeline_create_info& info

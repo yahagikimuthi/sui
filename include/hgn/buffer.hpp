@@ -11,7 +11,6 @@
 #include <vulkan/vulkan.h>
 
 #include "hgn/declaration.hpp"
-#include "hgn/device.hpp"
 #include "hgn/enums.hpp"
 
 namespace hgn {

@@ -4,11 +4,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/command.hpp"
-#include "hgn/device.hpp"
+#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/swapchain.hpp"
-#include "hgn/sync.hpp"
 
 namespace hgn {
 class submit_info final {

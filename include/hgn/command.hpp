@@ -9,15 +9,10 @@
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/buffer.hpp"
-#include "hgn/device.hpp"
+#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/image.hpp"
 
 namespace hgn {
-using command_pool   = VkCommandPool_T;
-using command_buffer = VkCommandBuffer_T;
-
 class command_pool_create_info final {
   public:
     explicit command_pool_create_info() noexcept {

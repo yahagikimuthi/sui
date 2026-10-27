@@ -10,12 +10,10 @@
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/device.hpp"
+#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
 
 namespace hgn {
-using shader_module = VkShaderModule_T;
-
 class shader_module_create_info final {
   public:
     explicit shader_module_create_info() noexcept {

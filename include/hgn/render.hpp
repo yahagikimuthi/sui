@@ -1,9 +1,10 @@
 #pragma once
 
-#include "vulkan/vulkan_core.h"
+#include <cstdint>
 
-#include "hgn/command.hpp"
-#include "hgn/image.hpp"
+#include <vulkan/vulkan.h>
+
+#include "hgn/declaration.hpp"
 
 namespace hgn {
 class rendering_attachment_info final {
