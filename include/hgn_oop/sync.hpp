@@ -7,8 +7,6 @@
 #include <hgn/sync.hpp>
 #include <hgn_raii/sync.hpp>
 
-#include "hgn_oop/hardware.hpp"
-
 namespace hgn::oop {
 class semaphore final {
   public:
@@ -17,13 +15,13 @@ class semaphore final {
   private:
     explicit semaphore(raii::semaphore&& native) noexcept : native_{std::move(native)} {}
 
-    friend class oop::device;
+    friend class device;
 
     raii::semaphore native_;
 };
 
 class fence final {
-    friend class oop::device;
+    friend class device;
 
   public:
     [[nodiscard]] auto try_wait(hgn::device& dev) noexcept -> std::expected<void, hgn::result> {
