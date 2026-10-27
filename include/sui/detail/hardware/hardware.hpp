@@ -40,14 +40,14 @@ class hardware final {
         if (not native_surface) return make_error(runtime_error, "Failed to make surface.");
         auto surface = hgn::raii::make_surface_khr(std::move(native_surface->get()), *inst);
 
-        auto physical_devices_res = hgn::try_enumerate_physical_devices(*inst);
-        if (not physical_devices_res)
+        auto native_physicals_res = hgn::raii::try_enumerate_physical(*inst);
+        if (not native_physicals_res)
             return make_error(runtime_error, "Failed to enumerate physical devices.");
-        auto& native_physical_devices = *physical_devices_res;
+        auto& native_physical_devices = *native_physicals_res;
 
         auto suitable_physicals =
             native_physical_devices |
-            std::views::filter([&](hgn::physical_device& physical) noexcept -> bool {
+            std::views::filter([&](hgn::raii::physical_device& physical) noexcept -> bool {
                 return is_device_suitable(physical, surface);
             });
 
@@ -56,12 +56,9 @@ class hardware final {
 
         const auto indices = find_queue_families(suitable_physicals.front(), surface);
 
-        auto& native_physical = native_physical_devices.front().get();
-        auto  physical        = physical_device{
-            hgn::raii::make_physical(std::move(native_physical)),
-            *indices.graphics_family,
-            *indices.present_family
-        };
+        auto& native_physical = suitable_physicals.front();
+        auto  physical =
+            physical_device{native_physical, *indices.graphics_family, *indices.present_family};
 
         const auto queue_info =
             hgn::device_queue_create_info{}.queue_family_index(physical.graphics_family());
