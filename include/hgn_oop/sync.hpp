@@ -12,34 +12,20 @@
 namespace hgn::oop {
 class semaphore final {
   public:
-    [[nodiscard]] static auto try_make(
-        const hgn::semaphore_create_info& info, oop::device& dev
-    ) noexcept -> std::expected<oop::semaphore, hgn::result> {
-        auto native = raii::try_make_semaphore(info, dev.get());
-        if (not native) return std::unexpected{native.error()};
-
-        return oop::semaphore{std::move(*native)};
-    }
-
     [[nodiscard]] auto get() noexcept -> raii::semaphore& { return native_; }
 
   private:
     explicit semaphore(raii::semaphore&& native) noexcept : native_{std::move(native)} {}
 
+    friend class oop::device;
+
     raii::semaphore native_;
 };
 
 class fence final {
+    friend class oop::device;
+
   public:
-    [[nodiscard]] static auto try_make(
-        const hgn::fence_create_info& info, oop::device& dev
-    ) noexcept -> std::expected<oop::fence, hgn::result> {
-        auto native = raii::try_make_fence(info, dev.get());
-        if (not native) return std::unexpected{native.error()};
-
-        return oop::fence{std::move(*native)};
-    }
-
     [[nodiscard]] auto try_wait(hgn::device& dev) noexcept -> std::expected<void, hgn::result> {
         return hgn::try_wait_for_fence(dev, native_);
     }
