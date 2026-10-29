@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cassert>
 #include <expected>
 #include <optional>
 #include <span>
-#include <string>
-#include <string_view>
+#include <utility>
 #include <vector>
 
+#include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 
 #include "hgn2/application.hpp"
@@ -18,8 +19,18 @@ class instance final {
   public:
     instance(const instance&) noexcept                    = delete;
     auto operator=(const instance&) noexcept -> instance& = delete;
-    instance(instance&& other) noexcept;
-    auto operator=(instance&& other) noexcept -> instance&;
+
+    instance(instance&& other) noexcept : raw_{std::exchange(other.raw_, std::nullopt)} {}
+
+    auto operator=(instance&& other) noexcept -> instance& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        raw_ = std::exchange(other.raw_, std::nullopt);
+        return *this;
+    }
+
     ~instance() noexcept { destroy(); }
 
     [[nodiscard]] auto enumerate_physical() noexcept
@@ -29,20 +40,53 @@ class instance final {
 
     class builder final {
       public:
-        explicit builder() noexcept = default;
+        explicit builder() noexcept {
+            auto   count      = std::uint32_t{};
+            auto** extensions = glfwGetRequiredInstanceExtensions(&count);
 
-        auto app(const application& app) noexcept -> builder&;
+            auto span = std::span<const char*>(extensions, count);
+            extensions_.reserve(span.size());
+            extensions_.assign_range(span);
+        }
 
-        auto layer(const std::string_view layer) noexcept -> builder&;
+        auto app(const application& app) noexcept -> builder& {
+            app_ = app;
+            return *this;
+        }
 
-        auto extensions(const std::span<const std::string_view> exts) noexcept -> builder&;
+        auto debug(const bool is_debug) noexcept -> builder& {
+            if (not is_debug) return *this;
 
-        [[nodiscard]] auto build() noexcept -> std::expected<instance, result>;
+            layer_ = "VK_LAYER_KHRONOS_validation";
+            extensions_.emplace_back("VK_EXT_debug_utils");
+            return *this;
+        }
+
+        [[nodiscard]] auto build() const noexcept -> std::expected<instance, result> {
+            auto info  = VkInstanceCreateInfo{};
+            info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+            if (app_) {
+                info.pApplicationInfo = &app_->info();
+            }
+            info.enabledLayerCount   = 1;
+            info.ppEnabledLayerNames = &layer_;
+
+            info.enabledExtensionCount   = static_cast<std::uint32_t>(extensions_.size());
+            info.ppEnabledExtensionNames = extensions_.data();
+
+            auto* raw = static_cast<VkInstance_T*>(nullptr);
+
+            const auto res = vkCreateInstance(&info, nullptr, &raw);
+            if (res != VK_SUCCESS) return make_unexpected(res);
+
+            assert(raw != nullptr);
+            return instance{*raw};
+        }
 
       private:
         std::optional<const application&> app_;
-        std::string                       layer_;
-        std::vector<std::string>          extensions_;
+        const char*                       layer_{};
+        std::vector<const char*>          extensions_;
     };
 
   private:
@@ -50,12 +94,12 @@ class instance final {
 
     explicit instance(VkInstance_T& raw) noexcept : raw_{raw} {}
 
-    void destroy() noexcept;
+    void destroy() noexcept {
+        if (raw_) {
+            vkDestroyInstance(&get(), nullptr);
+        }
+    }
 
     std::optional<VkInstance_T&> raw_;
 };
 }  // namespace hgn
-
-#define HGN_DETAIL_INSTANCE_IMPL_HPP_
-#include "hgn2/detail/instance.impl.hpp"
-#undef HGN_DETAIL_INSTANCE_IMPL_HPP_
