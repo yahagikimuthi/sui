@@ -62,17 +62,6 @@ class device_queue_create_info final {
         return *this;
     }
 
-    auto queue_count(const std::uint32_t cnt) noexcept -> device_queue_create_info& {
-        native_.queueCount = cnt;
-        return *this;
-    }
-
-    auto queue_priorities(const float priority) noexcept -> device_queue_create_info& {
-        priority_                = priority;
-        native_.pQueuePriorities = &priority_;
-        return *this;
-    }
-
     [[nodiscard]] auto get() const noexcept -> const VkDeviceQueueCreateInfo& { return native_; }
 
   private:

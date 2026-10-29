@@ -23,7 +23,3 @@ class window final {
     std::optional<GLFWwindow&> raw_;
 };
 }  // namespace hgn
-
-#define HGN_DETAIL_WINDOW_IMPL_HPP_
-#include "hgn2/detail/window.impl.hpp"
-#undef HGN_DETAIL_WINDOW_IMPL_HPP_

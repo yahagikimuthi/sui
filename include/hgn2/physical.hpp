@@ -56,7 +56,7 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
-    [[nodiscard]] auto is_surface_supporting_khr(
+    [[nodiscard]] auto is_supporting_surface_khr(
         const std::uint32_t queue_family_index, surface_khr& surface
     ) noexcept -> std::expected<bool, result> {
         auto       supported = VkBool32{};

@@ -3,10 +3,14 @@
 #include <expected>
 #include <optional>
 #include <ranges>
+#include <utility>
 
 #include <hgn2/application.hpp>
+#include <hgn2/device.hpp>
+#include <hgn2/device_queue.hpp>
 #include <hgn2/instance.hpp>
 #include <hgn2/physical.hpp>
+#include <hgn2/queue.hpp>
 #include <hgn2/surface.hpp>
 #include <hgn2/window.hpp>
 
@@ -54,14 +58,40 @@ class hardware final {
         if (suitable_physicals.empty())
             return make_error(runtime_error, "Failed to find suitable physical device.");
 
-        auto physical = std::move(suitable_physicals.front());
+        auto       physical = std::move(suitable_physicals.front());
+        const auto indices  = find_queue_families(physical, *surface);
 
-        return hardware{std::move(*instance)};
+        auto device_queue =
+            hgn::device_queue::builder{}.queue_family_index(*indices.graphics_family).build();
+
+        auto device = hgn::device::builder{}
+                          .next(hgn::physical_device_dynamic_rendering_features{})
+                          .features(hgn::physical_device_features{})
+                          .queue(device_queue)
+                          .build(physical);
+        if (not device) return make_error(runtime_error, "Failed to make device.");
+
+        auto graphics_queue = device->get_queue(*indices.graphics_family);
+        auto present_queue  = device->get_queue(*indices.present_family);
+
+        return hardware{
+            std::move(*instance),
+            std::move(*surface),
+            std::move(physical),
+            std::move(*device),
+            std::move(graphics_queue),
+            std::move(present_queue)
+        };
     }
 
   private:
     explicit hardware(
-        hgn::instance&& instance, hgn::surface_khr&& surface, hgn::physical_device&& physical
+        hgn::instance&&        instance,
+        hgn::surface_khr&&     surface,
+        hgn::physical_device&& physical,
+        hgn::device&&          device,
+        hgn::queue&&           graphics,
+        hgn::queue&&           present
     ) noexcept;
 
     [[nodiscard]] static auto find_queue_families(
@@ -78,7 +108,7 @@ class hardware final {
             }
 
             const auto supporting =
-                physical.is_surface_supporting_khr(static_cast<std::uint32_t>(i), surface);
+                physical.is_supporting_surface_khr(static_cast<std::uint32_t>(i), surface);
             if (supporting and *supporting) {
                 indices.present_family = i;
             }
@@ -92,5 +122,8 @@ class hardware final {
     hgn::instance        instance_;
     hgn::surface_khr     surface_;
     hgn::physical_device physical_;
+    hgn::device          device_;
+    hgn::queue           graphics_queue_;
+    hgn::queue           present_queue_;
 };
 }  // namespace sui

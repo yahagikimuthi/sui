@@ -84,9 +84,9 @@ class instance final {
         }
 
       private:
-        std::optional<const application&> app_;
-        const char*                       layer_{};
-        std::vector<const char*>          extensions_;
+        std::optional<application> app_;
+        const char*                layer_{};
+        std::vector<const char*>   extensions_;
     };
 
   private:
