@@ -19,10 +19,16 @@ class queue final {
     auto operator=(queue&&) noexcept -> queue&      = default;
     ~queue() noexcept                               = default;
 
+    [[nodiscard]] auto queue_family_index() const noexcept -> std::uint32_t {
+        return queue_family_index_;
+    }
+
   private:
-    explicit queue(VkQueue_T& raw) noexcept : raw_{std::ref(raw)} {}
+    explicit queue(VkQueue_T& raw, const std::uint32_t queue_family_index) noexcept
+        : raw_{std::ref(raw)}, queue_family_index_{queue_family_index} {}
 
     std::reference_wrapper<VkQueue_T> raw_;
+    std::uint32_t                     queue_family_index_;
 };
 
 inline auto device::get_queue(const std::uint32_t queue_family_index) noexcept -> queue {
@@ -30,6 +36,6 @@ inline auto device::get_queue(const std::uint32_t queue_family_index) noexcept -
     vkGetDeviceQueue(&get(), queue_family_index, 0, &raw);
 
     assert(raw != nullptr);
-    return queue{*raw};
+    return queue{*raw, queue_family_index};
 }
 }  // namespace hgn

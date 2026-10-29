@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bit>
 #include <cstdint>
 #include <expected>
 #include <functional>
@@ -11,19 +12,10 @@
 
 #include "hgn2/enums.hpp"
 #include "hgn2/instance.hpp"
+#include "hgn2/structs.hpp"
 #include "hgn2/surface.hpp"
 
 namespace hgn {
-class queue_family_properties final {
-  public:
-    [[nodiscard]] auto flags() const noexcept -> queue_flag_bits {
-        return static_cast<queue_flag_bits>(raw_.queueFlags);
-    }
-
-  private:
-    VkQueueFamilyProperties raw_;
-};
-
 class physical_device final {
     friend class instance;
 
@@ -66,6 +58,56 @@ class physical_device final {
         if (res != VK_SUCCESS) return make_unexpected(res);
 
         return supported != VK_FALSE;
+    }
+
+    [[nodiscard]] auto get_surface_capabilities_khr(surface_khr& surface) noexcept
+        -> std::expected<surface_capabilities_khr, result> {
+        auto       capabilities = VkSurfaceCapabilitiesKHR{};  // NOLINT
+        const auto res =
+            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&get(), &surface.get(), &capabilities);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        return std::bit_cast<surface_capabilities_khr>(capabilities);
+    }
+
+    [[nodiscard]] auto get_surface_formats_khr(surface_khr& surface) noexcept
+        -> std::expected<std::vector<surface_format_khr>, result> {
+        auto       count = std::uint32_t{};
+        const auto res1 =
+            vkGetPhysicalDeviceSurfaceFormatsKHR(&get(), &surface.get(), &count, nullptr);
+        if (res1 != VK_SUCCESS) return make_unexpected(res1);
+
+        auto       formats = std::vector<VkSurfaceFormatKHR>(count);
+        const auto res2 =
+            vkGetPhysicalDeviceSurfaceFormatsKHR(&get(), &surface.get(), &count, formats.data());
+        if (res2 != VK_SUCCESS) return make_unexpected(res2);
+
+        return formats |
+               std::views::transform(
+                   [](const VkSurfaceFormatKHR& raw) noexcept -> surface_format_khr {
+                       return std::bit_cast<surface_format_khr>(raw);
+                   }
+               ) |
+               std::ranges::to<std::vector>();
+    }
+
+    [[nodiscard]] auto get_surface_present_modes_khr(surface_khr& surface) noexcept
+        -> std::expected<std::vector<present_mode_khr>, result> {
+        auto       count = std::uint32_t{};
+        const auto res1 =
+            vkGetPhysicalDeviceSurfacePresentModesKHR(&get(), &surface.get(), &count, nullptr);
+        if (res1 != VK_SUCCESS) return make_unexpected(res1);
+
+        auto       modes = std::vector<VkPresentModeKHR>(count);
+        const auto res2 =
+            vkGetPhysicalDeviceSurfacePresentModesKHR(&get(), &surface.get(), &count, modes.data());
+        if (res2 != VK_SUCCESS) return make_unexpected(res2);
+
+        return modes |
+               std::views::transform([](VkPresentModeKHR& mode) noexcept -> present_mode_khr {
+                   return static_cast<present_mode_khr>(mode);
+               }) |
+               std::ranges::to<std::vector>();
     }
 
     [[nodiscard]] auto get() noexcept -> VkPhysicalDevice_T& { return raw_; }

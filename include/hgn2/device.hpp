@@ -11,34 +11,10 @@
 #include "hgn2/device_queue.hpp"
 #include "hgn2/enums.hpp"
 #include "hgn2/physical.hpp"
+#include "hgn2/structs.hpp"
 #include "hgn2/sync.hpp"
 
 namespace hgn {
-class physical_device_features final {
-  public:
-    explicit physical_device_features() noexcept = default;
-
-    [[nodiscard]] auto get() const noexcept -> const VkPhysicalDeviceFeatures& { return raw_; }
-
-  private:
-    VkPhysicalDeviceFeatures raw_{};
-};
-
-class physical_device_dynamic_rendering_features final {
-  public:
-    explicit physical_device_dynamic_rendering_features() noexcept {
-        raw_.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
-        raw_.dynamicRendering = VK_TRUE;
-    }
-
-    [[nodiscard]] auto get() const noexcept -> const VkPhysicalDeviceDynamicRenderingFeatures& {
-        return raw_;
-    }
-
-  private:
-    VkPhysicalDeviceDynamicRenderingFeatures raw_{};
-};
-
 class queue;
 class device final {
   public:
