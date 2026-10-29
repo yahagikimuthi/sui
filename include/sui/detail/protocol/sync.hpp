@@ -13,7 +13,6 @@
 #include <hgn_raii/device.hpp>
 #include <hgn_raii/sync.hpp>
 
-#include "sui/detail/debug_impl.hpp"
 #include "sui/detail/others.hpp"
 #include "sui/error.hpp"
 
