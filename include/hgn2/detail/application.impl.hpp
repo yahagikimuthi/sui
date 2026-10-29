@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef HGN_DETAIL_APPLICATION_INL_
+#ifndef HGN_DETAIL_APPLICATION_IMPL_HPP_
 #include "hgn2/application.hpp"
 #endif
 

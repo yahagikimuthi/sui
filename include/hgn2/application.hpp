@@ -55,6 +55,6 @@ class application final {
 };
 }  // namespace hgn
 
-#define HGN_DETAIL_APPLICATION_INL_
+#define HGN_DETAIL_APPLICATION_IMPL_HPP_
 #include "hgn2/detail/application.impl.hpp"
-#undef HGN_DETAIL_APPLICATION_INL_
+#undef HGN_DETAIL_APPLICATION_IMPL_HPP_
