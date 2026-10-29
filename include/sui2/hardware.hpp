@@ -12,6 +12,7 @@
 #include <hgn2/physical.hpp>
 #include <hgn2/queue.hpp>
 #include <hgn2/surface.hpp>
+#include <hgn2/sync.hpp>
 #include <hgn2/window.hpp>
 
 #include "sui2/error.hpp"
@@ -74,13 +75,23 @@ class hardware final {
         auto graphics_queue = device->get_queue(*indices.graphics_family);
         auto present_queue  = device->get_queue(*indices.present_family);
 
+        auto sem1  = device->make_semaphore();
+        auto sem2  = device->make_semaphore();
+        auto fence = device->make_fence();
+
+        if (not sem1 or not sem2) return make_error(runtime_error, "Failed to make semaphore.");
+        if (not fence) return make_error(runtime_error, "Failed to make fence.");
+
         return hardware{
             std::move(*instance),
             std::move(*surface),
             std::move(physical),
             std::move(*device),
             std::move(graphics_queue),
-            std::move(present_queue)
+            std::move(present_queue),
+            std::move(*sem1),
+            std::move(*sem2),
+            std::move(*fence)
         };
     }
 
@@ -91,7 +102,10 @@ class hardware final {
         hgn::physical_device&& physical,
         hgn::device&&          device,
         hgn::queue&&           graphics,
-        hgn::queue&&           present
+        hgn::queue&&           present,
+        hgn::semaphore&&       image_available,
+        hgn::semaphore&&       render_finished_,
+        hgn::fence&&           in_flight
     ) noexcept;
 
     [[nodiscard]] static auto find_queue_families(
@@ -125,5 +139,8 @@ class hardware final {
     hgn::device          device_;
     hgn::queue           graphics_queue_;
     hgn::queue           present_queue_;
+    hgn::semaphore       image_available_;
+    hgn::semaphore       render_finished_;
+    hgn::fence           in_flight_;
 };
 }  // namespace sui
