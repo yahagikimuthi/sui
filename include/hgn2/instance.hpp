@@ -13,6 +13,7 @@
 #include "hgn2/enums.hpp"
 
 namespace hgn {
+class physical_device;
 class instance final {
   public:
     instance(const instance&) noexcept                    = delete;
@@ -20,6 +21,9 @@ class instance final {
     instance(instance&& other) noexcept;
     auto operator=(instance&& other) noexcept -> instance&;
     ~instance() noexcept { destroy(); }
+
+    [[nodiscard]] auto enumerate_physical() noexcept
+        -> std::expected<std::vector<physical_device>, result>;
 
     [[nodiscard]] auto get() noexcept -> VkInstance_T& { return *raw_; }
 
