@@ -15,6 +15,8 @@ class application final {
     auto operator=(application&& other) noexcept -> application&;
     ~application() noexcept = default;
 
+    [[nodiscard]] auto info() const noexcept -> const VkApplicationInfo& { return info_; }
+
     class builder final {
         friend class application;
 
