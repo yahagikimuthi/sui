@@ -11,6 +11,7 @@
 #include "hgn2/device_queue.hpp"
 #include "hgn2/enums.hpp"
 #include "hgn2/physical.hpp"
+#include "hgn2/sync.hpp"
 
 namespace hgn {
 class physical_device_features final {
@@ -58,6 +59,29 @@ class device final {
     ~device() noexcept { destroy(); }
 
     [[nodiscard]] auto get_queue(const std::uint32_t queue_family_index) noexcept -> queue;
+
+    [[nodiscard]] auto make_semaphore() noexcept -> std::expected<semaphore, result> {
+        auto info      = VkSemaphoreCreateInfo{};
+        info.sType     = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        auto*      raw = static_cast<VkSemaphore_T*>(nullptr);
+        const auto res = vkCreateSemaphore(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return semaphore{*raw, get()};
+    }
+
+    [[nodiscard]] auto make_fence() noexcept -> std::expected<fence, result> {
+        auto info      = VkFenceCreateInfo{};
+        info.sType     = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        info.flags     = VK_FENCE_CREATE_SIGNALED_BIT;
+        auto*      raw = static_cast<VkFence_T*>(nullptr);
+        const auto res = vkCreateFence(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return fence{*raw, get()};
+    }
 
     [[nodiscard]] auto get() noexcept -> VkDevice_T& { return *raw_; }
 
