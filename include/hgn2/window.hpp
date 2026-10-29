@@ -1,0 +1,27 @@
+#pragma once
+
+#include <expected>
+#include <optional>
+
+#include <GLFW/glfw3.h>
+
+#include "hgn2/enums.hpp"
+#include "hgn2/instance.hpp"
+#include "hgn2/surface.hpp"
+
+namespace hgn {
+class window final {
+  public:
+    [[nodiscard]] auto get() noexcept -> GLFWwindow& { return *raw_; }
+
+    [[nodiscard]] auto make_surface(instance& instance_ref) noexcept
+        -> std::expected<surface_khr, result>;
+
+  private:
+    std::optional<GLFWwindow&> raw_;
+};
+}  // namespace hgn
+
+#define HGN_DETAIL_WINDOW_IMPL_HPP
+#include "hgn2/detail/window.impl.hpp"
+#undef HGN_DETAIL_WINDOW_IMPL_HPP
