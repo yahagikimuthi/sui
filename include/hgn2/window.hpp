@@ -3,7 +3,9 @@
 #include <expected>
 #include <optional>
 
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#undef GLFW_INCLUDE_VULKAN
 
 #include "hgn2/enums.hpp"
 #include "hgn2/instance.hpp"
