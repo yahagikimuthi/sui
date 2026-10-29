@@ -9,7 +9,6 @@
 #include <kgm/window.hpp>
 
 #include "hgn_oop/hardware.hpp"
-#include "hgn_oop/queue.hpp"
 #include "sui/detail/hardware/physical_device.hpp"
 #include "sui/error.hpp"
 
@@ -32,7 +31,6 @@ class hardware final {
                                   .application_version(1, 0, 0)
                                   .engine_name("No Engine")
                                   .engine_version(1, 0, 0)
-                                  .engine_version(1, 3, 0)
                                   .api_version(1, 3, 0);
 
         auto instance_info =
