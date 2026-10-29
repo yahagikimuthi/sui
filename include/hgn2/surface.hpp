@@ -1,7 +1,8 @@
 #pragma once
 
-#include <optional>
 #include <utility>
+
+#include "hgn2/raii/hardware.hpp"
 
 #include <vulkan/vulkan.h>
 
@@ -12,27 +13,16 @@ class surface_khr final {
   public:
     surface_khr(const surface_khr&) noexcept                    = delete;
     auto operator=(const surface_khr&) noexcept -> surface_khr& = delete;
+    surface_khr(surface_khr&&) noexcept                         = default;
+    auto operator=(surface_khr&&) noexcept -> surface_khr&      = default;
+    ~surface_khr() noexcept                                     = default;
 
-    surface_khr(surface_khr&& other) noexcept : raw_{std::exchange(other.raw_, std::nullopt)} {}
-
-    auto operator=(surface_khr&& other) noexcept -> surface_khr& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        raw_ = std::exchange(other.raw_, std::nullopt);
-        return *this;
-    }
-
-    ~surface_khr() noexcept { destroy(); }
-
-    [[nodiscard]] auto get() noexcept -> VkSurfaceKHR_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> VkSurfaceKHR_T& { return raw_; }
 
   private:
-    explicit surface_khr(VkSurfaceKHR_T& raw) noexcept : raw_{raw} {}
+    explicit surface_khr(VkSurfaceKHR_T& raw, VkInstance_T& instance) noexcept
+        : raw_{std::move(raw), instance} {}
 
-    void destroy() noexcept;
-
-    std::optional<VkSurfaceKHR_T&> raw_;
+    raii::surface_khr raw_;
 };
 }  // namespace hgn

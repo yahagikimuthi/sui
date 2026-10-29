@@ -3,15 +3,16 @@
 #include <bit>
 #include <cstdint>
 #include <expected>
-#include <functional>
 #include <ranges>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <vulkan/vulkan.h>
 
 #include "hgn2/enums.hpp"
 #include "hgn2/instance.hpp"
+#include "hgn2/raii/hardware.hpp"
 #include "hgn2/structs.hpp"
 #include "hgn2/surface.hpp"
 
@@ -115,7 +116,7 @@ class physical_device final {
     [[nodiscard]] auto get() const noexcept -> VkPhysicalDevice_T& { return raw_; }
 
   private:
-    explicit physical_device(VkPhysicalDevice_T& raw) noexcept : raw_{std::ref(raw)} {}
+    explicit physical_device(VkPhysicalDevice_T& raw) noexcept : raw_{std::move(raw)} {}
 
     [[nodiscard]] auto get_property() const noexcept -> VkPhysicalDeviceProperties {
         auto property = VkPhysicalDeviceProperties{};
@@ -123,7 +124,7 @@ class physical_device final {
         return property;
     }
 
-    std::reference_wrapper<VkPhysicalDevice_T> raw_;
+    raii::physical_device raw_;
 };
 
 inline auto instance::enumerate_physical() noexcept

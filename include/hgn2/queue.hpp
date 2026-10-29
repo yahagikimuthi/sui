@@ -2,11 +2,12 @@
 
 #include <cassert>
 #include <cstdint>
-#include <functional>
+#include <utility>
 
 #include <vulkan/vulkan.h>
 
 #include "hgn2/device.hpp"
+#include "hgn2/raii/hardware.hpp"
 
 namespace hgn {
 class queue final {
@@ -25,10 +26,10 @@ class queue final {
 
   private:
     explicit queue(VkQueue_T& raw, const std::uint32_t queue_family_index) noexcept
-        : raw_{std::ref(raw)}, queue_family_index_{queue_family_index} {}
+        : raw_{std::move(raw)}, queue_family_index_{queue_family_index} {}
 
-    std::reference_wrapper<VkQueue_T> raw_;
-    std::uint32_t                     queue_family_index_;
+    raii::queue   raw_;
+    std::uint32_t queue_family_index_;
 };
 
 inline auto device::get_queue(const std::uint32_t queue_family_index) noexcept -> queue {

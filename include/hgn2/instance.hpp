@@ -12,6 +12,7 @@
 
 #include "hgn2/application.hpp"
 #include "hgn2/enums.hpp"
+#include "hgn2/raii/hardware.hpp"
 
 namespace hgn {
 class physical_device;
@@ -19,24 +20,14 @@ class instance final {
   public:
     instance(const instance&) noexcept                    = delete;
     auto operator=(const instance&) noexcept -> instance& = delete;
-
-    instance(instance&& other) noexcept : raw_{std::exchange(other.raw_, std::nullopt)} {}
-
-    auto operator=(instance&& other) noexcept -> instance& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        raw_ = std::exchange(other.raw_, std::nullopt);
-        return *this;
-    }
-
-    ~instance() noexcept { destroy(); }
+    instance(instance&&) noexcept                         = default;
+    auto operator=(instance&&) noexcept -> instance&      = default;
+    ~instance() noexcept                                  = default;
 
     [[nodiscard]] auto enumerate_physical() noexcept
         -> std::expected<std::vector<physical_device>, result>;
 
-    [[nodiscard]] auto get() noexcept -> VkInstance_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> VkInstance_T& { return raw_; }
 
     class builder final {
       public:
@@ -92,14 +83,8 @@ class instance final {
   private:
     friend class instance::builder;
 
-    explicit instance(VkInstance_T& raw) noexcept : raw_{raw} {}
+    explicit instance(VkInstance_T& raw) noexcept : raw_{std::move(raw)} {}
 
-    void destroy() noexcept {
-        if (raw_) {
-            vkDestroyInstance(&get(), nullptr);
-        }
-    }
-
-    std::optional<VkInstance_T&> raw_;
+    raii::instance raw_;
 };
 }  // namespace hgn

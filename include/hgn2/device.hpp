@@ -11,6 +11,7 @@
 #include "hgn2/device_queue.hpp"
 #include "hgn2/enums.hpp"
 #include "hgn2/physical.hpp"
+#include "hgn2/raii/hardware.hpp"
 #include "hgn2/structs.hpp"
 #include "hgn2/sync.hpp"
 
@@ -20,19 +21,9 @@ class device final {
   public:
     device(const device&) noexcept                    = delete;
     auto operator=(const device&) noexcept -> device& = delete;
-
-    device(device&& other) noexcept : raw_{std::exchange(other.raw_, std::nullopt)} {}
-
-    auto operator=(device&& other) noexcept -> device& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        raw_ = std::exchange(other.raw_, std::nullopt);
-        return *this;
-    }
-
-    ~device() noexcept { destroy(); }
+    device(device&&) noexcept                         = default;
+    auto operator=(device&&) noexcept -> device&      = default;
+    ~device() noexcept                                = default;
 
     [[nodiscard]] auto get_queue(const std::uint32_t queue_family_index) noexcept -> queue;
 
@@ -59,7 +50,7 @@ class device final {
         return fence{*raw, get()};
     }
 
-    [[nodiscard]] auto get() noexcept -> VkDevice_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> VkDevice_T& { return raw_; }
 
     class builder final {
       public:
@@ -113,12 +104,8 @@ class device final {
   private:
     friend class device::builder;
 
-    explicit device(VkDevice_T& raw) noexcept : raw_{raw} {}
+    explicit device(VkDevice_T& raw) noexcept : raw_{std::move(raw)} {}
 
-    void destroy() noexcept {
-        if (raw_) vkDestroyDevice(&get(), nullptr);
-    }
-
-    std::optional<VkDevice_T&> raw_;
+    raii::device raw_;
 };
 }  // namespace hgn

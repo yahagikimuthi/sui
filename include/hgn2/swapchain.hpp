@@ -4,7 +4,6 @@
 #include <cassert>
 #include <cstdint>
 #include <expected>
-#include <functional>
 #include <optional>
 #include <span>
 #include <utility>
@@ -15,6 +14,7 @@
 #include "hgn2/device.hpp"
 #include "hgn2/enums.hpp"
 #include "hgn2/image.hpp"
+#include "hgn2/raii/image.hpp"
 #include "hgn2/structs.hpp"
 #include "hgn2/surface.hpp"
 
@@ -23,24 +23,9 @@ class swapchain_khr final {
   public:
     swapchain_khr(const swapchain_khr&) noexcept                    = delete;
     auto operator=(const swapchain_khr&) noexcept -> swapchain_khr& = delete;
-
-    swapchain_khr(swapchain_khr&& other) noexcept
-        : raw_{std::exchange(other.raw_, std::nullopt)},
-          dev_{other.dev_},
-          image_format_{other.image_format_} {}
-
-    auto operator=(swapchain_khr&& other) noexcept -> swapchain_khr& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        raw_          = std::exchange(other.raw_, std::nullopt);
-        dev_          = other.dev_;
-        image_format_ = other.image_format_;
-        return *this;
-    }
-
-    ~swapchain_khr() noexcept { destroy(); }
+    swapchain_khr(swapchain_khr&&) noexcept                         = default;
+    auto operator=(swapchain_khr&&) noexcept -> swapchain_khr&      = default;
+    ~swapchain_khr() noexcept                                       = default;
 
     [[nodiscard]] auto get_images_khr(device& dev) noexcept
         -> std::expected<std::vector<image>, result> {
@@ -61,7 +46,7 @@ class swapchain_khr final {
 
     [[nodiscard]] auto image_format() const noexcept -> format { return image_format_; }
 
-    [[nodiscard]] auto get() noexcept -> VkSwapchainKHR_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> VkSwapchainKHR_T& { return raw_; }
 
     class builder final {
       public:
@@ -153,14 +138,9 @@ class swapchain_khr final {
     friend swapchain_khr::builder;
 
     explicit swapchain_khr(VkSwapchainKHR_T& raw, VkDevice_T& dev, const format fmt) noexcept
-        : raw_{raw}, dev_{std::ref(dev)}, image_format_{fmt} {}
+        : raw_{std::move(raw), dev}, image_format_{fmt} {}
 
-    void destroy() noexcept {
-        if (raw_) vkDestroySwapchainKHR(&dev_.get(), &get(), nullptr);
-    }
-
-    std::optional<VkSwapchainKHR_T&>   raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
-    format                             image_format_;
+    raii::swapchain_khr raw_;
+    format              image_format_;
 };
 }  // namespace hgn

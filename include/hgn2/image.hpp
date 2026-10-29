@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <expected>
-#include <functional>
 #include <optional>
 #include <utility>
 
@@ -10,6 +9,7 @@
 
 #include "hgn2/device.hpp"
 #include "hgn2/enums.hpp"
+#include "hgn2/raii/image.hpp"
 
 namespace hgn {
 class image final {
@@ -25,32 +25,20 @@ class image final {
     [[nodiscard]] auto get() noexcept -> VkImage_T& { return raw_; }
 
   private:
-    explicit image(VkImage_T& raw) noexcept : raw_{std::ref(raw)} {}
+    explicit image(VkImage_T& raw) noexcept : raw_{std::move(raw)} {}
 
-    std::reference_wrapper<VkImage_T> raw_;
+    raii::image raw_;
 };
 
 class image_view final {
   public:
     image_view(const image_view&) noexcept                    = delete;
     auto operator=(const image_view&) noexcept -> image_view& = delete;
+    image_view(image_view&&) noexcept                         = default;
+    auto operator=(image_view&&) noexcept -> image_view&      = default;
+    ~image_view() noexcept                                    = default;
 
-    image_view(image_view&& other) noexcept
-        : raw_{std::exchange(other.raw_, std::nullopt)}, dev_{other.dev_} {}
-
-    auto operator=(image_view&& other) noexcept -> image_view& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        raw_ = std::exchange(other.raw_, std::nullopt);
-        dev_ = other.dev_;
-        return *this;
-    }
-
-    ~image_view() noexcept { destroy(); }
-
-    [[nodiscard]] auto get() noexcept -> VkImageView_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> VkImageView_T& { return raw_; }
 
     class builder final {
       public:
@@ -100,14 +88,8 @@ class image_view final {
   private:
     friend class image_view::builder;
 
-    explicit image_view(VkImageView_T& raw, VkDevice_T& dev) noexcept
-        : raw_{raw}, dev_{std::ref(dev)} {}
+    explicit image_view(VkImageView_T& raw, VkDevice_T& dev) noexcept : raw_{std::move(raw), dev} {}
 
-    void destroy() noexcept {
-        if (raw_) vkDestroyImageView(&dev_.get(), &get(), nullptr);
-    }
-
-    std::optional<VkImageView_T&>      raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    raii::image_view raw_;
 };
 }  // namespace hgn
