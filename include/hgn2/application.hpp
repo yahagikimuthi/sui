@@ -35,6 +35,8 @@ class application final {
             const std::uint32_t major, const std::uint32_t minor, const std::uint32_t patch
         ) noexcept -> builder&;
 
+        [[nodiscard]] auto build() noexcept -> application { return application{*this}; }
+
       private:
         std::string   name_;
         std::uint32_t app_version_{};
