@@ -8,6 +8,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn2/command.hpp"
 #include "hgn2/device_queue.hpp"
 #include "hgn2/enums.hpp"
 #include "hgn2/physical.hpp"
@@ -48,6 +49,37 @@ class device final {
 
         assert(raw != nullptr);
         return fence{*raw, get()};
+    }
+
+    [[nodiscard]] auto make_command_pool(const std::uint32_t queue_family_index) noexcept
+        -> std::expected<command_pool, result> {
+        auto info             = VkCommandPoolCreateInfo{};
+        info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        info.queueFamilyIndex = queue_family_index;
+
+        auto*      raw = static_cast<VkCommandPool_T*>(nullptr);
+        const auto res = vkCreateCommandPool(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return command_pool{*raw, get()};
+    }
+
+    [[nodiscard]] auto allocate_command_buffer(command_pool& pool) noexcept
+        -> std::expected<command_buffer, result> {
+        auto info               = VkCommandBufferAllocateInfo{};
+        info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        info.commandBufferCount = 1;
+        info.commandPool        = &pool.get();
+
+        auto*      raw = static_cast<VkCommandBuffer_T*>(nullptr);
+        const auto res = vkAllocateCommandBuffers(&get(), &info, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return command_buffer{*raw};
     }
 
     [[nodiscard]] auto get() noexcept -> VkDevice_T& { return raw_; }
