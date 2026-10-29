@@ -47,6 +47,9 @@ class pipeline_layout final {
 
 class pipeline final {
   public:
+    [[nodiscard]] explicit pipeline(VkPipeline_T&& raw, VkDevice_T& dev) noexcept  // NOLINT
+        : raw_{raw}, dev_{std::ref(dev)} {}
+
     pipeline(const pipeline&) noexcept                    = delete;
     auto operator=(const pipeline&) noexcept -> pipeline& = delete;
 
@@ -70,9 +73,6 @@ class pipeline final {
     [[nodiscard]] operator VkPipeline_T&() noexcept { return get(); }
 
   private:
-    explicit pipeline(VkPipeline_T& raw, VkDevice_T& dev) noexcept
-        : raw_{raw}, dev_{std::ref(dev)} {}
-
     void destroy() noexcept {
         if (raw_) vkDestroyPipeline(&dev_.get(), &get(), nullptr);
     }
