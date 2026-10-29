@@ -9,6 +9,9 @@
 namespace hgn::raii {
 class command_pool final {
   public:
+    explicit command_pool(VkCommandPool_T&& raw, VkDevice_T& dev) noexcept  // NOLINT
+        : raw_{raw}, dev_{std::ref(dev)} {}
+
     command_pool(const command_pool&) noexcept                    = delete;
     auto operator=(const command_pool&) noexcept -> command_pool& = delete;
 
@@ -32,9 +35,6 @@ class command_pool final {
     [[nodiscard]] operator VkCommandPool_T&() noexcept { return get(); }
 
   private:
-    explicit command_pool(VkCommandPool_T& raw, VkDevice_T& dev) noexcept
-        : raw_{raw}, dev_{std::ref(dev)} {}
-
     void destroy() noexcept {
         if (raw_) vkDestroyCommandPool(&dev_.get(), &get(), nullptr);
     }
@@ -45,6 +45,8 @@ class command_pool final {
 
 class command_buffer final {
   public:
+    explicit command_buffer(VkCommandBuffer_T&& raw) noexcept : raw_{std::ref(raw)} {}  // NOLINT
+
     command_buffer(const command_buffer&) noexcept                   = delete;
     auto operator=(const command_buffer&) noexcept -> command_buffer = delete;
     command_buffer(command_buffer&&) noexcept                        = default;
@@ -56,8 +58,6 @@ class command_buffer final {
     [[nodiscard]] operator VkCommandBuffer_T&() noexcept { return get(); }
 
   private:
-    explicit command_buffer(VkCommandBuffer_T& raw) noexcept : raw_{std::ref(raw)} {}
-
     std::reference_wrapper<VkCommandBuffer_T> raw_;
 };
 }  // namespace hgn::raii
