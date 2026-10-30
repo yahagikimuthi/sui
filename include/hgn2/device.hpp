@@ -4,15 +4,18 @@
 #include <cstdint>
 #include <expected>
 #include <optional>
+#include <span>
 #include <utility>
 
 #include <vulkan/vulkan.h>
 
+#include "hgn2/buffer.hpp"
 #include "hgn2/command.hpp"
 #include "hgn2/device_queue.hpp"
 #include "hgn2/enums.hpp"
 #include "hgn2/physical.hpp"
 #include "hgn2/raii/hardware.hpp"
+#include "hgn2/shader.hpp"
 #include "hgn2/structs.hpp"
 #include "hgn2/sync.hpp"
 
@@ -80,6 +83,56 @@ class device final {
 
         assert(raw != nullptr);
         return command_buffer{*raw};
+    }
+
+    [[nodiscard]] auto make_buffer(const std::uint32_t size) noexcept
+        -> std::expected<buffer, result> {
+        auto info        = VkBufferCreateInfo{};
+        info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        info.usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        info.size        = size;
+        info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        auto*      raw = static_cast<VkBuffer_T*>(nullptr);
+        const auto res = vkCreateBuffer(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return buffer{*raw, get()};
+    }
+
+    [[nodiscard]] auto allocate_memory(
+        const std::uint64_t allocation_size, const std::uint32_t memory_type_index
+    ) noexcept -> std::expected<device_memory, result> {
+        auto info            = VkMemoryAllocateInfo{};
+        info.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        info.allocationSize  = allocation_size;
+        info.memoryTypeIndex = memory_type_index;
+
+        auto*      raw = static_cast<VkDeviceMemory_T*>(nullptr);
+        const auto res = vkAllocateMemory(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return device_memory{*raw, get()};
+    }
+
+    [[nodiscard]] auto make_shader(const std::span<const char> codes) noexcept
+        -> std::expected<shader_module, result> {
+        auto info     = VkShaderModuleCreateInfo{};
+        info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        info.codeSize = codes.size();
+
+        // TODO Configure this!
+        info.pCode = reinterpret_cast<const std::uint32_t*>(codes.data());
+
+        auto*      raw = static_cast<VkShaderModule_T*>(nullptr);
+        const auto res = vkCreateShaderModule(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return shader_module{*raw, get()};
     }
 
     [[nodiscard]] auto get() noexcept -> VkDevice_T& { return raw_; }

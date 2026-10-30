@@ -111,6 +111,12 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
+    [[nodiscard]] auto get_memory_properties() noexcept -> physical_device_memory_properties {
+        auto property = VkPhysicalDeviceMemoryProperties{};
+        vkGetPhysicalDeviceMemoryProperties(&get(), &property);
+        return std::bit_cast<physical_device_memory_properties>(property);
+    }
+
     [[nodiscard]] auto get() noexcept -> VkPhysicalDevice_T& { return raw_; }
 
     [[nodiscard]] auto get() const noexcept -> VkPhysicalDevice_T& { return raw_; }

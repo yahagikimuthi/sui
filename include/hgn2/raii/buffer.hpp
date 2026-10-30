@@ -34,6 +34,8 @@ class device_memory final {
 
     [[nodiscard]] operator VkDeviceMemory_T&() noexcept { return get(); }
 
+    [[nodiscard]] auto init_device() noexcept -> VkDevice_T& { return dev_; }
+
   private:
     void destroy() noexcept {
         if (raw_) vkFreeMemory(&dev_.get(), &get(), nullptr);
@@ -45,7 +47,7 @@ class device_memory final {
 
 class buffer final {
   public:
-    explicit buffer(VkBuffer_T& native, VkDevice_T& dev) noexcept
+    [[nodiscard]] explicit buffer(VkBuffer_T&& native, VkDevice_T& dev) noexcept  // NOLINT
         : raw_{native}, dev_{std::ref(dev)} {}
 
     buffer(const buffer&) noexcept                    = delete;
@@ -69,6 +71,8 @@ class buffer final {
     [[nodiscard]] auto get() noexcept -> VkBuffer_T& { return *raw_; }
 
     [[nodiscard]] operator VkBuffer_T&() noexcept { return get(); }
+
+    [[nodiscard]] auto init_device() noexcept -> VkDevice_T& { return dev_; }
 
   private:
     void destroy() noexcept {

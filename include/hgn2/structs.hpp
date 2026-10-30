@@ -2,6 +2,9 @@
 
 #include <bit>
 #include <cstdint>
+#include <ranges>
+#include <span>
+#include <vector>
 
 #include <vulkan/vulkan.h>
 
@@ -82,5 +85,46 @@ class surface_format_khr final {
 
   private:
     VkSurfaceFormatKHR raw_;
+};
+
+class memory_requirements final {
+  public:
+    [[nodiscard]] auto memory_type_bits() const noexcept -> std::uint32_t {
+        return raw_.memoryTypeBits;
+    }
+
+    [[nodiscard]] auto size() const noexcept -> std::uint64_t { return raw_.size; }
+
+  private:
+    VkMemoryRequirements raw_;
+};
+
+class memory_type final {
+  public:
+    [[nodiscard]] auto property_flags() const noexcept -> memory_property_flags {
+        return static_cast<memory_property_flags>(raw_.propertyFlags);
+    }
+
+  private:
+    VkMemoryType raw_;
+};
+
+class physical_device_memory_properties final {
+  public:
+    [[nodiscard]] auto memory_types() const noexcept -> std::vector<memory_type> {
+        const auto* ptr  = static_cast<const VkMemoryType*>(raw_.memoryTypes);
+        auto        span = std::span{ptr, raw_.memoryTypeCount};
+        return span | std::views::transform([](const VkMemoryType type) noexcept -> memory_type {
+                   return std::bit_cast<memory_type>(type);
+               }) |
+               std::ranges::to<std::vector>();
+    }
+
+    [[nodiscard]] auto memory_type_count() const noexcept -> std::uint32_t {
+        return raw_.memoryTypeCount;
+    }
+
+  private:
+    VkPhysicalDeviceMemoryProperties raw_;
 };
 }  // namespace hgn
