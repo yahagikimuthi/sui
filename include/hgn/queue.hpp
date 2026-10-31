@@ -137,9 +137,7 @@ class queue final {
     auto operator=(queue&&) noexcept -> queue&      = default;
     ~queue() noexcept                               = default;
 
-    [[nodiscard]] auto queue_family_index() const noexcept -> std::uint32_t {
-        return queue_family_index_;
-    }
+    [[nodiscard]] auto queue_family_index() const noexcept -> std::uint32_t { return index_; }
 
     [[nodiscard]] auto get_present_executor() noexcept -> present_executor {
         return present_executor{get()};
@@ -153,9 +151,9 @@ class queue final {
 
   private:
     explicit queue(raw::queue& raw, const std::uint32_t queue_family_index) noexcept
-        : raw_{std::move(raw)}, queue_family_index_{queue_family_index} {}
+        : raw_{std::move(raw)}, index_{queue_family_index} {}
 
     raii::queue   raw_;
-    std::uint32_t queue_family_index_;
+    std::uint32_t index_;
 };
 }  // namespace hgn
