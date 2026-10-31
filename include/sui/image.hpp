@@ -83,7 +83,7 @@ class image final {
         auto swapchain = builder.build();
         if (not swapchain) return make_error(runtime_error, "Failed to make swapchain.");
 
-        auto images = swapchain->get_images_khr();
+        auto images = swapchain->make_images_khr();
         if (not images) return make_error(runtime_error, "Failed to get images.");
 
         auto views = std::vector<hgn::image_view>{};

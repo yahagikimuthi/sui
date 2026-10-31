@@ -27,7 +27,7 @@ class swapchain_khr final {
     auto operator=(swapchain_khr&&) noexcept -> swapchain_khr&      = default;
     ~swapchain_khr() noexcept                                       = default;
 
-    [[nodiscard]] auto get_images_khr() noexcept -> std::expected<std::vector<image>, result> {
+    [[nodiscard]] auto make_images_khr() noexcept -> std::expected<std::vector<image>, result> {
         auto       count = std::uint32_t{};
         const auto res1  = vkGetSwapchainImagesKHR(&raw_.init_device(), &get(), &count, nullptr);
         if (res1 != VK_SUCCESS) return make_unexpected(res1);
