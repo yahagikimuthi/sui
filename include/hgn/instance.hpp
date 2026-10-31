@@ -28,7 +28,7 @@ class instance final {
     auto operator=(instance&&) noexcept -> instance&      = default;
     ~instance() noexcept                                  = default;
 
-    [[nodiscard]] auto enumerate_physical() noexcept
+    [[nodiscard]] auto enumerate_physicals() noexcept
         -> std::expected<std::vector<physical_device>, result> {
         auto count = std::uint32_t{};
         if (const auto res = vkEnumeratePhysicalDevices(&get(), &count, nullptr);

@@ -45,7 +45,7 @@ class hardware final {
         auto surface = win.make_surface(*instance);
         if (not surface) return make_error(runtime_error, "Failed to make surface.");
 
-        auto physicals = instance->enumerate_physical();
+        auto physicals = instance->enumerate_physicals();
         if (not physicals)
             return make_error(runtime_error, "Failed to enumerate physical devices.");
 
