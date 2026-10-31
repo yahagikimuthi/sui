@@ -1,13 +1,10 @@
 #pragma once
 
 #include <cassert>
-#include <expected>
-#include <optional>
 #include <utility>
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/enums.hpp"
 #include "hgn/raii/image.hpp"
 #include "hgn/raw.hpp"
 
