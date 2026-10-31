@@ -6,11 +6,13 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/raw.hpp"
+
 namespace hgn::raii {
 class swapchain_khr final {
   public:
     [[nodiscard]] explicit swapchain_khr(
-        VkSwapchainKHR_T&& raw, VkDevice_T& dev  // NOLINT
+        VkSwapchainKHR_T&& raw, raw::device& dev  // NOLINT
     ) noexcept
         : raw_{raw}, dev_{std::ref(dev)} {}
 
@@ -36,20 +38,20 @@ class swapchain_khr final {
 
     [[nodiscard]] operator VkSwapchainKHR_T&() noexcept { return get(); }
 
-    [[nodiscard]] auto init_device() noexcept -> VkDevice_T& { return dev_; }
+    [[nodiscard]] auto init_device() noexcept -> raw::device& { return dev_; }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroySwapchainKHR(&dev_.get(), &get(), nullptr);
     }
 
-    std::optional<VkSwapchainKHR_T&>   raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    std::optional<VkSwapchainKHR_T&>    raw_;
+    std::reference_wrapper<raw::device> dev_;
 };
 
 class image final {
   public:
-    [[nodiscard]] explicit image(VkImage_T&& raw) noexcept : raw_{raw} {}  // NOLINT
+    [[nodiscard]] explicit image(raw::image&& raw) noexcept : raw_{raw} {}  // NOLINT
 
     image(const image&) noexcept                    = delete;
     auto operator=(const image&) noexcept -> image& = delete;
@@ -57,17 +59,17 @@ class image final {
     auto operator=(image&&) noexcept -> image&      = default;
     ~image() noexcept                               = default;
 
-    [[nodiscard]] auto get() noexcept -> VkImage_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::image& { return raw_; }
 
-    [[nodiscard]] operator VkImage_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::image&() noexcept { return get(); }
 
   private:
-    std::reference_wrapper<VkImage_T> raw_;
+    std::reference_wrapper<raw::image> raw_;
 };
 
 class image_view final {
   public:
-    [[nodiscard]] explicit image_view(VkImageView_T&& raw, VkDevice_T& dev) noexcept  // NOLINT
+    [[nodiscard]] explicit image_view(raw::image_view&& raw, raw::device& dev) noexcept  // NOLINT
         : raw_{raw}, dev_{std::ref(dev)} {}
 
     image_view(const image_view&) noexcept                    = delete;
@@ -87,16 +89,16 @@ class image_view final {
 
     ~image_view() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkImageView_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::image_view& { return *raw_; }
 
-    [[nodiscard]] operator VkImageView_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::image_view&() noexcept { return get(); }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroyImageView(&dev_.get(), &get(), nullptr);
     }
 
-    std::optional<VkImageView_T&>      raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    std::optional<raw::image_view&>     raw_;
+    std::reference_wrapper<raw::device> dev_;
 };
 }  // namespace hgn::raii

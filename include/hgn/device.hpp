@@ -18,6 +18,7 @@
 #include "hgn/pipeline_layout.hpp"
 #include "hgn/pipeline_structs.hpp"
 #include "hgn/raii/hardware.hpp"
+#include "hgn/raw.hpp"
 #include "hgn/shader.hpp"
 #include "hgn/structs.hpp"
 #include "hgn/sync.hpp"
@@ -37,7 +38,7 @@ class device final {
     [[nodiscard]] auto make_semaphore() noexcept -> std::expected<semaphore, result> {
         auto info      = VkSemaphoreCreateInfo{};
         info.sType     = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        auto*      raw = static_cast<VkSemaphore_T*>(nullptr);
+        auto*      raw = static_cast<raw::semaphore*>(nullptr);
         const auto res = vkCreateSemaphore(&get(), &info, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -49,7 +50,7 @@ class device final {
         auto info      = VkFenceCreateInfo{};
         info.sType     = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         info.flags     = VK_FENCE_CREATE_SIGNALED_BIT;
-        auto*      raw = static_cast<VkFence_T*>(nullptr);
+        auto*      raw = static_cast<raw::fence*>(nullptr);
         const auto res = vkCreateFence(&get(), &info, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -64,7 +65,7 @@ class device final {
         info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         info.queueFamilyIndex = queue_family_index;
 
-        auto*      raw = static_cast<VkCommandPool_T*>(nullptr);
+        auto*      raw = static_cast<raw::command_pool*>(nullptr);
         const auto res = vkCreateCommandPool(&get(), &info, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -80,7 +81,7 @@ class device final {
         info.commandBufferCount = 1;
         info.commandPool        = &pool.get();
 
-        auto*      raw = static_cast<VkCommandBuffer_T*>(nullptr);
+        auto*      raw = static_cast<raw::command_buffer*>(nullptr);
         const auto res = vkAllocateCommandBuffers(&get(), &info, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -101,7 +102,7 @@ class device final {
         info.size        = size;
         info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        auto*      raw = static_cast<VkBuffer_T*>(nullptr);
+        auto*      raw = static_cast<raw::buffer*>(nullptr);
         const auto res = vkCreateBuffer(&get(), &info, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -117,7 +118,7 @@ class device final {
         info.allocationSize  = allocation_size;
         info.memoryTypeIndex = memory_type_index;
 
-        auto*      raw = static_cast<VkDeviceMemory_T*>(nullptr);
+        auto*      raw = static_cast<raw::device_memory*>(nullptr);
         const auto res = vkAllocateMemory(&get(), &info, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -134,7 +135,7 @@ class device final {
         // TODO Configure this!
         info.pCode = reinterpret_cast<const std::uint32_t*>(codes.data());
 
-        auto*      raw = static_cast<VkShaderModule_T*>(nullptr);
+        auto*      raw = static_cast<raw::shader_module*>(nullptr);
         const auto res = vkCreateShaderModule(&get(), &info, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -148,7 +149,7 @@ class device final {
         info.setLayoutCount         = 0;
         info.pushConstantRangeCount = 0;
 
-        auto*      raw = static_cast<VkPipelineLayout_T*>(nullptr);
+        auto*      raw = static_cast<raw::pipeline_layout*>(nullptr);
         const auto res = vkCreatePipelineLayout(&get(), &info, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -166,7 +167,7 @@ class device final {
         return {};
     }
 
-    [[nodiscard]] auto get() noexcept -> VkDevice_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::device& { return raw_; }
 
     class builder final {
       public:
@@ -203,7 +204,7 @@ class device final {
             constexpr auto* extension    = "VK_KHR_swapchain";
             info.ppEnabledExtensionNames = &extension;
 
-            auto*      raw = static_cast<VkDevice_T*>(nullptr);
+            auto*      raw = static_cast<raw::device*>(nullptr);
             const auto res = vkCreateDevice(&physical.get(), &info, nullptr, &raw);
             if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -220,7 +221,7 @@ class device final {
   private:
     friend class device::builder;
 
-    explicit device(VkDevice_T& raw) noexcept : raw_{std::move(raw)} {}
+    explicit device(raw::device& raw) noexcept : raw_{std::move(raw)} {}
 
     raii::device raw_;
 };

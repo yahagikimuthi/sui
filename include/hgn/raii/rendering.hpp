@@ -6,11 +6,13 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/raw.hpp"
+
 namespace hgn::raii {
 class pipeline_layout final {
   public:
     [[nodiscard]] explicit pipeline_layout(
-        VkPipelineLayout_T&& raw, VkDevice_T& dev  // NOLINT
+        raw::pipeline_layout&& raw, raw::device& dev  // NOLINT
     ) noexcept
         : raw_{raw}, dev_{std::ref(dev)} {}
 
@@ -32,22 +34,22 @@ class pipeline_layout final {
 
     ~pipeline_layout() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkPipelineLayout_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::pipeline_layout& { return *raw_; }
 
-    [[nodiscard]] operator VkPipelineLayout_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::pipeline_layout&() noexcept { return get(); }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroyPipelineLayout(&dev_.get(), &get(), nullptr);
     }
 
-    std::optional<VkPipelineLayout_T&> raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    std::optional<raw::pipeline_layout&> raw_;
+    std::reference_wrapper<raw::device>  dev_;
 };
 
 class pipeline final {
   public:
-    [[nodiscard]] explicit pipeline(VkPipeline_T&& raw, VkDevice_T& dev) noexcept  // NOLINT
+    [[nodiscard]] explicit pipeline(raw::pipeline&& raw, raw::device& dev) noexcept  // NOLINT
         : raw_{raw}, dev_{std::ref(dev)} {}
 
     pipeline(const pipeline&) noexcept                    = delete;
@@ -68,23 +70,23 @@ class pipeline final {
 
     ~pipeline() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkPipeline_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::pipeline& { return *raw_; }
 
-    [[nodiscard]] operator VkPipeline_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::pipeline&() noexcept { return get(); }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroyPipeline(&dev_.get(), &get(), nullptr);
     }
 
-    std::optional<VkPipeline_T&>       raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    std::optional<raw::pipeline&>       raw_;
+    std::reference_wrapper<raw::device> dev_;
 };
 
 class shader_module final {
   public:
     [[nodiscard]] explicit shader_module(
-        VkShaderModule_T&& native, VkDevice_T& dev  // NOLINT
+        raw::shader_module&& native, raw::device& dev  // NOLINT
     ) noexcept
         : raw_{native}, dev_{std::ref(dev)} {}
 
@@ -106,16 +108,16 @@ class shader_module final {
 
     ~shader_module() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkShaderModule_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::shader_module& { return *raw_; }
 
-    [[nodiscard]] operator VkShaderModule_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::shader_module&() noexcept { return get(); }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroyShaderModule(&dev_.get(), &get(), nullptr);
     }
 
-    std::optional<VkShaderModule_T&>   raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    std::optional<raw::shader_module&>  raw_;
+    std::reference_wrapper<raw::device> dev_;
 };
 }  // namespace hgn::raii

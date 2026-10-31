@@ -6,10 +6,12 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/raw.hpp"
+
 namespace hgn::raii {
 class instance final {
   public:
-    [[nodiscard]] explicit instance(VkInstance_T&& raw) noexcept : raw_{raw} {}  // NOLINT
+    [[nodiscard]] explicit instance(raw::instance&& raw) noexcept : raw_{raw} {}  // NOLINT
 
     instance(const instance& other) noexcept                    = delete;
     auto operator=(const instance& other) noexcept -> instance& = delete;
@@ -27,22 +29,22 @@ class instance final {
 
     ~instance() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkInstance_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::instance& { return *raw_; }
 
-    [[nodiscard]] operator VkInstance_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::instance&() noexcept { return get(); }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroyInstance(&get(), nullptr);
     }
 
-    std::optional<VkInstance_T&> raw_;
+    std::optional<raw::instance&> raw_;
 };
 
 class surface_khr final {
   public:
     [[nodiscard]] explicit surface_khr(
-        VkSurfaceKHR_T&& raw, VkInstance_T& instance  // NOLINT
+        raw::surface_khr&& raw, raw::instance& instance  // NOLINT
     ) noexcept
         : raw_{raw}, instance_{instance} {}
 
@@ -64,21 +66,21 @@ class surface_khr final {
 
     ~surface_khr() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkSurfaceKHR_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::surface_khr& { return *raw_; }
 
-    [[nodiscard]] operator VkSurfaceKHR_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::surface_khr&() noexcept { return get(); }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroySurfaceKHR(&instance_.get(), &get(), nullptr);
     }
-    std::optional<VkSurfaceKHR_T&>       raw_;
-    std::reference_wrapper<VkInstance_T> instance_;
+    std::optional<raw::surface_khr&>      raw_;
+    std::reference_wrapper<raw::instance> instance_;
 };
 
 class device final {
   public:
-    [[nodiscard]] explicit device(VkDevice_T&& raw) noexcept : raw_{raw} {}  // NOLINT
+    [[nodiscard]] explicit device(raw::device&& raw) noexcept : raw_{raw} {}  // NOLINT
 
     device(const device&) noexcept                    = delete;
     auto operator=(const device&) noexcept -> device& = delete;
@@ -96,9 +98,9 @@ class device final {
 
     ~device() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkDevice_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::device& { return *raw_; }
 
-    [[nodiscard]] operator VkDevice_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::device&() noexcept { return get(); }
 
   private:
     void destroy() noexcept {
@@ -107,12 +109,12 @@ class device final {
         }
     }
 
-    std::optional<VkDevice_T&> raw_;
+    std::optional<raw::device&> raw_;
 };
 
 class physical_device final {
   public:
-    [[nodiscard]] explicit physical_device(VkPhysicalDevice_T&& raw) noexcept  // NOLINT
+    [[nodiscard]] explicit physical_device(raw::physical_device&& raw) noexcept  // NOLINT
         : raw_{raw} {}
 
     physical_device(const physical_device&) noexcept                    = delete;
@@ -121,19 +123,19 @@ class physical_device final {
     auto operator=(physical_device&&) noexcept -> physical_device&      = default;
     ~physical_device() noexcept                                         = default;
 
-    [[nodiscard]] auto get() noexcept -> VkPhysicalDevice_T& { return raw_; }
-    [[nodiscard]] auto get() const noexcept -> VkPhysicalDevice_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::physical_device& { return raw_; }
+    [[nodiscard]] auto get() const noexcept -> raw::physical_device& { return raw_; }
 
-    [[nodiscard]] operator VkPhysicalDevice_T&() noexcept { return get(); }
-    [[nodiscard]] operator VkPhysicalDevice_T&() const noexcept { return get(); }
+    [[nodiscard]] operator raw::physical_device&() noexcept { return get(); }
+    [[nodiscard]] operator raw::physical_device&() const noexcept { return get(); }
 
   private:
-    std::reference_wrapper<VkPhysicalDevice_T> raw_;
+    std::reference_wrapper<raw::physical_device> raw_;
 };
 
 class queue final {
   public:
-    [[nodiscard]] explicit queue(VkQueue_T&& raw) noexcept : raw_{raw} {}  // NOLINT
+    [[nodiscard]] explicit queue(raw::queue&& raw) noexcept : raw_{raw} {}  // NOLINT
 
     queue(const queue&) noexcept                    = delete;
     auto operator=(const queue&) noexcept -> queue& = delete;
@@ -141,11 +143,11 @@ class queue final {
     auto operator=(queue&&) noexcept -> queue&      = default;
     ~queue() noexcept                               = default;
 
-    [[nodiscard]] auto get() noexcept -> VkQueue_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::queue& { return raw_; }
 
-    [[nodiscard]] operator VkQueue_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::queue&() noexcept { return get(); }
 
   private:
-    std::reference_wrapper<VkQueue_T> raw_;
+    std::reference_wrapper<raw::queue> raw_;
 };
 }  // namespace hgn::raii

@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <expected>
-#include <functional>
 #include <optional>
 #include <utility>
 
@@ -10,6 +9,7 @@
 
 #include "hgn/enums.hpp"
 #include "hgn/raii/image.hpp"
+#include "hgn/raw.hpp"
 
 namespace hgn {
 class image final {
@@ -22,10 +22,10 @@ class image final {
     auto operator=(image&&) noexcept -> image&      = default;
     ~image() noexcept                               = default;
 
-    [[nodiscard]] auto get() noexcept -> VkImage_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::image& { return raw_; }
 
   private:
-    explicit image(VkImage_T& raw) noexcept : raw_{std::move(raw)} {}
+    explicit image(raw::image& raw) noexcept : raw_{std::move(raw)} {}
 
     raii::image raw_;
 };
@@ -38,7 +38,7 @@ class image_view final {
     auto operator=(image_view&&) noexcept -> image_view&      = default;
     ~image_view() noexcept                                    = default;
 
-    [[nodiscard]] auto get() noexcept -> VkImageView_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::image_view& { return raw_; }
 
     class builder final {
         friend class device;
@@ -74,7 +74,7 @@ class image_view final {
             if (image_) info.image = &*image_;
             info.format = format_;
 
-            auto*      raw = static_cast<VkImageView_T*>(nullptr);
+            auto*      raw = static_cast<raw::image_view*>(nullptr);
             const auto res = vkCreateImageView(&dev_.get(), &info, nullptr, &raw);
             if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -83,17 +83,18 @@ class image_view final {
         }
 
       private:
-        explicit builder(VkDevice_T& dev) noexcept : dev_{std::ref(dev)} {}
+        explicit builder(raw::device& dev) noexcept : dev_{std::ref(dev)} {}
 
-        std::reference_wrapper<VkDevice_T> dev_;
-        std::optional<VkImage_T&>          image_;
-        VkFormat                           format_{};
+        std::reference_wrapper<raw::device> dev_;
+        std::optional<raw::image&>          image_;
+        VkFormat                            format_{};
     };
 
   private:
     friend class image_view::builder;
 
-    explicit image_view(VkImageView_T& raw, VkDevice_T& dev) noexcept : raw_{std::move(raw), dev} {}
+    explicit image_view(raw::image_view& raw, raw::device& dev) noexcept
+        : raw_{std::move(raw), dev} {}
 
     raii::image_view raw_;
 };

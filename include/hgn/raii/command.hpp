@@ -6,10 +6,12 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/raw.hpp"
+
 namespace hgn::raii {
 class command_pool final {
   public:
-    explicit command_pool(VkCommandPool_T&& raw, VkDevice_T& dev) noexcept  // NOLINT
+    explicit command_pool(raw::command_pool&& raw, raw::device& dev) noexcept  // NOLINT
         : raw_{raw}, dev_{std::ref(dev)} {}
 
     command_pool(const command_pool&) noexcept                    = delete;
@@ -30,22 +32,22 @@ class command_pool final {
 
     ~command_pool() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkCommandPool_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::command_pool& { return *raw_; }
 
-    [[nodiscard]] operator VkCommandPool_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::command_pool&() noexcept { return get(); }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroyCommandPool(&dev_.get(), &get(), nullptr);
     }
 
-    std::optional<VkCommandPool_T&>    raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    std::optional<raw::command_pool&>   raw_;
+    std::reference_wrapper<raw::device> dev_;
 };
 
 class command_buffer final {
   public:
-    explicit command_buffer(VkCommandBuffer_T&& raw) noexcept : raw_{std::ref(raw)} {}  // NOLINT
+    explicit command_buffer(raw::command_buffer&& raw) noexcept : raw_{std::ref(raw)} {}  // NOLINT
 
     command_buffer(const command_buffer&) noexcept                   = delete;
     auto operator=(const command_buffer&) noexcept -> command_buffer = delete;
@@ -53,11 +55,11 @@ class command_buffer final {
     auto operator=(command_buffer&&) noexcept -> command_buffer&     = default;
     ~command_buffer() noexcept                                       = default;
 
-    [[nodiscard]] auto get() noexcept -> VkCommandBuffer_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::command_buffer& { return raw_; }
 
-    [[nodiscard]] operator VkCommandBuffer_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::command_buffer&() noexcept { return get(); }
 
   private:
-    std::reference_wrapper<VkCommandBuffer_T> raw_;
+    std::reference_wrapper<raw::command_buffer> raw_;
 };
 }  // namespace hgn::raii

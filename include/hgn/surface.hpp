@@ -2,9 +2,10 @@
 
 #include <utility>
 
-#include "hgn/raii/hardware.hpp"
-
 #include <vulkan/vulkan.h>
+
+#include "hgn/raii/hardware.hpp"
+#include "hgn/raw.hpp"
 
 namespace hgn {
 class surface_khr final {
@@ -17,10 +18,10 @@ class surface_khr final {
     auto operator=(surface_khr&&) noexcept -> surface_khr&      = default;
     ~surface_khr() noexcept                                     = default;
 
-    [[nodiscard]] auto get() noexcept -> VkSurfaceKHR_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::surface_khr& { return raw_; }
 
   private:
-    explicit surface_khr(VkSurfaceKHR_T& raw, VkInstance_T& instance) noexcept
+    explicit surface_khr(raw::surface_khr& raw, raw::instance& instance) noexcept
         : raw_{std::move(raw), instance} {}
 
     raii::surface_khr raw_;

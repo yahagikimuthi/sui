@@ -11,6 +11,7 @@
 #include "hgn/enums.hpp"
 #include "hgn/pipeline.hpp"
 #include "hgn/pipeline_layout.hpp"
+#include "hgn/raw.hpp"
 #include "hgn/shader.hpp"
 
 namespace hgn {
@@ -75,7 +76,7 @@ class graphics_pipeline_builder final {
         info_.pStages             = shaders_.data();
         info_.pNext               = &rendering_;
 
-        auto*      raw = static_cast<VkPipeline_T*>(nullptr);
+        auto*      raw = static_cast<raw::pipeline*>(nullptr);
         const auto res = vkCreateGraphicsPipelines(&dev_.get(), nullptr, 1, &info_, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
@@ -84,7 +85,7 @@ class graphics_pipeline_builder final {
     }
 
   private:
-    explicit graphics_pipeline_builder(VkDevice_T& dev) noexcept : dev_{std::ref(dev)} {
+    explicit graphics_pipeline_builder(raw::device& dev) noexcept : dev_{std::ref(dev)} {
         info_.sType      = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         info_.renderPass = nullptr;
         info_.subpass    = 0;
@@ -158,6 +159,6 @@ class graphics_pipeline_builder final {
     std::array<VkPipelineShaderStageCreateInfo, 2>   shaders_{};  // NOLINT
     VkPipelineRenderingCreateInfo                    rendering_{};
     VkFormat                                         color_attachment_{};
-    std::reference_wrapper<VkDevice_T>               dev_;
+    std::reference_wrapper<raw::device>              dev_;
 };
 }  // namespace hgn

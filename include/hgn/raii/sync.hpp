@@ -6,10 +6,12 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/raw.hpp"
+
 namespace hgn::raii {
 class semaphore final {
   public:
-    [[nodiscard]] explicit semaphore(VkSemaphore_T&& raw, VkDevice_T& dev) noexcept  // NOLINT
+    [[nodiscard]] explicit semaphore(raw::semaphore&& raw, raw::device& dev) noexcept  // NOLINT
         : raw_{raw}, dev_{std::ref(dev)} {}
 
     semaphore(const semaphore&)                             = delete;
@@ -30,22 +32,22 @@ class semaphore final {
 
     ~semaphore() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkSemaphore_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::semaphore& { return *raw_; }
 
-    [[nodiscard]] operator VkSemaphore_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::semaphore&() noexcept { return get(); }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroySemaphore(&dev_.get(), &get(), nullptr);
     }
 
-    std::optional<VkSemaphore_T&>      raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    std::optional<raw::semaphore&>      raw_;
+    std::reference_wrapper<raw::device> dev_;
 };
 
 class fence final {
   public:
-    [[nodiscard]] explicit fence(VkFence_T&& raw, VkDevice_T& dev) noexcept  // NOLINT
+    [[nodiscard]] explicit fence(raw::fence&& raw, raw::device& dev) noexcept  // NOLINT
         : raw_{raw}, dev_{std::ref(dev)} {}
 
     fence(const fence&) noexcept                    = delete;
@@ -67,18 +69,18 @@ class fence final {
 
     ~fence() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkFence_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::fence& { return *raw_; }
 
-    [[nodiscard]] operator VkFence_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::fence&() noexcept { return get(); }
 
-    [[nodiscard]] auto init_device() noexcept -> VkDevice_T& { return dev_; }
+    [[nodiscard]] auto init_device() noexcept -> raw::device& { return dev_; }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroyFence(&dev_.get(), &get(), nullptr);
     }
 
-    std::optional<VkFence_T&>          raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    std::optional<raw::fence&>          raw_;
+    std::reference_wrapper<raw::device> dev_;
 };
 }  // namespace hgn::raii

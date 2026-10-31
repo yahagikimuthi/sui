@@ -9,6 +9,7 @@
 
 #include "hgn/enums.hpp"
 #include "hgn/raii/sync.hpp"
+#include "hgn/raw.hpp"
 
 namespace hgn {
 class semaphore final {
@@ -21,10 +22,11 @@ class semaphore final {
     auto operator=(semaphore&&) noexcept -> semaphore&      = default;
     ~semaphore() noexcept                                   = default;
 
-    [[nodiscard]] auto get() noexcept -> VkSemaphore_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::semaphore& { return raw_; }
 
   private:
-    explicit semaphore(VkSemaphore_T& raw, VkDevice_T& dev) noexcept : raw_{std::move(raw), dev} {}
+    explicit semaphore(raw::semaphore& raw, raw::device& dev) noexcept
+        : raw_{std::move(raw), dev} {}
 
     raii::semaphore raw_;
 };
@@ -57,10 +59,10 @@ class fence final {
         return {};
     }
 
-    [[nodiscard]] auto get() noexcept -> VkFence_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::fence& { return raw_; }
 
   private:
-    explicit fence(VkFence_T& raw, VkDevice_T& dev) noexcept : raw_{std::move(raw), dev} {}
+    explicit fence(raw::fence& raw, raw::device& dev) noexcept : raw_{std::move(raw), dev} {}
 
     raii::fence raw_;
 };

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <cstdint>
 #include <expected>
 #include <functional>
@@ -12,16 +11,17 @@
 #include "hgn/image.hpp"
 #include "hgn/pipeline.hpp"
 #include "hgn/raii/command.hpp"
+#include "hgn/raw.hpp"
 
 namespace hgn {
 class command_pool final {
     friend class device;
 
   public:
-    [[nodiscard]] auto get() noexcept -> VkCommandPool_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::command_pool& { return raw_; }
 
   private:
-    explicit command_pool(VkCommandPool_T& raw, VkDevice_T& dev) noexcept
+    explicit command_pool(raw::command_pool& raw, raw::device& dev) noexcept
         : raw_{std::move(raw), dev} {}
 
     raii::command_pool raw_;
@@ -31,7 +31,7 @@ class image_memory_barrier_executor final {
     friend class command_buffer;
 
   public:
-    explicit image_memory_barrier_executor(VkCommandBuffer_T& buffer) noexcept
+    explicit image_memory_barrier_executor(raw::command_buffer& buffer) noexcept
         : buffer_{std::ref(buffer)} {
         raw_.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 
@@ -82,8 +82,8 @@ class image_memory_barrier_executor final {
     }
 
   private:
-    VkImageMemoryBarrier                      raw_{};
-    std::reference_wrapper<VkCommandBuffer_T> buffer_;
+    VkImageMemoryBarrier                        raw_{};
+    std::reference_wrapper<raw::command_buffer> buffer_;
 };
 
 class command_begin_rendering_executor final {
@@ -115,7 +115,7 @@ class command_begin_rendering_executor final {
     }
 
   private:
-    explicit command_begin_rendering_executor(VkCommandBuffer_T& buffer) noexcept
+    explicit command_begin_rendering_executor(raw::command_buffer& buffer) noexcept
         : buffer_{std::ref(buffer)} {
         raw_.sType             = VK_STRUCTURE_TYPE_RENDERING_INFO;
         raw_.renderArea.offset = {.x = 0, .y = 0};
@@ -128,9 +128,9 @@ class command_begin_rendering_executor final {
         attachment_.clearValue.color = {{1.f, 1.f, 1.f, 1.f}};
     }
 
-    std::reference_wrapper<VkCommandBuffer_T> buffer_;
-    VkRenderingInfo                           raw_{};
-    VkRenderingAttachmentInfo                 attachment_{};
+    std::reference_wrapper<raw::command_buffer> buffer_;
+    VkRenderingInfo                             raw_{};
+    VkRenderingAttachmentInfo                   attachment_{};
 };
 
 class command_buffer final {
@@ -196,10 +196,10 @@ class command_buffer final {
         vkCmdSetScissor(&get(), 0, 1, &scissor);
     }
 
-    [[nodiscard]] auto get() noexcept -> VkCommandBuffer_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::command_buffer& { return raw_; }
 
   private:
-    explicit command_buffer(VkCommandBuffer_T& raw) noexcept : raw_{std::move(raw)} {}
+    explicit command_buffer(raw::command_buffer& raw) noexcept : raw_{std::move(raw)} {}
 
     raii::command_buffer raw_;
 };

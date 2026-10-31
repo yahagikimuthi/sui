@@ -17,6 +17,7 @@
 #include "hgn/enums.hpp"
 #include "hgn/instance.hpp"
 #include "hgn/raii/window.hpp"
+#include "hgn/raw.hpp"
 #include "hgn/surface.hpp"
 
 namespace hgn {
@@ -52,7 +53,7 @@ class window final {
 
     [[nodiscard]] auto make_surface(instance& instance_ref) noexcept
         -> std::expected<surface_khr, result> {
-        auto*      raw = static_cast<VkSurfaceKHR_T*>(nullptr);
+        auto*      raw = static_cast<raw::surface_khr*>(nullptr);
         const auto res = glfwCreateWindowSurface(&instance_ref.get(), &get(), nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 

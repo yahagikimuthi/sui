@@ -16,6 +16,7 @@
 #include "hgn/enums.hpp"
 #include "hgn/image.hpp"
 #include "hgn/raii/image.hpp"
+#include "hgn/raw.hpp"
 #include "hgn/structs.hpp"
 #include "hgn/surface.hpp"
 #include "hgn/sync.hpp"
@@ -35,11 +36,11 @@ class swapchain_khr final {
         const auto res1  = vkGetSwapchainImagesKHR(&dev.get(), &get(), &count, nullptr);
         if (res1 != VK_SUCCESS) return make_unexpected(res1);
 
-        auto       raws = std::vector<VkImage_T*>(count);
+        auto       raws = std::vector<raw::image*>(count);
         const auto res2 = vkGetSwapchainImagesKHR(&dev.get(), &get(), &count, raws.data());
         if (res2 != VK_SUCCESS) return make_unexpected(res2);
 
-        return raws | std::views::transform([](VkImage_T* raw) noexcept -> image {
+        return raws | std::views::transform([](raw::image* raw) noexcept -> image {
                    assert(raw != nullptr);
                    return image{*raw};
                }) |
@@ -142,13 +143,13 @@ class swapchain_khr final {
         }
 
       private:
-        std::optional<VkSurfaceKHR_T&> surface_;
-        std::uint32_t                  min_image_count_{};
-        VkFormat                       format_{};
-        VkColorSpaceKHR                color_space_{};
-        VkExtent2D                     image_extent_{};
-        VkSharingMode                  image_sharing_mode_{};
-        std::vector<std::uint32_t>     queue_family_indices_;
+        std::optional<raw::surface_khr&> surface_;
+        std::uint32_t                    min_image_count_{};
+        VkFormat                         format_{};
+        VkColorSpaceKHR                  color_space_{};
+        VkExtent2D                       image_extent_{};
+        VkSharingMode                    image_sharing_mode_{};
+        std::vector<std::uint32_t>       queue_family_indices_;
         VkSurfaceTransformFlagBitsKHR pre_transform_{static_cast<VkSurfaceTransformFlagBitsKHR>(0)};
         VkPresentModeKHR              present_mode_;
     };
@@ -156,7 +157,7 @@ class swapchain_khr final {
   private:
     friend swapchain_khr::builder;
 
-    explicit swapchain_khr(VkSwapchainKHR_T& raw, VkDevice_T& dev, const format fmt) noexcept
+    explicit swapchain_khr(VkSwapchainKHR_T& raw, raw::device& dev, const format fmt) noexcept
         : raw_{std::move(raw), dev}, image_format_{fmt} {}
 
     raii::swapchain_khr raw_;

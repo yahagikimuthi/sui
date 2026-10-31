@@ -13,6 +13,7 @@
 #include "hgn/application.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/raii/hardware.hpp"
+#include "hgn/raw.hpp"
 
 namespace hgn {
 class physical_device;
@@ -27,7 +28,7 @@ class instance final {
     [[nodiscard]] auto enumerate_physical() noexcept
         -> std::expected<std::vector<physical_device>, result>;
 
-    [[nodiscard]] auto get() noexcept -> VkInstance_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::instance& { return raw_; }
 
     class builder final {
       public:
@@ -65,7 +66,7 @@ class instance final {
             info.enabledExtensionCount   = static_cast<std::uint32_t>(extensions_.size());
             info.ppEnabledExtensionNames = extensions_.data();
 
-            auto* raw = static_cast<VkInstance_T*>(nullptr);
+            auto* raw = static_cast<raw::instance*>(nullptr);
 
             const auto res = vkCreateInstance(&info, nullptr, &raw);
             if (res != VK_SUCCESS) return make_unexpected(res);
@@ -83,7 +84,7 @@ class instance final {
   private:
     friend class instance::builder;
 
-    explicit instance(VkInstance_T& raw) noexcept : raw_{std::move(raw)} {}
+    explicit instance(raw::instance& raw) noexcept : raw_{std::move(raw)} {}
 
     raii::instance raw_;
 };

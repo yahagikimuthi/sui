@@ -13,6 +13,7 @@
 #include "hgn/enums.hpp"
 #include "hgn/instance.hpp"
 #include "hgn/raii/hardware.hpp"
+#include "hgn/raw.hpp"
 #include "hgn/structs.hpp"
 #include "hgn/surface.hpp"
 
@@ -117,12 +118,12 @@ class physical_device final {
         return std::bit_cast<physical_device_memory_properties>(property);
     }
 
-    [[nodiscard]] auto get() noexcept -> VkPhysicalDevice_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::physical_device& { return raw_; }
 
-    [[nodiscard]] auto get() const noexcept -> VkPhysicalDevice_T& { return raw_; }
+    [[nodiscard]] auto get() const noexcept -> raw::physical_device& { return raw_; }
 
   private:
-    explicit physical_device(VkPhysicalDevice_T& raw) noexcept : raw_{std::move(raw)} {}
+    explicit physical_device(raw::physical_device& raw) noexcept : raw_{std::move(raw)} {}
 
     [[nodiscard]] auto get_property() const noexcept -> VkPhysicalDeviceProperties {
         auto property = VkPhysicalDeviceProperties{};
@@ -140,13 +141,14 @@ inline auto instance::enumerate_physical() noexcept
         return make_unexpected(res);
     }
 
-    auto devices = std::vector<VkPhysicalDevice_T*>(count);
+    auto devices = std::vector<raw::physical_device*>(count);
     if (const auto res = vkEnumeratePhysicalDevices(&get(), &count, devices.data());
         res != VK_SUCCESS) {
         return make_unexpected(res);
     }
 
-    return devices | std::views::transform([](VkPhysicalDevice_T* ptr) noexcept -> physical_device {
+    return devices |
+           std::views::transform([](raw::physical_device* ptr) noexcept -> physical_device {
                assert(ptr != nullptr);
                return physical_device{*ptr};
            }) |

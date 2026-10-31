@@ -13,6 +13,7 @@
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/raii/hardware.hpp"
+#include "hgn/raw.hpp"
 #include "hgn/swapchain.hpp"
 #include "hgn/sync.hpp"
 
@@ -38,7 +39,7 @@ class present_executor final {
 
     [[nodiscard]] auto execute() noexcept -> std::expected<void, result> {
         auto* p_swapchain = static_cast<VkSwapchainKHR_T*>(nullptr);
-        auto* p_semapho   = static_cast<VkSemaphore_T*>(nullptr);
+        auto* p_semapho   = static_cast<raw::semaphore*>(nullptr);
 
         if (swapchain_) p_swapchain = &*swapchain_;
         if (semapho_) p_semapho = &*semapho_;
@@ -56,15 +57,15 @@ class present_executor final {
     }
 
   private:
-    explicit present_executor(VkQueue_T& queue) noexcept : queue_{std::ref(queue)} {
+    explicit present_executor(raw::queue& queue) noexcept : queue_{std::ref(queue)} {
         info_.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     }
 
-    VkPresentInfoKHR                  info_{};
-    std::uint32_t                     image_index_{};
-    std::optional<VkSwapchainKHR_T&>  swapchain_;
-    std::optional<VkSemaphore_T&>     semapho_;
-    std::reference_wrapper<VkQueue_T> queue_;
+    VkPresentInfoKHR                   info_{};
+    std::uint32_t                      image_index_{};
+    std::optional<VkSwapchainKHR_T&>   swapchain_;
+    std::optional<raw::semaphore&>     semapho_;
+    std::reference_wrapper<raw::queue> queue_;
 };
 
 class submit_executor final {
@@ -89,9 +90,9 @@ class submit_executor final {
     [[nodiscard]] auto submit(fence& fence) noexcept -> std::expected<void, result> {
         auto wait_stage = static_cast<std::uint32_t>(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
         info_.pWaitDstStageMask  = &wait_stage;
-        auto* p_cmd_buffer       = static_cast<VkCommandBuffer_T*>(nullptr);
-        auto* p_wait_semaphore   = static_cast<VkSemaphore_T*>(nullptr);
-        auto* p_signal_semaphore = static_cast<VkSemaphore_T*>(nullptr);
+        auto* p_cmd_buffer       = static_cast<raw::command_buffer*>(nullptr);
+        auto* p_wait_semaphore   = static_cast<raw::semaphore*>(nullptr);
+        auto* p_signal_semaphore = static_cast<raw::semaphore*>(nullptr);
 
         if (cmd_buffer_) {
             p_cmd_buffer             = &*cmd_buffer_;
@@ -116,15 +117,15 @@ class submit_executor final {
     }
 
   private:
-    explicit submit_executor(VkQueue_T& queue) noexcept : queue_{std::ref(queue)} {
+    explicit submit_executor(raw::queue& queue) noexcept : queue_{std::ref(queue)} {
         info_.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     }
 
-    VkSubmitInfo                      info_{};
-    std::optional<VkCommandBuffer_T&> cmd_buffer_;
-    std::optional<VkSemaphore_T&>     wait_;
-    std::optional<VkSemaphore_T&>     signal_;
-    std::reference_wrapper<VkQueue_T> queue_;
+    VkSubmitInfo                        info_{};
+    std::optional<raw::command_buffer&> cmd_buffer_;
+    std::optional<raw::semaphore&>      wait_;
+    std::optional<raw::semaphore&>      signal_;
+    std::reference_wrapper<raw::queue>  queue_;
 };
 
 class queue final {
@@ -149,10 +150,10 @@ class queue final {
         return submit_executor{get()};
     }
 
-    [[nodiscard]] auto get() noexcept -> VkQueue_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::queue& { return raw_; }
 
   private:
-    explicit queue(VkQueue_T& raw, const std::uint32_t queue_family_index) noexcept
+    explicit queue(raw::queue& raw, const std::uint32_t queue_family_index) noexcept
         : raw_{std::move(raw)}, queue_family_index_{queue_family_index} {}
 
     raii::queue   raw_;
@@ -160,7 +161,7 @@ class queue final {
 };
 
 inline auto device::get_queue(const std::uint32_t queue_family_index) noexcept -> queue {
-    auto* raw = static_cast<VkQueue_T*>(nullptr);
+    auto* raw = static_cast<raw::queue*>(nullptr);
     vkGetDeviceQueue(&get(), queue_family_index, 0, &raw);
 
     assert(raw != nullptr);

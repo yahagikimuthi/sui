@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.h>
 
 #include "hgn/raii/rendering.hpp"
+#include "hgn/raw.hpp"
 
 namespace hgn {
 class shader_module final {
@@ -17,10 +18,10 @@ class shader_module final {
     auto operator=(shader_module&&) noexcept -> shader_module&      = default;
     ~shader_module() noexcept                                       = default;
 
-    [[nodiscard]] auto get() noexcept -> VkShaderModule_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::shader_module& { return raw_; }
 
   private:
-    explicit shader_module(VkShaderModule_T& raw, VkDevice_T& dev) noexcept
+    explicit shader_module(raw::shader_module& raw, raw::device& dev) noexcept
         : raw_{std::move(raw), dev} {}
 
     raii::shader_module raw_;

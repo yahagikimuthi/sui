@@ -11,6 +11,7 @@
 
 #include "hgn/enums.hpp"
 #include "hgn/raii/buffer.hpp"
+#include "hgn/raw.hpp"
 #include "hgn/structs.hpp"
 
 namespace hgn {
@@ -30,10 +31,10 @@ class buffer final {
         return std::bit_cast<memory_requirements>(requirements);
     }
 
-    [[nodiscard]] auto get() noexcept -> VkBuffer_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::buffer& { return raw_; }
 
   private:
-    explicit buffer(VkBuffer_T& raw, VkDevice_T& dev) noexcept : raw_{std::move(raw), dev} {}
+    explicit buffer(raw::buffer& raw, raw::device& dev) noexcept : raw_{std::move(raw), dev} {}
 
     raii::buffer raw_;
 };
@@ -66,10 +67,10 @@ class device_memory final {
         return std::span<std::byte, Size>(static_cast<std::byte*>(data), Size);
     }
 
-    [[nodiscard]] auto get() noexcept -> VkDeviceMemory_T& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::device_memory& { return raw_; }
 
   private:
-    explicit device_memory(VkDeviceMemory_T& raw, VkDevice_T& dev) noexcept
+    explicit device_memory(raw::device_memory& raw, raw::device& dev) noexcept
         : raw_{std::move(raw), dev} {}
 
     raii::device_memory raw_;

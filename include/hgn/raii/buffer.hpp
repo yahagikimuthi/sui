@@ -6,10 +6,12 @@
 
 #include <vulkan/vulkan.h>
 
+#include "hgn/raw.hpp"
+
 namespace hgn::raii {
 class device_memory final {
   public:
-    explicit device_memory(VkDeviceMemory_T&& native, VkDevice_T& dev) noexcept  // NOLINT
+    explicit device_memory(raw::device_memory&& native, raw::device& dev) noexcept  // NOLINT
         : raw_{native}, dev_{std::ref(dev)} {}
 
     device_memory(const device_memory&) noexcept                    = delete;
@@ -30,24 +32,24 @@ class device_memory final {
 
     ~device_memory() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkDeviceMemory_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::device_memory& { return *raw_; }
 
-    [[nodiscard]] operator VkDeviceMemory_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::device_memory&() noexcept { return get(); }
 
-    [[nodiscard]] auto init_device() noexcept -> VkDevice_T& { return dev_; }
+    [[nodiscard]] auto init_device() noexcept -> raw::device& { return dev_; }
 
   private:
     void destroy() noexcept {
         if (raw_) vkFreeMemory(&dev_.get(), &get(), nullptr);
     }
 
-    std::optional<VkDeviceMemory_T&>   raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    std::optional<raw::device_memory&>  raw_;
+    std::reference_wrapper<raw::device> dev_;
 };
 
 class buffer final {
   public:
-    [[nodiscard]] explicit buffer(VkBuffer_T&& native, VkDevice_T& dev) noexcept  // NOLINT
+    [[nodiscard]] explicit buffer(raw::buffer&& native, raw::device& dev) noexcept  // NOLINT
         : raw_{native}, dev_{std::ref(dev)} {}
 
     buffer(const buffer&) noexcept                    = delete;
@@ -68,18 +70,18 @@ class buffer final {
 
     ~buffer() noexcept { destroy(); }
 
-    [[nodiscard]] auto get() noexcept -> VkBuffer_T& { return *raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::buffer& { return *raw_; }
 
-    [[nodiscard]] operator VkBuffer_T&() noexcept { return get(); }
+    [[nodiscard]] operator raw::buffer&() noexcept { return get(); }
 
-    [[nodiscard]] auto init_device() noexcept -> VkDevice_T& { return dev_; }
+    [[nodiscard]] auto init_device() noexcept -> raw::device& { return dev_; }
 
   private:
     void destroy() noexcept {
         if (raw_) vkDestroyBuffer(&dev_.get(), &get(), nullptr);
     }
 
-    std::optional<VkBuffer_T&>         raw_;
-    std::reference_wrapper<VkDevice_T> dev_;
+    std::optional<raw::buffer&>         raw_;
+    std::reference_wrapper<raw::device> dev_;
 };
 }  // namespace hgn::raii
