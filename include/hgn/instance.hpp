@@ -1,8 +1,10 @@
 #pragma once
 
 #include <cassert>
+#include <cstdint>
 #include <expected>
 #include <optional>
+#include <ranges>
 #include <span>
 #include <utility>
 #include <vector>
@@ -12,6 +14,7 @@
 
 #include "hgn/application.hpp"
 #include "hgn/enums.hpp"
+#include "hgn/physical.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw.hpp"
 
@@ -26,7 +29,26 @@ class instance final {
     ~instance() noexcept                                  = default;
 
     [[nodiscard]] auto enumerate_physical() noexcept
-        -> std::expected<std::vector<physical_device>, result>;
+        -> std::expected<std::vector<physical_device>, result> {
+        auto count = std::uint32_t{};
+        if (const auto res = vkEnumeratePhysicalDevices(&get(), &count, nullptr);
+            res != VK_SUCCESS) {
+            return make_unexpected(res);
+        }
+
+        auto devices = std::vector<raw::physical_device*>(count);
+        if (const auto res = vkEnumeratePhysicalDevices(&get(), &count, devices.data());
+            res != VK_SUCCESS) {
+            return make_unexpected(res);
+        }
+
+        return devices |
+               std::views::transform([](raw::physical_device* ptr) noexcept -> physical_device {
+                   assert(ptr != nullptr);
+                   return physical_device{*ptr};
+               }) |
+               std::ranges::to<std::vector>();
+    }
 
     [[nodiscard]] auto get() noexcept -> raw::instance& { return raw_; }
 

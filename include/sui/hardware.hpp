@@ -41,7 +41,6 @@ class hardware final {
         instance_builder.debug(true);
 #endif
         auto instance = instance_builder.build();
-
         if (not instance) return make_error(runtime_error, "Failed to make instance.");
 
         auto surface = win.make_surface(*instance);
