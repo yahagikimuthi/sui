@@ -128,15 +128,15 @@ class physical_device final {
 
         auto features = VkPhysicalDeviceFeatures{};
 
-        auto info                  = VkDeviceCreateInfo{};
-        info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        info.pNext                 = &dynamic_rendering;
-        info.queueCreateInfoCount  = 1;
-        info.pQueueCreateInfos     = &device_queue;
-        info.pEnabledFeatures      = &features;
-        info.enabledExtensionCount = 1;
-        constexpr auto* extension  = "VK_KHR_swapchain";
-        info.ppEnabledLayerNames   = &extension;
+        auto info                    = VkDeviceCreateInfo{};
+        info.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        info.pNext                   = &dynamic_rendering;
+        info.queueCreateInfoCount    = 1;
+        info.pQueueCreateInfos       = &device_queue;
+        info.pEnabledFeatures        = &features;
+        info.enabledExtensionCount   = 1;
+        constexpr auto* extension    = "VK_KHR_swapchain";
+        info.ppEnabledExtensionNames = &extension;
 
         auto*      raw = static_cast<raw::device*>(nullptr);
         const auto res = vkCreateDevice(&get(), &info, nullptr, &raw);
