@@ -10,7 +10,6 @@
 #include <hgn/instance.hpp>
 #include <hgn/physical.hpp>
 #include <hgn/queue.hpp>
-#include <hgn/queue_family.hpp>
 #include <hgn/surface.hpp>
 #include <hgn/sync.hpp>
 #include <hgn/window.hpp>
@@ -20,8 +19,8 @@
 namespace sui {
 class hardware final {
     struct queue_family_indices final {
-        std::optional<hgn::queue_family&> graphics_family;
-        std::optional<hgn::queue_family&> present_family;
+        std::optional<std::uint32_t> graphics_family;
+        std::optional<std::uint32_t> present_family;
 
         [[nodiscard]] auto is_complete() const noexcept -> bool {
             return graphics_family.has_value() and present_family.has_value();
@@ -56,10 +55,10 @@ class hardware final {
                 return find_queue_families(physical, *surface).is_complete();
             });
         if (suitable_physicals.empty())
-            return make_error(runtime_error, "Failed to find suitable queue family.");
+            return make_error(runtime_error, "Failed to find suitable physical device.");
 
-        auto physical = std::move(suitable_physicals.front());
-        auto indices  = find_queue_families(physical, *surface);
+        auto       physical = std::move(suitable_physicals.front());
+        const auto indices  = find_queue_families(physical, *surface);
 
         auto device = physical.make_device(*indices.graphics_family);
         if (not device) return make_error(runtime_error, "Failed to make device.");
@@ -78,8 +77,6 @@ class hardware final {
             std::move(*instance),
             std::move(*surface),
             std::move(physical),
-            std::move(*indices.graphics_family),
-            std::move(*indices.present_family),
             std::move(*device),
             std::move(graphics_queue),
             std::move(present_queue),
@@ -107,8 +104,6 @@ class hardware final {
         hgn::instance&&        instance,
         hgn::surface_khr&&     surface,
         hgn::physical_device&& physical,
-        hgn::queue_family&&    graphics_family,
-        hgn::queue_family&&    present_family,
         hgn::device&&          device,
         hgn::queue&&           graphics,
         hgn::queue&&           present,
@@ -119,8 +114,6 @@ class hardware final {
         : instance_{std::move(instance)},
           surface_{std::move(surface)},
           physical_{std::move(physical)},
-          graphics_family_{std::move(graphics_family)},
-          present_family_{std::move(present_family)},
           device_{std::move(device)},
           graphics_queue_{std::move(graphics)},
           present_queue_{std::move(present)},
@@ -133,17 +126,18 @@ class hardware final {
     ) noexcept -> queue_family_indices {
         auto indices = queue_family_indices{};
 
-        auto queue_families = physical.enumerate_queue_families();
+        auto queue_families = physical.get_queue_family_properties();
 
-        for (auto& queue_family : queue_families) {
+        for (const auto [i, queue_family] : std::views::enumerate(queue_families)) {
             if ((queue_family.flags() & hgn::queue_flag_bits::graphics) !=
                 hgn::queue_flag_bits::none) {
-                indices.graphics_family = queue_family;
+                indices.graphics_family = i;
             }
 
-            const auto supporting = queue_family.is_supporting_surface_khr(surface);
+            const auto supporting =
+                physical.is_supporting_surface_khr(static_cast<std::uint32_t>(i), surface);
             if (supporting and *supporting) {
-                indices.present_family = queue_family;
+                indices.present_family = i;
             }
 
             if (indices.is_complete()) break;
@@ -155,8 +149,6 @@ class hardware final {
     hgn::instance        instance_;
     hgn::surface_khr     surface_;
     hgn::physical_device physical_;
-    hgn::queue_family    graphics_family_;
-    hgn::queue_family    present_family_;
     hgn::device          device_;
     hgn::queue           graphics_queue_;
     hgn::queue           present_queue_;
