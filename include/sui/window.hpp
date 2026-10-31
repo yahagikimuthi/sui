@@ -1,89 +1,46 @@
 #pragma once
 
-#include <cstdint>
 #include <expected>
 #include <span>
-#include <string_view>
 #include <utility>
 
-#include "sui/detail/window_impl.hpp"
+#include <hgn/window.hpp>
+
+#include "sui/context.hpp"
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
 
 namespace sui {
 class window final {
   public:
-    [[nodiscard]] static auto try_make(
-        const std::uint32_t    width,
-        const std::uint32_t    height,
-        const std::string_view title = "No Title"
-    ) noexcept -> std::expected<window, error>;
+    [[nodiscard]] static auto make() noexcept -> std::expected<window, error> {
+        if (not hgn::window::init()) return make_error(runtime_error, "Failed to init GLFW.");
 
-    window(const window&) noexcept                    = delete;
-    auto operator=(const window&) noexcept -> window& = delete;
-    window(window&&) noexcept                         = default;
-    auto operator=(window&&) noexcept -> window&      = default;
-    ~window() noexcept                                = default;
+        hgn::window::set_hint(hgn::window_hint::client_api, hgn::window_value::no_api);
+        auto win = hgn::window::make(800, 600, "No Title");
+        if (not win) return make_error(runtime_error, "Failed to make window.");
 
-    [[nodiscard]] auto is_open() const noexcept -> bool;
+        auto ctx = context::make(*win);
+        if (not ctx) return make_error(runtime_error, "Failed to make context.", ctx.error());
 
-    void pool_events() const noexcept;
+        return window{std::move(*win), std::move(*ctx)};
+    }
 
-    [[nodiscard]] auto try_begin_rendering() noexcept -> bool;
+    [[nodiscard]] auto is_open() noexcept -> bool { return win_.is_open(); }
 
-    void rendering(const std::span<const vertex> vertices) noexcept;
+    void poll_events() noexcept { hgn::window::poll_events(); }  // NOLINT
 
-    [[nodiscard]] auto try_end_rendering() noexcept -> bool;
+    [[nodiscard]] auto begin_rendering() noexcept -> bool { return ctx_.begin_rendering(); }
+
+    void render(const std::span<const vertex> vertices) noexcept { ctx_.render(vertices); }
+
+    [[nodiscard]] auto end_rendering() noexcept -> bool { return ctx_.end_rendering(); }
 
   private:
-    explicit window(detail::window_impl&& impl) noexcept;
+    explicit window(hgn::window&& win, context&& ctx) noexcept
+        : win_{std::move(win)}, ctx_{std::move(ctx)} {}
 
-    detail::window_impl impl_;
+    hgn::window win_;
+    context     ctx_;
 };
-
-[[nodiscard]] inline auto try_make_window(
-    const std::uint32_t width, const std::uint32_t height, const std::string_view title = "No Title"
-) noexcept -> std::expected<window, error>;
-}  // namespace sui
-
-// ==================================================
-// Implementation details only below here
-// ==================================================
-
-namespace sui {
-[[nodiscard]] inline auto window::try_make(
-    const std::uint32_t width, const std::uint32_t height, const std::string_view title
-) noexcept -> std::expected<window, error> {
-    auto res = detail::window_impl::try_make(width, height, title);
-    if (not res) return std::unexpected{res.error()};
-    return window{std::move(*res)};
-}
-
-[[nodiscard]] inline auto window::is_open() const noexcept -> bool {
-    return impl_.is_open();
-}
-
-inline void window::pool_events() const noexcept {
-    impl_.pool_events();
-}
-
-[[nodiscard]] inline auto window::try_begin_rendering() noexcept -> bool {
-    return impl_.try_begin_rendering();
-}
-
-inline void window::rendering(const std::span<const vertex> vertices) noexcept {
-    impl_.rendering(vertices);
-}
-
-[[nodiscard]] inline auto window::try_end_rendering() noexcept -> bool {
-    return impl_.try_end_rendering();
-}
-
-inline window::window(detail::window_impl&& impl) noexcept : impl_{std::move(impl)} {}
-
-[[nodiscard]] inline auto try_make_window(
-    const std::uint32_t width, const std::uint32_t height, const std::string_view title
-) noexcept -> std::expected<window, error> {
-    return window::try_make(width, height, title);
-}
 }  // namespace sui

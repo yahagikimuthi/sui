@@ -1,155 +1,165 @@
 #pragma once
 
+#include <bit>
 #include <cassert>
 #include <cstdint>
 #include <expected>
-#include <functional>
+#include <limits>
+#include <optional>
 #include <span>
 #include <utility>
 #include <vector>
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/declaration.hpp"
+#include "hgn/device.hpp"
 #include "hgn/enums.hpp"
+#include "hgn/image.hpp"
+#include "hgn/raii/image.hpp"
+#include "hgn/structs.hpp"
+#include "hgn/surface.hpp"
+#include "hgn/sync.hpp"
 
 namespace hgn {
-class swapchain_create_info_khr final {
+class swapchain_khr final {
   public:
-    explicit swapchain_create_info_khr() noexcept {
-        native_.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        native_.imageArrayLayers = 1;
-        native_.compositeAlpha   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        native_.clipped          = VK_TRUE;
+    swapchain_khr(const swapchain_khr&) noexcept                    = delete;
+    auto operator=(const swapchain_khr&) noexcept -> swapchain_khr& = delete;
+    swapchain_khr(swapchain_khr&&) noexcept                         = default;
+    auto operator=(swapchain_khr&&) noexcept -> swapchain_khr&      = default;
+    ~swapchain_khr() noexcept                                       = default;
+
+    [[nodiscard]] auto get_images_khr(device& dev) noexcept
+        -> std::expected<std::vector<image>, result> {
+        auto       count = std::uint32_t{};
+        const auto res1  = vkGetSwapchainImagesKHR(&dev.get(), &get(), &count, nullptr);
+        if (res1 != VK_SUCCESS) return make_unexpected(res1);
+
+        auto       raws = std::vector<VkImage_T*>(count);
+        const auto res2 = vkGetSwapchainImagesKHR(&dev.get(), &get(), &count, raws.data());
+        if (res2 != VK_SUCCESS) return make_unexpected(res2);
+
+        return raws | std::views::transform([](VkImage_T* raw) noexcept -> image {
+                   assert(raw != nullptr);
+                   return image{*raw};
+               }) |
+               std::ranges::to<std::vector>();
     }
 
-    swapchain_create_info_khr(const swapchain_create_info_khr& other) noexcept
-        : native_{other.native_}, queue_family_indices_{other.queue_family_indices_} {
-        reset();
+    [[nodiscard]] auto acquire_next_image(semaphore& semapho) noexcept
+        -> std::expected<std::uint32_t, result> {
+        auto       index = std::uint32_t{};
+        const auto res   = vkAcquireNextImageKHR(
+            &raw_.init_device(),
+            &get(),
+            std::numeric_limits<std::uint32_t>::max(),
+            &semapho.get(),
+            nullptr,
+            &index
+        );
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        return index;
     }
 
-    auto operator=(const swapchain_create_info_khr& other) noexcept -> swapchain_create_info_khr& {
-        if (this == &other) return *this;
+    [[nodiscard]] auto image_format() const noexcept -> format { return image_format_; }
 
-        native_               = other.native_;
-        queue_family_indices_ = other.queue_family_indices_;
+    [[nodiscard]] auto get() noexcept -> VkSwapchainKHR_T& { return raw_; }
 
-        reset();
-        return *this;
-    }
+    class builder final {
+      public:
+        auto surface(surface_khr& surface) noexcept -> builder& {
+            surface_ = surface.get();
+            return *this;
+        }
 
-    swapchain_create_info_khr(swapchain_create_info_khr&& other) noexcept
-        : native_{other.native_}, queue_family_indices_{std::move(other.queue_family_indices_)} {
-        reset();
-    }
+        auto min_image_count(const std::uint32_t count) noexcept -> builder& {
+            min_image_count_ = count;
+            return *this;
+        }
 
-    auto operator=(swapchain_create_info_khr&& other) noexcept -> swapchain_create_info_khr& {
-        if (this == &other) return *this;
+        auto image_format(const format fmt) noexcept -> builder& {
+            format_ = static_cast<VkFormat>(fmt);
+            return *this;
+        }
 
-        native_               = other.native_;
-        queue_family_indices_ = std::move(other.queue_family_indices_);
+        auto image_color_space(const color_space_khr space) noexcept -> builder& {
+            color_space_ = static_cast<VkColorSpaceKHR>(space);
+            return *this;
+        }
 
-        reset();
-        return *this;
-    }
+        auto image_extent(const extent2d extent) noexcept -> builder& {
+            image_extent_ = std::bit_cast<VkExtent2D>(extent);
+            return *this;
+        }
 
-    ~swapchain_create_info_khr() noexcept = default;
+        auto pre_transform(const surface_transform_flag_bits_khr transform) noexcept -> builder& {
+            pre_transform_ = static_cast<VkSurfaceTransformFlagBitsKHR>(transform);
+            return *this;
+        }
 
-    auto surface(surface_khr& surface) noexcept -> swapchain_create_info_khr& {
-        native_.surface = &surface;
-        return *this;
-    }
+        auto present_mode(const present_mode_khr mode) noexcept -> builder& {
+            present_mode_ = static_cast<VkPresentModeKHR>(mode);
+            return *this;
+        }
 
-    auto min_image_count(const std::uint32_t count) noexcept -> swapchain_create_info_khr& {
-        native_.minImageCount = count;
-        return *this;
-    }
+        auto queue_family_indices(const std::span<const std::uint32_t> indices) noexcept
+            -> builder& {
+            queue_family_indices_.assign_range(indices);
+            return *this;
+        }
 
-    auto image_format(const format f) noexcept -> swapchain_create_info_khr& {
-        native_.imageFormat = static_cast<VkFormat>(f);
-        return *this;
-    }
+        auto image_sharing_mode(const sharing_mode mode) noexcept -> builder& {
+            image_sharing_mode_ = static_cast<VkSharingMode>(mode);
+            return *this;
+        }
 
-    auto image_color_space(const color_space_khr color) noexcept -> swapchain_create_info_khr& {
-        native_.imageColorSpace = static_cast<VkColorSpaceKHR>(color);
-        return *this;
-    }
+        [[nodiscard]] auto build(device& dev) noexcept -> std::expected<swapchain_khr, result> {
+            auto info             = VkSwapchainCreateInfoKHR{};  // NOLINT
+            info.sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+            info.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            info.imageArrayLayers = 1;
+            info.compositeAlpha   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+            info.clipped          = VK_TRUE;
 
-    auto image_extent(const extent2d extent) noexcept -> swapchain_create_info_khr& {
-        native_.imageExtent = extent;
-        return *this;
-    }
+            if (surface_) info.surface = &*surface_;
+            info.minImageCount         = min_image_count_;
+            info.imageFormat           = format_;
+            info.imageColorSpace       = color_space_;
+            info.imageExtent           = image_extent_;
+            info.imageSharingMode      = image_sharing_mode_;
+            info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_family_indices_.size());
+            info.pQueueFamilyIndices   = queue_family_indices_.data();
+            info.preTransform          = pre_transform_;
+            info.presentMode           = present_mode_;
 
-    auto image_sharing_mode(const sharing_mode mode) noexcept -> swapchain_create_info_khr& {
-        native_.imageSharingMode = static_cast<VkSharingMode>(mode);
-        return *this;
-    }
+            auto*      raw = static_cast<VkSwapchainKHR_T*>(nullptr);
+            const auto res = vkCreateSwapchainKHR(&dev.get(), &info, nullptr, &raw);
+            if (res != VK_SUCCESS) return make_unexpected(res);
 
-    auto queue_family_indices(const std::span<const std::uint32_t> indices) noexcept
-        -> swapchain_create_info_khr& {
-        queue_family_indices_.assign_range(indices);
-        native_.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_family_indices_.size());
-        native_.pQueueFamilyIndices   = queue_family_indices_.data();
-        return *this;
-    }
+            assert(raw != nullptr);
+            return swapchain_khr{*raw, dev.get(), static_cast<format>(format_)};
+        }
 
-    auto pre_transform(const surface_transform_flag_bits_khr transform) noexcept
-        -> swapchain_create_info_khr& {
-        native_.preTransform = static_cast<VkSurfaceTransformFlagBitsKHR>(transform);
-        return *this;
-    }
-
-    auto present_mode(const present_mode_khr mode) noexcept -> swapchain_create_info_khr& {
-        native_.presentMode = static_cast<VkPresentModeKHR>(mode);
-        return *this;
-    }
-
-    [[nodiscard]] auto get() const noexcept -> const VkSwapchainCreateInfoKHR& { return native_; }
+      private:
+        std::optional<VkSurfaceKHR_T&> surface_;
+        std::uint32_t                  min_image_count_{};
+        VkFormat                       format_{};
+        VkColorSpaceKHR                color_space_{};
+        VkExtent2D                     image_extent_{};
+        VkSharingMode                  image_sharing_mode_{};
+        std::vector<std::uint32_t>     queue_family_indices_;
+        VkSurfaceTransformFlagBitsKHR pre_transform_{static_cast<VkSurfaceTransformFlagBitsKHR>(0)};
+        VkPresentModeKHR              present_mode_;
+    };
 
   private:
-    void reset() noexcept {
-        if (native_.pQueueFamilyIndices != nullptr)
-            native_.pQueueFamilyIndices = queue_family_indices_.data();
-    }
+    friend swapchain_khr::builder;
 
-    VkSwapchainCreateInfoKHR native_{
-        .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .pNext                 = nullptr,
-        .flags                 = 0,
-        .surface               = nullptr,
-        .minImageCount         = 0,
-        .imageFormat           = static_cast<VkFormat>(0),
-        .imageColorSpace       = static_cast<VkColorSpaceKHR>(0),
-        .imageExtent           = {},
-        .imageArrayLayers      = 0,
-        .imageUsage            = 0,
-        .imageSharingMode      = static_cast<VkSharingMode>(0),
-        .queueFamilyIndexCount = 0,
-        .pQueueFamilyIndices   = nullptr,
-        .preTransform          = static_cast<VkSurfaceTransformFlagBitsKHR>(0),
-        .compositeAlpha        = static_cast<VkCompositeAlphaFlagBitsKHR>(0),
-        .presentMode           = static_cast<VkPresentModeKHR>(0),
-        .clipped               = 0,
-        .oldSwapchain          = nullptr
-    };
-    std::vector<std::uint32_t> queue_family_indices_;
+    explicit swapchain_khr(VkSwapchainKHR_T& raw, VkDevice_T& dev, const format fmt) noexcept
+        : raw_{std::move(raw), dev}, image_format_{fmt} {}
+
+    raii::swapchain_khr raw_;
+    format              image_format_;
 };
-
-using swapchain_khr = VkSwapchainKHR_T;
-
-[[nodiscard]] inline auto try_make_swapchain(
-    device& dev, const swapchain_create_info_khr& info
-) noexcept -> std::expected<std::reference_wrapper<swapchain_khr>, result> {
-    auto*      chain = static_cast<swapchain_khr*>(nullptr);
-    const auto res   = vkCreateSwapchainKHR(&dev, &info.get(), nullptr, &chain);
-    if (res != VK_SUCCESS) return make_result(res);
-
-    assert(chain != nullptr);
-
-    return std::ref(*chain);
-}
-
-inline void destroy_swapchain_khr(device& dev, swapchain_khr& target) noexcept {
-    vkDestroySwapchainKHR(&dev, &target, nullptr);
-}
 }  // namespace hgn

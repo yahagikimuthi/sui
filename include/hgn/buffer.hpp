@@ -3,71 +3,75 @@
 #include <bit>
 #include <cassert>
 #include <cstddef>
-#include <cstdint>
 #include <expected>
-#include <functional>
+#include <span>
+#include <utility>
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
+#include "hgn/raii/buffer.hpp"
+#include "hgn/structs.hpp"
 
 namespace hgn {
-class buffer_create_info final {
+class buffer final {
+    friend class device;
+
   public:
-    explicit buffer_create_info() noexcept {
-        native_.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        native_.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    buffer(const buffer&) noexcept                    = delete;
+    auto operator=(const buffer&) noexcept -> buffer& = delete;
+    buffer(buffer&&) noexcept                         = default;
+    auto operator=(buffer&&) noexcept -> buffer&;
+    ~buffer() noexcept = default;
 
-        native_.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    [[nodiscard]] auto get_memory_requirements() noexcept -> memory_requirements {
+        auto requirements = VkMemoryRequirements{};
+        vkGetBufferMemoryRequirements(&raw_.init_device(), &get(), &requirements);
+        return std::bit_cast<memory_requirements>(requirements);
     }
 
-    auto size(std::size_t n) noexcept -> buffer_create_info& {
-        native_.size = n;
-        return *this;
-    }
-
-    auto setting_sharing_mode(const sharing_mode mode) noexcept -> buffer_create_info& {
-        native_.sharingMode = static_cast<VkSharingMode>(mode);
-        return *this;
-    }
-
-    [[nodiscard]] auto get() const noexcept -> const VkBufferCreateInfo& { return native_; }
+    [[nodiscard]] auto get() noexcept -> VkBuffer_T& { return raw_; }
 
   private:
-    VkBufferCreateInfo native_{};
+    explicit buffer(VkBuffer_T& raw, VkDevice_T& dev) noexcept : raw_{std::move(raw), dev} {}
+
+    raii::buffer raw_;
 };
 
-[[nodiscard]] inline auto try_make_buffer(device& dev, const buffer_create_info& info) noexcept
-    -> std::expected<std::reference_wrapper<buffer>, result> {
-    auto*      ptr = static_cast<buffer*>(nullptr);
-    const auto res = vkCreateBuffer(&dev, &info.get(), nullptr, &ptr);
-    if (res != VK_SUCCESS) return make_result(res);
+class device_memory final {
+    friend class device;
 
-    assert(ptr != nullptr);
-    return std::ref(*ptr);
-}
-
-inline void destroy_buffer(device& dev, buffer& target) noexcept {
-    vkDestroyBuffer(&dev, &target, nullptr);
-}
-
-class memory_requirements final {
   public:
-    [[nodiscard]] auto size() const noexcept -> std::uint64_t { return native_.size; }
+    device_memory(const device_memory&) noexcept                    = delete;
+    auto operator=(const device_memory&) noexcept -> device_memory& = delete;
+    device_memory(device_memory&&) noexcept                         = default;
+    auto operator=(device_memory&&) noexcept -> device_memory&      = default;
+    ~device_memory() noexcept                                       = default;
 
-    [[nodiscard]] auto memory_type_bits() const noexcept -> std::uint32_t {
-        return native_.memoryTypeBits;
+    [[nodiscard]] auto bind_buffer(buffer& buffer) noexcept -> std::expected<void, result> {
+        const auto res = vkBindBufferMemory(&raw_.init_device(), &buffer.get(), &get(), 0);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        return {};
     }
 
-  private:
-    VkMemoryRequirements native_;
-};
+    template <std::uint64_t Size>
+    [[nodiscard]] auto map() noexcept -> std::expected<std::span<std::byte, Size>, result> {
+        auto* data = static_cast<void*>(nullptr);
 
-[[nodiscard]] inline auto get_buffer_memory_requirements(device& dev, buffer& buffer_ref) noexcept
-    -> memory_requirements {
-    auto native = VkMemoryRequirements{};
-    vkGetBufferMemoryRequirements(&dev, &buffer_ref, &native);
-    return std::bit_cast<memory_requirements>(native);
-}
+        const auto res = vkMapMemory(&raw_.init_device(), &get(), 0, Size, 0, &data);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(data != nullptr);
+        return std::span<std::byte, Size>(static_cast<std::byte*>(data), Size);
+    }
+
+    [[nodiscard]] auto get() noexcept -> VkDeviceMemory_T& { return raw_; }
+
+  private:
+    explicit device_memory(VkDeviceMemory_T& raw, VkDevice_T& dev) noexcept
+        : raw_{std::move(raw), dev} {}
+
+    raii::device_memory raw_;
+};
 }  // namespace hgn

@@ -1,101 +1,100 @@
 #pragma once
 
-#include <bit>
 #include <cassert>
-#include <cstdint>
 #include <expected>
 #include <functional>
-#include <limits>
-#include <ranges>
-#include <vector>
+#include <optional>
+#include <utility>
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/declaration.hpp"
 #include "hgn/enums.hpp"
+#include "hgn/raii/image.hpp"
 
 namespace hgn {
-[[nodiscard]] inline auto try_get_swapchain_images_khr(device& dev, swapchain_khr& chain) noexcept
-    -> std::expected<std::vector<std::reference_wrapper<image>>, result> {
-    auto       count = std::uint32_t{};
-    const auto res1  = vkGetSwapchainImagesKHR(&dev, &chain, &count, nullptr);
-    if (res1 != VK_SUCCESS) return make_result(res1);
+class image final {
+    friend class swapchain_khr;
 
-    auto images = std::vector<image*>(count);
-
-    const auto res2 = vkGetSwapchainImagesKHR(&dev, &chain, &count, images.data());
-    if (res2 != VK_SUCCESS) return make_result(res2);
-
-    auto out = std::vector<std::reference_wrapper<image>>{};
-    out.reserve(count);
-    out.assign_range(
-        images | std::views::transform([](image* ptr) noexcept -> std::reference_wrapper<image> {
-            assert(ptr != nullptr);
-            return std::ref(*ptr);
-        })
-    );
-
-    return out;
-};
-
-class image_view_create_info final {
   public:
-    explicit image_view_create_info() noexcept {
-        native_.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    image(const image&) noexcept                    = delete;
+    auto operator=(const image&) noexcept -> image& = delete;
+    image(image&&) noexcept                         = default;
+    auto operator=(image&&) noexcept -> image&      = default;
+    ~image() noexcept                               = default;
 
-        native_.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        native_.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        native_.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        native_.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-        native_.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-        native_.subresourceRange.baseMipLevel   = 0;
-        native_.subresourceRange.levelCount     = 1;
-        native_.subresourceRange.baseArrayLayer = 0;
-        native_.subresourceRange.layerCount     = 1;
-
-        native_.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    }
-
-    auto setting_image(image& image_ref) noexcept -> image_view_create_info& {
-        native_.image = &image_ref;
-        return *this;
-    }
-
-    auto format(const format f) noexcept -> image_view_create_info& {
-        native_.format = static_cast<VkFormat>(f);
-        return *this;
-    }
+    [[nodiscard]] auto get() noexcept -> VkImage_T& { return raw_; }
 
   private:
-    VkImageViewCreateInfo native_{};
+    explicit image(VkImage_T& raw) noexcept : raw_{std::move(raw)} {}
+
+    raii::image raw_;
 };
 
-[[nodiscard]] inline auto try_make_image_view(
-    device& dev, const image_view_create_info& info
-) noexcept -> std::expected<std::reference_wrapper<image_view>, result> {
-    auto*      view        = static_cast<image_view*>(nullptr);
-    auto       native_info = std::bit_cast<VkImageViewCreateInfo>(info);
-    const auto res         = vkCreateImageView(&dev, &native_info, nullptr, &view);
-    if (res != VK_SUCCESS) return make_result(res);
+class image_view final {
+  public:
+    image_view(const image_view&) noexcept                    = delete;
+    auto operator=(const image_view&) noexcept -> image_view& = delete;
+    image_view(image_view&&) noexcept                         = default;
+    auto operator=(image_view&&) noexcept -> image_view&      = default;
+    ~image_view() noexcept                                    = default;
 
-    assert(view != nullptr);
-    return std::ref(*view);
-}
+    [[nodiscard]] auto get() noexcept -> VkImageView_T& { return raw_; }
 
-inline void destroy_image_view(device& dev, image_view& view) noexcept {
-    vkDestroyImageView(&dev, &view, nullptr);
-}
+    class builder final {
+        friend class device;
 
-[[nodiscard]] inline auto try_acquire_next_image_khr(
-    device&             dev,
-    swapchain_khr&      chain,
-    semaphore&          semaph,
-    const std::uint32_t timeout = std::numeric_limits<std::uint32_t>::max()
-) noexcept -> std::expected<std::uint32_t, result> {
-    auto       index = std::uint32_t{};
-    const auto res   = vkAcquireNextImageKHR(&dev, &chain, timeout, &semaph, nullptr, &index);
-    if (res != VK_SUCCESS) return make_result(res);
-    return index;
-}
+      public:
+        auto image(image& image) noexcept -> builder& {
+            image_ = image.get();
+            return *this;
+        }
+
+        auto format(const format fmt) noexcept -> builder& {
+            format_ = static_cast<VkFormat>(fmt);
+            return *this;
+        }
+
+        [[nodiscard]] auto build() const noexcept -> std::expected<image_view, result> {
+            auto info  = VkImageViewCreateInfo{};
+            info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+
+            info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+            info.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+            info.subresourceRange.baseMipLevel   = 0;
+            info.subresourceRange.levelCount     = 1;
+            info.subresourceRange.baseArrayLayer = 0;
+            info.subresourceRange.layerCount     = 1;
+
+            info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
+            if (image_) info.image = &*image_;
+            info.format = format_;
+
+            auto*      raw = static_cast<VkImageView_T*>(nullptr);
+            const auto res = vkCreateImageView(&dev_.get(), &info, nullptr, &raw);
+            if (res != VK_SUCCESS) return make_unexpected(res);
+
+            assert(raw != nullptr);
+            return image_view{*raw, dev_.get()};
+        }
+
+      private:
+        explicit builder(VkDevice_T& dev) noexcept : dev_{std::ref(dev)} {}
+
+        std::reference_wrapper<VkDevice_T> dev_;
+        std::optional<VkImage_T&>          image_;
+        VkFormat                           format_{};
+    };
+
+  private:
+    friend class image_view::builder;
+
+    explicit image_view(VkImageView_T& raw, VkDevice_T& dev) noexcept : raw_{std::move(raw), dev} {}
+
+    raii::image_view raw_;
+};
 }  // namespace hgn
