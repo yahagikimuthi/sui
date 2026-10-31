@@ -52,7 +52,10 @@ class application final {
         friend class application;
 
       public:
-        explicit builder() noexcept = default;
+        explicit builder() noexcept {
+            info_.sType      = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+            info_.apiVersion = VK_API_VERSION_1_3;
+        }
 
         auto app_name(const std::string_view name) noexcept -> builder& {
             name_ = name;
@@ -62,7 +65,7 @@ class application final {
         auto app_version(
             const std::uint32_t major, const std::uint32_t minor, const std::uint32_t patch
         ) noexcept -> builder& {
-            app_version_ = VK_MAKE_VERSION(major, minor, patch);
+            info_.applicationVersion = VK_MAKE_VERSION(major, minor, patch);
             return *this;
         }
 
@@ -74,30 +77,26 @@ class application final {
         auto engine_version(
             const std::uint32_t major, const std::uint32_t minor, const std::uint32_t patch
         ) noexcept -> builder& {
-            engine_version_ = VK_MAKE_VERSION(major, minor, patch);
+            info_.engineVersion = VK_MAKE_VERSION(major, minor, patch);
             return *this;
         }
 
-        [[nodiscard]] auto build() noexcept -> application { return application{*this}; }
+        [[nodiscard]] auto build() noexcept -> application { return application{info_}; }
 
       private:
-        std::string   name_;
-        std::uint32_t app_version_{};
-        std::string   engine_name_;
-        std::uint32_t engine_version_{};
+        VkApplicationInfo info_{};
+        std::string       name_;
+        std::string       engine_name_;
     };
 
   private:
     friend class application::builder;
 
-    explicit application(const builder& builder_ref) noexcept
-        : name_{builder_ref.name_}, engine_name_{builder_ref.engine_name_} {
-        info_.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        info_.pApplicationName   = name_.c_str();
-        info_.applicationVersion = builder_ref.app_version_;
-        info_.pEngineName        = builder_ref.engine_name_.c_str();
-        info_.engineVersion      = builder_ref.engine_version_;
-        info_.apiVersion         = VK_API_VERSION_1_3;
+    explicit application(VkApplicationInfo info) noexcept
+        : info_{info}, name_{info.pApplicationName}, engine_name_{info.pEngineName} {
+        info_.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        info_.pApplicationName = name_.c_str();
+        info_.pEngineName      = engine_name_.c_str();
     }
 
     void reset() noexcept {
