@@ -22,6 +22,8 @@
 namespace hgn {
 class queue;
 class device final {
+    friend class physical_device;
+
   public:
     device(const device&) noexcept                    = delete;
     auto operator=(const device&) noexcept -> device& = delete;
@@ -166,8 +168,6 @@ class device final {
     [[nodiscard]] auto get() noexcept -> raw::device& { return raw_; }
 
   private:
-    friend class device_builder;
-
     explicit device(raw::device& raw) noexcept : raw_{std::move(raw)} {}
 
     raii::device raw_;

@@ -7,7 +7,6 @@
 
 #include <hgn/application.hpp>
 #include <hgn/device.hpp>
-#include <hgn/device_queue.hpp>
 #include <hgn/instance.hpp>
 #include <hgn/physical.hpp>
 #include <hgn/queue.hpp>
@@ -61,15 +60,7 @@ class hardware final {
         auto       physical = std::move(suitable_physicals.front());
         const auto indices  = find_queue_families(physical, *surface);
 
-        auto device_queue =
-            hgn::device_queue::builder{}.queue_family_index(*indices.graphics_family).build();
-
-        auto device = physical.get_device_builder()
-                          .next(hgn::physical_device_dynamic_rendering_features{})
-                          .features(hgn::physical_device_features{})
-                          .queue(device_queue)
-                          .build();
-
+        auto device = physical.make_device(*indices.graphics_family);
         if (not device) return make_error(runtime_error, "Failed to make device.");
 
         auto graphics_queue = device->get_queue(*indices.graphics_family);

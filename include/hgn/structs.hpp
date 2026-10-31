@@ -48,31 +48,6 @@ class surface_capabilities_khr final {
     VkSurfaceCapabilitiesKHR raw_;
 };
 
-class physical_device_features final {
-  public:
-    explicit physical_device_features() noexcept = default;
-
-    [[nodiscard]] auto get() const noexcept -> const VkPhysicalDeviceFeatures& { return raw_; }
-
-  private:
-    VkPhysicalDeviceFeatures raw_{};
-};
-
-class physical_device_dynamic_rendering_features final {
-  public:
-    explicit physical_device_dynamic_rendering_features() noexcept {
-        raw_.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
-        raw_.dynamicRendering = VK_TRUE;
-    }
-
-    [[nodiscard]] auto get() const noexcept -> const VkPhysicalDeviceDynamicRenderingFeatures& {
-        return raw_;
-    }
-
-  private:
-    VkPhysicalDeviceDynamicRenderingFeatures raw_{};
-};
-
 class surface_format_khr final {
   public:
     [[nodiscard]] auto format() const noexcept -> format {

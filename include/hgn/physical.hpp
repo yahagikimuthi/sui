@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bit>
+#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <ranges>
@@ -11,7 +12,6 @@
 #include <vulkan/vulkan.h>
 
 #include "hgn/device.hpp"
-#include "hgn/device_queue.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw.hpp"
@@ -19,58 +19,6 @@
 #include "hgn/surface.hpp"
 
 namespace hgn {
-class device_builder final {
-    friend class physical_device;
-
-  public:
-    auto next(const physical_device_dynamic_rendering_features& next) noexcept -> device_builder& {
-        dynamic_rendering_ = next;
-        return *this;
-    }
-
-    auto queue(const device_queue& dev_queue) noexcept -> device_builder& {
-        queue_ = dev_queue;
-        return *this;
-    }
-
-    auto features(const physical_device_features& feature) noexcept -> device_builder& {
-        feature_ = feature;
-        return *this;
-    }
-
-    [[nodiscard]] auto build() const noexcept -> std::expected<device, result> {
-        auto info  = VkDeviceCreateInfo{};
-        info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        if (dynamic_rendering_) info.pNext = &dynamic_rendering_->get();
-        if (queue_) {
-            info.queueCreateInfoCount = 1;
-            info.pQueueCreateInfos    = &queue_->info();
-        }
-        if (feature_) {
-            info.pEnabledFeatures = &feature_->get();
-        }
-        info.enabledExtensionCount   = 1;
-        constexpr auto* extension    = "VK_KHR_swapchain";
-        info.ppEnabledExtensionNames = &extension;
-
-        auto*      raw = static_cast<raw::device*>(nullptr);
-        const auto res = vkCreateDevice(&physical_.get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return device{*raw};
-    }
-
-  private:
-    explicit device_builder(raw::physical_device& physical) noexcept
-        : physical_{std::ref(physical)} {}
-
-    std::reference_wrapper<raw::physical_device>              physical_;
-    std::optional<device_queue>                               queue_;
-    std::optional<physical_device_features>                   feature_;
-    std::optional<physical_device_dynamic_rendering_features> dynamic_rendering_;
-};
-
 class physical_device final {
     friend class instance;
 
@@ -165,8 +113,36 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
-    [[nodiscard]] auto get_device_builder() noexcept -> device_builder {
-        return device_builder{get()};
+    [[nodiscard]] auto make_device(const std::uint32_t queue_family_index) noexcept
+        -> std::expected<device, result> {
+        auto           device_queue   = VkDeviceQueueCreateInfo{};
+        constexpr auto priority       = 1.f;
+        device_queue.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        device_queue.queueCount       = 1;
+        device_queue.queueFamilyIndex = queue_family_index;
+        device_queue.pQueuePriorities = &priority;
+
+        auto dynamic_rendering  = VkPhysicalDeviceDynamicRenderingFeatures{};
+        dynamic_rendering.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+        dynamic_rendering.dynamicRendering = VK_TRUE;
+
+        auto features = VkPhysicalDeviceFeatures{};
+
+        auto info                  = VkDeviceCreateInfo{};
+        info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        info.pNext                 = &dynamic_rendering;
+        info.queueCreateInfoCount  = 1;
+        info.pQueueCreateInfos     = &device_queue;
+        info.pEnabledFeatures      = &features;
+        info.enabledExtensionCount = 1;
+        constexpr auto* extension  = "VK_KHR_swapchain";
+        info.ppEnabledLayerNames   = &extension;
+
+        auto*      raw = static_cast<raw::device*>(nullptr);
+        const auto res = vkCreateDevice(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        return device{*raw};
     }
 
     [[nodiscard]] auto get_memory_properties() noexcept -> physical_device_memory_properties {
