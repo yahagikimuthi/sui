@@ -103,6 +103,51 @@ class swapchain_khr_builder final {
     std::reference_wrapper<raw::device> dev_;
 };
 
+class image_view_builder final {
+    friend class device;
+
+  public:
+    auto image(image& image) noexcept -> image_view_builder& {
+        info_.image = &image.get();
+        return *this;
+    }
+
+    auto format(const format fmt) noexcept -> image_view_builder& {
+        info_.format = static_cast<VkFormat>(fmt);
+        return *this;
+    }
+
+    [[nodiscard]] auto build() const noexcept -> std::expected<image_view, result> {
+        auto*      raw = static_cast<raw::image_view*>(nullptr);
+        const auto res = vkCreateImageView(&dev_.get(), &info_, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return image_view{*raw, dev_.get()};
+    }
+
+  private:
+    explicit image_view_builder(raw::device& dev) noexcept : dev_{std::ref(dev)} {
+        info_.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+
+        info_.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        info_.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        info_.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        info_.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+        info_.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+        info_.subresourceRange.baseMipLevel   = 0;
+        info_.subresourceRange.levelCount     = 1;
+        info_.subresourceRange.baseArrayLayer = 0;
+        info_.subresourceRange.layerCount     = 1;
+
+        info_.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    }
+
+    VkImageViewCreateInfo               info_{};
+    std::reference_wrapper<raw::device> dev_;
+};
+
 class device final {
     friend class physical_device;
 
@@ -181,8 +226,8 @@ class device final {
         return command_buffer{*raw};
     }
 
-    [[nodiscard]] auto get_image_view_builder() noexcept -> image_view::builder {
-        return image_view::builder{get()};
+    [[nodiscard]] auto get_image_view_builder() noexcept -> image_view_builder {
+        return image_view_builder{get()};
     }
 
     [[nodiscard]] auto make_buffer(const std::uint32_t size) noexcept
