@@ -63,8 +63,8 @@ class hardware final {
         auto device = physical.make_device(*indices.graphics_family);
         if (not device) return make_error(runtime_error, "Failed to make device.");
 
-        auto graphics_queue = device->get_queue(*indices.graphics_family);
-        auto present_queue  = device->get_queue(*indices.present_family);
+        auto graphics_queue = device->make_queue(*indices.graphics_family);
+        auto present_queue  = device->make_queue(*indices.present_family);
 
         auto sem1  = device->make_semaphore();
         auto sem2  = device->make_semaphore();

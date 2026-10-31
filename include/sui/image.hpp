@@ -66,7 +66,8 @@ class image final {
             hard.graphics_queue().queue_family_index(), hard.present_queue().queue_family_index()
         };
         const bool is_duplicate = indices[0] == indices[1];
-        auto       builder      = hgn::swapchain_khr::builder{}
+        auto       builder      = hard.device()
+                                      .get_swapchain_builder()
                                       .surface(surface)
                                       .min_image_count(image_count)
                                       .image_format(surface_format.format())
@@ -79,10 +80,10 @@ class image final {
         } else {
             builder.image_sharing_mode(hgn::sharing_mode::concurrent).queue_family_indices(indices);
         }
-        auto swapchain = builder.build(hard.device());
+        auto swapchain = builder.build();
         if (not swapchain) return make_error(runtime_error, "Failed to make swapchain.");
 
-        auto images = swapchain->get_images_khr(hard.device());
+        auto images = swapchain->get_images_khr();
         if (not images) return make_error(runtime_error, "Failed to get images.");
 
         auto views = std::vector<hgn::image_view>{};

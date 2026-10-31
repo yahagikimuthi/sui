@@ -1,8 +1,11 @@
 #pragma once
 
+#include <bit>
 #include <cassert>
 #include <cstdint>
 #include <expected>
+#include <functional>
+#include <optional>
 #include <span>
 #include <utility>
 
@@ -14,13 +17,109 @@
 #include "hgn/image.hpp"
 #include "hgn/pipeline_layout.hpp"
 #include "hgn/pipeline_structs.hpp"
+#include "hgn/queue.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw.hpp"
 #include "hgn/shader.hpp"
+#include "hgn/structs.hpp"
+#include "hgn/surface.hpp"
+#include "hgn/swapchain.hpp"
 #include "hgn/sync.hpp"
 
 namespace hgn {
-class queue;
+class swapchain_khr_builder final {
+    friend class device;
+
+  public:
+    auto surface(surface_khr& surface) noexcept -> swapchain_khr_builder& {
+        surface_ = surface.get();
+        return *this;
+    }
+
+    auto min_image_count(const std::uint32_t count) noexcept -> swapchain_khr_builder& {
+        min_image_count_ = count;
+        return *this;
+    }
+
+    auto image_format(const format fmt) noexcept -> swapchain_khr_builder& {
+        format_ = static_cast<VkFormat>(fmt);
+        return *this;
+    }
+
+    auto image_color_space(const color_space_khr space) noexcept -> swapchain_khr_builder& {
+        color_space_ = static_cast<VkColorSpaceKHR>(space);
+        return *this;
+    }
+
+    auto image_extent(const extent2d extent) noexcept -> swapchain_khr_builder& {
+        image_extent_ = std::bit_cast<VkExtent2D>(extent);
+        return *this;
+    }
+
+    auto pre_transform(const surface_transform_flag_bits_khr transform) noexcept
+        -> swapchain_khr_builder& {
+        pre_transform_ = static_cast<VkSurfaceTransformFlagBitsKHR>(transform);
+        return *this;
+    }
+
+    auto present_mode(const present_mode_khr mode) noexcept -> swapchain_khr_builder& {
+        present_mode_ = static_cast<VkPresentModeKHR>(mode);
+        return *this;
+    }
+
+    auto queue_family_indices(const std::span<const std::uint32_t> indices) noexcept
+        -> swapchain_khr_builder& {
+        queue_family_indices_.assign_range(indices);
+        return *this;
+    }
+
+    auto image_sharing_mode(const sharing_mode mode) noexcept -> swapchain_khr_builder& {
+        image_sharing_mode_ = static_cast<VkSharingMode>(mode);
+        return *this;
+    }
+
+    [[nodiscard]] auto build() noexcept -> std::expected<swapchain_khr, result> {
+        auto info             = VkSwapchainCreateInfoKHR{};  // NOLINT
+        info.sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        info.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        info.imageArrayLayers = 1;
+        info.compositeAlpha   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        info.clipped          = VK_TRUE;
+
+        if (surface_) info.surface = &*surface_;
+        info.minImageCount         = min_image_count_;
+        info.imageFormat           = format_;
+        info.imageColorSpace       = color_space_;
+        info.imageExtent           = image_extent_;
+        info.imageSharingMode      = image_sharing_mode_;
+        info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_family_indices_.size());
+        info.pQueueFamilyIndices   = queue_family_indices_.data();
+        info.preTransform          = pre_transform_;
+        info.presentMode           = present_mode_;
+
+        auto*      raw = static_cast<VkSwapchainKHR_T*>(nullptr);
+        const auto res = vkCreateSwapchainKHR(&dev_.get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return swapchain_khr{*raw, dev_.get(), static_cast<format>(format_)};
+    }
+
+  private:
+    explicit swapchain_khr_builder(raw::device& dev) noexcept : dev_{std::ref(dev)} {}
+
+    std::optional<raw::surface_khr&> surface_;
+    std::uint32_t                    min_image_count_{};
+    VkFormat                         format_{};
+    VkColorSpaceKHR                  color_space_{};
+    VkExtent2D                       image_extent_{};
+    VkSharingMode                    image_sharing_mode_{};
+    std::vector<std::uint32_t>       queue_family_indices_;
+    VkSurfaceTransformFlagBitsKHR    pre_transform_{static_cast<VkSurfaceTransformFlagBitsKHR>(0)};
+    VkPresentModeKHR                 present_mode_{};
+    std::reference_wrapper<raw::device> dev_;
+};
+
 class device final {
     friend class physical_device;
 
@@ -31,7 +130,17 @@ class device final {
     auto operator=(device&&) noexcept -> device&      = default;
     ~device() noexcept                                = default;
 
-    [[nodiscard]] auto get_queue(const std::uint32_t queue_family_index) noexcept -> queue;
+    [[nodiscard]] auto make_queue(const std::uint32_t queue_family_index) noexcept -> queue {
+        auto* raw = static_cast<raw::queue*>(nullptr);
+        vkGetDeviceQueue(&get(), queue_family_index, 0, &raw);
+
+        assert(raw != nullptr);
+        return queue{*raw, queue_family_index};
+    }
+
+    [[nodiscard]] auto get_swapchain_builder() noexcept -> swapchain_khr_builder {
+        return swapchain_khr_builder{get()};
+    }
 
     [[nodiscard]] auto make_semaphore() noexcept -> std::expected<semaphore, result> {
         auto info      = VkSemaphoreCreateInfo{};

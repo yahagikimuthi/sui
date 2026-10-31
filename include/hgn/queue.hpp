@@ -10,7 +10,6 @@
 #include <vulkan/vulkan.h>
 
 #include "hgn/command.hpp"
-#include "hgn/device.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw.hpp"
@@ -159,12 +158,4 @@ class queue final {
     raii::queue   raw_;
     std::uint32_t queue_family_index_;
 };
-
-inline auto device::get_queue(const std::uint32_t queue_family_index) noexcept -> queue {
-    auto* raw = static_cast<raw::queue*>(nullptr);
-    vkGetDeviceQueue(&get(), queue_family_index, 0, &raw);
-
-    assert(raw != nullptr);
-    return queue{*raw, queue_family_index};
-}
 }  // namespace hgn
