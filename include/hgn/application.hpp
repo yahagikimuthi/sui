@@ -81,7 +81,11 @@ class application final {
             return *this;
         }
 
-        [[nodiscard]] auto build() noexcept -> application { return application{info_}; }
+        [[nodiscard]] auto build() noexcept -> application {
+            info_.pApplicationName = name_.c_str();
+            info_.pEngineName      = engine_name_.c_str();
+            return application{info_};
+        }
 
       private:
         VkApplicationInfo info_{};
