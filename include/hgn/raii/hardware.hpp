@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <utility>
@@ -78,6 +79,27 @@ class surface_khr final {
     std::reference_wrapper<raw::instance> instance_;
 };
 
+class physical_device final {
+  public:
+    [[nodiscard]] explicit physical_device(raw::physical_device&& raw) noexcept  // NOLINT
+        : raw_{raw} {}
+
+    physical_device(const physical_device&) noexcept                    = delete;
+    auto operator=(const physical_device&) noexcept -> physical_device& = delete;
+    physical_device(physical_device&&) noexcept                         = default;
+    auto operator=(physical_device&&) noexcept -> physical_device&      = default;
+    ~physical_device() noexcept                                         = default;
+
+    [[nodiscard]] auto get() noexcept -> raw::physical_device& { return raw_; }
+    [[nodiscard]] auto get() const noexcept -> raw::physical_device& { return raw_; }
+
+    [[nodiscard]] operator raw::physical_device&() noexcept { return get(); }
+    [[nodiscard]] operator raw::physical_device&() const noexcept { return get(); }
+
+  private:
+    std::reference_wrapper<raw::physical_device> raw_;
+};
+
 class device final {
   public:
     [[nodiscard]] explicit device(raw::device&& raw) noexcept : raw_{raw} {}  // NOLINT
@@ -112,25 +134,28 @@ class device final {
     std::optional<raw::device&> raw_;
 };
 
-class physical_device final {
+class queue_family final {
   public:
-    [[nodiscard]] explicit physical_device(raw::physical_device&& raw) noexcept  // NOLINT
-        : raw_{raw} {}
+    explicit queue_family(
+        std::uint32_t index, raw::physical_device& physical  // NOLINT
+    ) noexcept
+        : index_{index}, physical_{std::ref(physical)} {}
 
-    physical_device(const physical_device&) noexcept                    = delete;
-    auto operator=(const physical_device&) noexcept -> physical_device& = delete;
-    physical_device(physical_device&&) noexcept                         = default;
-    auto operator=(physical_device&&) noexcept -> physical_device&      = default;
-    ~physical_device() noexcept                                         = default;
+    queue_family(const queue_family&) noexcept                    = delete;
+    auto operator=(const queue_family&) noexcept -> queue_family& = delete;
+    queue_family(queue_family&&) noexcept                         = default;
+    auto operator=(queue_family&&) noexcept -> queue_family&      = default;
+    ~queue_family() noexcept                                      = default;
 
-    [[nodiscard]] auto get() noexcept -> raw::physical_device& { return raw_; }
-    [[nodiscard]] auto get() const noexcept -> raw::physical_device& { return raw_; }
+    [[nodiscard]] auto get() const noexcept -> std::uint32_t { return index_; }
 
-    [[nodiscard]] operator raw::physical_device&() noexcept { return get(); }
-    [[nodiscard]] operator raw::physical_device&() const noexcept { return get(); }
+    [[nodiscard]] auto init_physical() noexcept -> raw::physical_device& { return physical_; }
+
+    [[nodiscard]] operator std::uint32_t() const noexcept { return get(); }
 
   private:
-    std::reference_wrapper<raw::physical_device> raw_;
+    std::uint32_t                                index_;
+    std::reference_wrapper<raw::physical_device> physical_;
 };
 
 class queue final {
