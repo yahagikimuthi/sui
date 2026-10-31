@@ -63,4 +63,14 @@ enum class memory_property_flags : std::int32_t {  // NOLINT
     const auto out      = casted_a | casted_b;
     return static_cast<memory_property_flags>(out);
 }
+
+enum class shader_stage_flag_bits : std::int32_t {  // NOLINT
+    vertex   = VK_SHADER_STAGE_VERTEX_BIT,
+    fragment = VK_SHADER_STAGE_FRAGMENT_BIT
+};
+
+enum class dynamic_state : std::int32_t {  // NOLINT
+    viewport = VK_DYNAMIC_STATE_VIEWPORT,
+    scissor  = VK_DYNAMIC_STATE_SCISSOR
+};
 }  // namespace hgn

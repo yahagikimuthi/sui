@@ -55,7 +55,7 @@ class renderer final {
         auto frag = dev.make_shader(*frag_source);
         if (not frag) return make_error(runtime_error, "Failed to make fragment shader module.");
 
-        return sui::renderer{
+        return renderer{
             std::move(*buffer), std::move(*memory), *data, std::move(*vert), std::move(*frag)
         };
     }
