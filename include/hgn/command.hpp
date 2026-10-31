@@ -197,7 +197,7 @@ class command_pool final {
   public:
     [[nodiscard]] auto get() noexcept -> raw::command_pool& { return raw_; }
 
-    [[nodiscard]] auto allocate_command_buffer() noexcept -> std::expected<command_buffer, result> {
+    [[nodiscard]] auto allocate_buffer() noexcept -> std::expected<command_buffer, result> {
         auto info               = VkCommandBufferAllocateInfo{};
         info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;

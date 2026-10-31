@@ -16,7 +16,7 @@ class command final {
         auto  pool = dev.make_command_pool(hard.graphics_queue().queue_family_index());
         if (not pool) return make_error(runtime_error, "Failed to make command pool.");
 
-        auto buffer = pool->allocate_command_buffer();
+        auto buffer = pool->allocate_buffer();
         if (not buffer) return make_error(runtime_error, "Failed to allocate command buffer.");
 
         return command{std::move(*pool), std::move(*buffer)};
