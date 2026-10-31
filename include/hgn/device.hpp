@@ -3,7 +3,6 @@
 #include <cassert>
 #include <cstdint>
 #include <expected>
-#include <optional>
 #include <span>
 #include <utility>
 
@@ -11,16 +10,13 @@
 
 #include "hgn/buffer.hpp"
 #include "hgn/command.hpp"
-#include "hgn/device_queue.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/image.hpp"
-#include "hgn/physical.hpp"
 #include "hgn/pipeline_layout.hpp"
 #include "hgn/pipeline_structs.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw.hpp"
 #include "hgn/shader.hpp"
-#include "hgn/structs.hpp"
 #include "hgn/sync.hpp"
 
 namespace hgn {
@@ -169,57 +165,8 @@ class device final {
 
     [[nodiscard]] auto get() noexcept -> raw::device& { return raw_; }
 
-    class builder final {
-      public:
-        explicit builder() noexcept = default;
-
-        auto next(const physical_device_dynamic_rendering_features& next) noexcept -> builder& {
-            dynamic_rendering_ = next;
-            return *this;
-        }
-
-        auto queue(const device_queue& dev_queue) noexcept -> builder& {
-            queue_ = dev_queue;
-            return *this;
-        }
-
-        auto features(const physical_device_features& feature) noexcept -> builder& {
-            feature_ = feature;
-            return *this;
-        }
-
-        [[nodiscard]] auto build(physical_device& physical) const noexcept
-            -> std::expected<device, result> {
-            auto info  = VkDeviceCreateInfo{};
-            info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-            if (dynamic_rendering_) info.pNext = &dynamic_rendering_->get();
-            if (queue_) {
-                info.queueCreateInfoCount = 1;
-                info.pQueueCreateInfos    = &queue_->info();
-            }
-            if (feature_) {
-                info.pEnabledFeatures = &feature_->get();
-            }
-            info.enabledExtensionCount   = 1;
-            constexpr auto* extension    = "VK_KHR_swapchain";
-            info.ppEnabledExtensionNames = &extension;
-
-            auto*      raw = static_cast<raw::device*>(nullptr);
-            const auto res = vkCreateDevice(&physical.get(), &info, nullptr, &raw);
-            if (res != VK_SUCCESS) return make_unexpected(res);
-
-            assert(raw != nullptr);
-            return device{*raw};
-        }
-
-      private:
-        std::optional<device_queue>                               queue_;
-        std::optional<physical_device_features>                   feature_;
-        std::optional<physical_device_dynamic_rendering_features> dynamic_rendering_;
-    };
-
   private:
-    friend class device::builder;
+    friend class device_builder;
 
     explicit device(raw::device& raw) noexcept : raw_{std::move(raw)} {}
 

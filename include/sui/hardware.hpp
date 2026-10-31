@@ -64,11 +64,12 @@ class hardware final {
         auto device_queue =
             hgn::device_queue::builder{}.queue_family_index(*indices.graphics_family).build();
 
-        auto device = hgn::device::builder{}
+        auto device = physical.get_device_builder()
                           .next(hgn::physical_device_dynamic_rendering_features{})
                           .features(hgn::physical_device_features{})
                           .queue(device_queue)
-                          .build(physical);
+                          .build();
+
         if (not device) return make_error(runtime_error, "Failed to make device.");
 
         auto graphics_queue = device->get_queue(*indices.graphics_family);
