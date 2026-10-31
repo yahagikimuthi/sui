@@ -14,6 +14,8 @@
 #include "hgn2/device_queue.hpp"
 #include "hgn2/enums.hpp"
 #include "hgn2/physical.hpp"
+#include "hgn2/pipeline_layout.hpp"
+#include "hgn2/pipeline_structs.hpp"
 #include "hgn2/raii/hardware.hpp"
 #include "hgn2/shader.hpp"
 #include "hgn2/structs.hpp"
@@ -133,6 +135,24 @@ class device final {
 
         assert(raw != nullptr);
         return shader_module{*raw, get()};
+    }
+
+    [[nodiscard]] auto get_pipeline_layout() noexcept -> std::expected<pipeline_layout, result> {
+        auto info                   = VkPipelineLayoutCreateInfo{};
+        info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        info.setLayoutCount         = 0;
+        info.pushConstantRangeCount = 0;
+
+        auto*      raw = static_cast<VkPipelineLayout_T*>(nullptr);
+        const auto res = vkCreatePipelineLayout(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return pipeline_layout{*raw, get()};
+    }
+
+    [[nodiscard]] auto get_graphics_pipeline_builder() noexcept -> graphics_pipeline_builder {
+        return graphics_pipeline_builder{get()};
     }
 
     [[nodiscard]] auto get() noexcept -> VkDevice_T& { return raw_; }
