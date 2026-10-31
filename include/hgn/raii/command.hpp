@@ -36,6 +36,8 @@ class command_pool final {
 
     [[nodiscard]] operator raw::command_pool&() noexcept { return get(); }
 
+    [[nodiscard]] auto init_device() noexcept -> raw::device& { return dev_; }
+
   private:
     void destroy() noexcept {
         if (raw_) vkDestroyCommandPool(&dev_.get(), &get(), nullptr);

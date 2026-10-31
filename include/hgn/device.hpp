@@ -84,22 +84,6 @@ class device final {
         return command_pool{*raw, get()};
     }
 
-    [[nodiscard]] auto allocate_command_buffer(command_pool& pool) noexcept
-        -> std::expected<command_buffer, result> {
-        auto info               = VkCommandBufferAllocateInfo{};
-        info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        info.commandBufferCount = 1;
-        info.commandPool        = &pool.get();
-
-        auto*      raw = static_cast<raw::command_buffer*>(nullptr);
-        const auto res = vkAllocateCommandBuffers(&get(), &info, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return command_buffer{*raw};
-    }
-
     [[nodiscard]] auto get_image_view_builder() noexcept -> image_view_builder {
         return image_view_builder{get()};
     }

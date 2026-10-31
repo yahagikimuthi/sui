@@ -14,19 +14,6 @@
 #include "hgn/raw.hpp"
 
 namespace hgn {
-class command_pool final {
-    friend class device;
-
-  public:
-    [[nodiscard]] auto get() noexcept -> raw::command_pool& { return raw_; }
-
-  private:
-    explicit command_pool(raw::command_pool& raw, raw::device& dev) noexcept
-        : raw_{std::move(raw), dev} {}
-
-    raii::command_pool raw_;
-};
-
 class image_memory_barrier_executor final {
     friend class command_buffer;
 
@@ -134,7 +121,7 @@ class command_begin_rendering_executor final {
 };
 
 class command_buffer final {
-    friend class device;
+    friend class command_pool;
 
   public:
     [[nodiscard]] auto begin_command() noexcept -> std::expected<void, result> {
@@ -202,5 +189,33 @@ class command_buffer final {
     explicit command_buffer(raw::command_buffer& raw) noexcept : raw_{std::move(raw)} {}
 
     raii::command_buffer raw_;
+};
+
+class command_pool final {
+    friend class device;
+
+  public:
+    [[nodiscard]] auto get() noexcept -> raw::command_pool& { return raw_; }
+
+    [[nodiscard]] auto allocate_command_buffer() noexcept -> std::expected<command_buffer, result> {
+        auto info               = VkCommandBufferAllocateInfo{};
+        info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        info.commandBufferCount = 1;
+        info.commandPool        = &get();
+
+        auto*      raw = static_cast<raw::command_buffer*>(nullptr);
+        const auto res = vkAllocateCommandBuffers(&raw_.init_device(), &info, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return command_buffer{*raw};
+    }
+
+  private:
+    explicit command_pool(raw::command_pool& raw, raw::device& dev) noexcept
+        : raw_{std::move(raw), dev} {}
+
+    raii::command_pool raw_;
 };
 }  // namespace hgn
