@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <expected>
 #include <functional>
-#include <optional>
 #include <span>
 #include <utility>
 
@@ -32,38 +31,38 @@ class swapchain_khr_builder final {
 
   public:
     auto surface(surface_khr& surface) noexcept -> swapchain_khr_builder& {
-        surface_ = surface.get();
+        info_.surface = &surface.get();
         return *this;
     }
 
     auto min_image_count(const std::uint32_t count) noexcept -> swapchain_khr_builder& {
-        min_image_count_ = count;
+        info_.minImageCount = count;
         return *this;
     }
 
     auto image_format(const format fmt) noexcept -> swapchain_khr_builder& {
-        format_ = static_cast<VkFormat>(fmt);
+        info_.imageFormat = static_cast<VkFormat>(fmt);
         return *this;
     }
 
     auto image_color_space(const color_space_khr space) noexcept -> swapchain_khr_builder& {
-        color_space_ = static_cast<VkColorSpaceKHR>(space);
+        info_.imageColorSpace = static_cast<VkColorSpaceKHR>(space);
         return *this;
     }
 
     auto image_extent(const extent2d extent) noexcept -> swapchain_khr_builder& {
-        image_extent_ = std::bit_cast<VkExtent2D>(extent);
+        info_.imageExtent = std::bit_cast<VkExtent2D>(extent);
         return *this;
     }
 
     auto pre_transform(const surface_transform_flag_bits_khr transform) noexcept
         -> swapchain_khr_builder& {
-        pre_transform_ = static_cast<VkSurfaceTransformFlagBitsKHR>(transform);
+        info_.preTransform = static_cast<VkSurfaceTransformFlagBitsKHR>(transform);
         return *this;
     }
 
     auto present_mode(const present_mode_khr mode) noexcept -> swapchain_khr_builder& {
-        present_mode_ = static_cast<VkPresentModeKHR>(mode);
+        info_.presentMode = static_cast<VkPresentModeKHR>(mode);
         return *this;
     }
 
@@ -74,49 +73,33 @@ class swapchain_khr_builder final {
     }
 
     auto image_sharing_mode(const sharing_mode mode) noexcept -> swapchain_khr_builder& {
-        image_sharing_mode_ = static_cast<VkSharingMode>(mode);
+        info_.imageSharingMode = static_cast<VkSharingMode>(mode);
         return *this;
     }
 
     [[nodiscard]] auto build() noexcept -> std::expected<swapchain_khr, result> {
-        auto info             = VkSwapchainCreateInfoKHR{};  // NOLINT
-        info.sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        info.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        info.imageArrayLayers = 1;
-        info.compositeAlpha   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        info.clipped          = VK_TRUE;
-
-        if (surface_) info.surface = &*surface_;
-        info.minImageCount         = min_image_count_;
-        info.imageFormat           = format_;
-        info.imageColorSpace       = color_space_;
-        info.imageExtent           = image_extent_;
-        info.imageSharingMode      = image_sharing_mode_;
-        info.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_family_indices_.size());
-        info.pQueueFamilyIndices   = queue_family_indices_.data();
-        info.preTransform          = pre_transform_;
-        info.presentMode           = present_mode_;
+        info_.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_family_indices_.size());
+        info_.pQueueFamilyIndices   = queue_family_indices_.data();
 
         auto*      raw = static_cast<VkSwapchainKHR_T*>(nullptr);
-        const auto res = vkCreateSwapchainKHR(&dev_.get(), &info, nullptr, &raw);
+        const auto res = vkCreateSwapchainKHR(&dev_.get(), &info_, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
         assert(raw != nullptr);
-        return swapchain_khr{*raw, dev_.get(), static_cast<format>(format_)};
+        return swapchain_khr{*raw, dev_.get(), static_cast<format>(info_.imageFormat)};
     }
 
   private:
-    explicit swapchain_khr_builder(raw::device& dev) noexcept : dev_{std::ref(dev)} {}
+    explicit swapchain_khr_builder(raw::device& dev) noexcept : dev_{std::ref(dev)} {
+        info_.sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        info_.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        info_.imageArrayLayers = 1;
+        info_.compositeAlpha   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        info_.clipped          = VK_TRUE;
+    }
 
-    std::optional<raw::surface_khr&> surface_;
-    std::uint32_t                    min_image_count_{};
-    VkFormat                         format_{};
-    VkColorSpaceKHR                  color_space_{};
-    VkExtent2D                       image_extent_{};
-    VkSharingMode                    image_sharing_mode_{};
-    std::vector<std::uint32_t>       queue_family_indices_;
-    VkSurfaceTransformFlagBitsKHR    pre_transform_{static_cast<VkSurfaceTransformFlagBitsKHR>(0)};
-    VkPresentModeKHR                 present_mode_{};
+    VkSwapchainCreateInfoKHR            info_{};  // NOLINT
+    std::vector<std::uint32_t>          queue_family_indices_;
     std::reference_wrapper<raw::device> dev_;
 };
 
