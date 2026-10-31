@@ -143,8 +143,9 @@ class device final {
     }
 
     [[nodiscard]] auto make_semaphore() noexcept -> std::expected<semaphore, result> {
-        auto info      = VkSemaphoreCreateInfo{};
-        info.sType     = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        auto info  = VkSemaphoreCreateInfo{};
+        info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
         auto*      raw = static_cast<raw::semaphore*>(nullptr);
         const auto res = vkCreateSemaphore(&get(), &info, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
@@ -154,9 +155,10 @@ class device final {
     }
 
     [[nodiscard]] auto make_fence() noexcept -> std::expected<fence, result> {
-        auto info      = VkFenceCreateInfo{};
-        info.sType     = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        info.flags     = VK_FENCE_CREATE_SIGNALED_BIT;
+        auto info  = VkFenceCreateInfo{};
+        info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
         auto*      raw = static_cast<raw::fence*>(nullptr);
         const auto res = vkCreateFence(&get(), &info, nullptr, &raw);
         if (res != VK_SUCCESS) return make_unexpected(res);
