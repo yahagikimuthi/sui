@@ -113,16 +113,6 @@ class graphics_pipeline_builder final {
         return *this;
     }
 
-    auto dynamic_states(const dynamic_state state1, const dynamic_state state2) noexcept
-        -> graphics_pipeline_builder& {
-        dynamic_states_ = {
-            static_cast<VkDynamicState>(state1), static_cast<VkDynamicState>(state2)
-        };
-        dynamic_state_.dynamicStateCount = 2;
-        dynamic_state_.pDynamicStates    = dynamic_states_.data();
-        return *this;
-    }
-
     auto color_attachment(const format fmt) noexcept -> graphics_pipeline_builder& {
         color_attachment_                  = static_cast<VkFormat>(fmt);
         rendering_.colorAttachmentCount    = 1;
@@ -174,7 +164,10 @@ class graphics_pipeline_builder final {
         assembly_.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         assembly_.primitiveRestartEnable = VK_FALSE;
 
-        dynamic_state_.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamic_states_                  = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        dynamic_state_.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamic_state_.dynamicStateCount = 2;
+        dynamic_state_.pDynamicStates    = dynamic_states_.data();
 
         viewport_.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewport_.viewportCount = 1;
