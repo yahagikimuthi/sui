@@ -66,16 +66,13 @@ class renderer final {
         if (not layout) return make_error(runtime_error, "Failed to get pipeline layout");
 
         auto pipe = dev.get_graphics_pipeline_builder()
-                        .vertex_input_state(
-                            hgn::pipeline_vertex_input_state::builder{}
-                                .binding(sizeof(vertex))
-                                .offsets(offsetof(vertex, position), offsetof(vertex, color))
-                                .build()
-                        )
+                        .vertex_binding(sizeof(vertex))
+                        .vertex_offsets(offsetof(vertex, position), offsetof(vertex, color))
                         .color_attachment(fmt)
                         .layout(*layout)
                         .shaders(*vert, *frag)
                         .build();
+
         if (not pipe) return make_error(runtime_error, "Failed to graphics make pipeline.");
 
         return renderer{
