@@ -131,12 +131,6 @@ class queue final {
     friend class device;
 
   public:
-    queue(const queue&) noexcept                    = delete;
-    auto operator=(const queue&) noexcept -> queue& = delete;
-    queue(queue&&) noexcept                         = default;
-    auto operator=(queue&&) noexcept -> queue&      = default;
-    ~queue() noexcept                               = default;
-
     [[nodiscard]] auto queue_family_index() const noexcept -> std::uint32_t { return index_; }
 
     [[nodiscard]] auto get_present_executor() noexcept -> present_executor {

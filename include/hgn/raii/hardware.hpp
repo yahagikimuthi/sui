@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <utility>
@@ -117,12 +118,6 @@ class physical_device final {
     [[nodiscard]] explicit physical_device(raw::physical_device&& raw) noexcept  // NOLINT
         : raw_{raw} {}
 
-    physical_device(const physical_device&) noexcept                    = delete;
-    auto operator=(const physical_device&) noexcept -> physical_device& = delete;
-    physical_device(physical_device&&) noexcept                         = default;
-    auto operator=(physical_device&&) noexcept -> physical_device&      = default;
-    ~physical_device() noexcept                                         = default;
-
     [[nodiscard]] auto get() noexcept -> raw::physical_device& { return raw_; }
     [[nodiscard]] auto get() const noexcept -> raw::physical_device& { return raw_; }
 
@@ -133,15 +128,23 @@ class physical_device final {
     std::reference_wrapper<raw::physical_device> raw_;
 };
 
+class queue_family final {
+  public:
+    explicit queue_family(std::uint32_t index, raw::physical_device& physical) noexcept
+        : index_{index}, physical_{std::ref(physical)} {}
+
+    [[nodiscard]] auto index() const noexcept -> std::uint32_t { return index_; }
+
+    [[nodiscard]] auto init_physical() noexcept -> raw::physical_device& { return physical_; }
+
+  private:
+    std::uint32_t                                index_;
+    std::reference_wrapper<raw::physical_device> physical_;
+};
+
 class queue final {
   public:
     [[nodiscard]] explicit queue(raw::queue&& raw) noexcept : raw_{raw} {}  // NOLINT
-
-    queue(const queue&) noexcept                    = delete;
-    auto operator=(const queue&) noexcept -> queue& = delete;
-    queue(queue&&) noexcept                         = default;
-    auto operator=(queue&&) noexcept -> queue&      = default;
-    ~queue() noexcept                               = default;
 
     [[nodiscard]] auto get() noexcept -> raw::queue& { return raw_; }
 

@@ -13,6 +13,7 @@
 
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
+#include "hgn/queue_family.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw.hpp"
 #include "hgn/structs.hpp"
@@ -34,20 +35,14 @@ class physical_device final {
         return std::string{static_cast<const char*>(property.deviceName)};
     }
 
-    [[nodiscard]] auto get_queue_family_properties() noexcept
-        -> std::vector<queue_family_properties> {
+    [[nodiscard]] auto get_queue_families() noexcept -> std::vector<queue_family> {
         auto count = std::uint32_t{};
         vkGetPhysicalDeviceQueueFamilyProperties(&get(), &count, nullptr);
 
-        auto properties = std::vector<VkQueueFamilyProperties>(count);
-        vkGetPhysicalDeviceQueueFamilyProperties(&get(), &count, properties.data());
-
-        return properties |
-               std::views::transform(
-                   [](const VkQueueFamilyProperties& property) noexcept -> queue_family_properties {
-                       return std::bit_cast<queue_family_properties>(property);
-                   }
-               ) |
+        return std::views::indices(count) |
+               std::views::transform([this](std::uint32_t index) noexcept -> queue_family {
+                   return queue_family{index, get()};
+               }) |
                std::ranges::to<std::vector>();
     }
 
@@ -113,13 +108,13 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
-    [[nodiscard]] auto make_device(const std::uint32_t queue_family_index) noexcept
+    [[nodiscard]] auto make_device(const queue_family& family) noexcept
         -> std::expected<device, result> {
         auto           device_queue   = VkDeviceQueueCreateInfo{};
         constexpr auto priority       = 1.f;
         device_queue.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         device_queue.queueCount       = 1;
-        device_queue.queueFamilyIndex = queue_family_index;
+        device_queue.queueFamilyIndex = family.index();
         device_queue.pQueuePriorities = &priority;
 
         auto dynamic_rendering  = VkPhysicalDeviceDynamicRenderingFeatures{};

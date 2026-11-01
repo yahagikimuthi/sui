@@ -15,6 +15,7 @@
 #include "hgn/pipeline_layout.hpp"
 #include "hgn/pipeline_structs.hpp"
 #include "hgn/queue.hpp"
+#include "hgn/queue_family.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw.hpp"
 #include "hgn/shader.hpp"
@@ -32,12 +33,12 @@ class device final {
     auto operator=(device&&) noexcept -> device&      = default;
     ~device() noexcept                                = default;
 
-    [[nodiscard]] auto make_queue(const std::uint32_t queue_family_index) noexcept -> queue {
+    [[nodiscard]] auto get_queue(const queue_family& family) noexcept -> queue {
         auto* raw = static_cast<raw::queue*>(nullptr);
-        vkGetDeviceQueue(&get(), queue_family_index, 0, &raw);
+        vkGetDeviceQueue(&get(), family.index(), 0, &raw);
 
         assert(raw != nullptr);
-        return queue{*raw, queue_family_index};
+        return queue{*raw, family.index()};
     }
 
     [[nodiscard]] auto get_swapchain_builder() noexcept -> swapchain_khr_builder {
