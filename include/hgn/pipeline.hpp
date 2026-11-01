@@ -5,7 +5,7 @@
 #include <vulkan/vulkan.h>
 
 #include "hgn/raii/rendering.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 
 namespace hgn {
 class graphics_pipeline final {

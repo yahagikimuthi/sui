@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "hgn/raii/rendering.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 
 namespace hgn {
 class pipeline_layout final {

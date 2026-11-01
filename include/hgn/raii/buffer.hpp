@@ -6,7 +6,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 
 namespace hgn::raii {
 class device_memory final {

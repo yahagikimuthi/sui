@@ -8,7 +8,7 @@
 
 #include "hgn/enums.hpp"
 #include "hgn/raii/hardware.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 #include "hgn/surface.hpp"
 
 namespace hgn {

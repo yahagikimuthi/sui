@@ -11,7 +11,7 @@
 #include "hgn/image.hpp"
 #include "hgn/pipeline.hpp"
 #include "hgn/raii/command.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 
 namespace hgn {
 class image_memory_barrier_executor final {

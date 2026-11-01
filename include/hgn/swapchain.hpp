@@ -16,7 +16,7 @@
 #include "hgn/enums.hpp"
 #include "hgn/image.hpp"
 #include "hgn/raii/image.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 #include "hgn/structs.hpp"
 #include "hgn/surface.hpp"
 #include "hgn/sync.hpp"

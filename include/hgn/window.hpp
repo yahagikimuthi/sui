@@ -17,7 +17,7 @@
 #include "hgn/enums.hpp"
 #include "hgn/instance.hpp"
 #include "hgn/raii/window.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 #include "hgn/surface.hpp"
 
 namespace hgn {

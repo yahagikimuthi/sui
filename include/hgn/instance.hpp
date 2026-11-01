@@ -16,7 +16,7 @@
 #include "hgn/enums.hpp"
 #include "hgn/physical.hpp"
 #include "hgn/raii/hardware.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 
 namespace hgn {
 class physical_device;

@@ -9,7 +9,7 @@
 
 #include "hgn/enums.hpp"
 #include "hgn/raii/image.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 
 namespace hgn {
 class image final {

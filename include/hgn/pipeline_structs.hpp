@@ -11,7 +11,7 @@
 #include "hgn/enums.hpp"
 #include "hgn/pipeline.hpp"
 #include "hgn/pipeline_layout.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 #include "hgn/shader.hpp"
 
 namespace hgn {

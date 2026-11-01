@@ -11,7 +11,7 @@
 
 #include "hgn/enums.hpp"
 #include "hgn/raii/buffer.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 #include "hgn/structs.hpp"
 
 namespace hgn {

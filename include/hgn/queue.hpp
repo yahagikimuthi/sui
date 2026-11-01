@@ -12,7 +12,7 @@
 #include "hgn/command.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/raii/hardware.hpp"
-#include "hgn/raw.hpp"
+#include "hgn/raw/raw.hpp"
 #include "hgn/swapchain.hpp"
 #include "hgn/sync.hpp"
 
