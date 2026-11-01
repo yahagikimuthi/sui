@@ -5,8 +5,8 @@
 #include <ranges>
 #include <utility>
 
-#include <hgn/application.hpp>
 #include <hgn/device.hpp>
+#include <hgn/hgn.hpp>
 #include <hgn/instance.hpp>
 #include <hgn/physical.hpp>
 #include <hgn/queue.hpp>
@@ -30,17 +30,16 @@ class hardware final {
 
   public:
     [[nodiscard]] static auto make(hgn::window& win) noexcept -> std::expected<hardware, error> {
-        const auto app              = hgn::application::builder{}
-                                          .app_name("Sui")
-                                          .app_version(0, 0, 1)
-                                          .engine_name("No Engine")
-                                          .engine_version(0, 0, 1)
-                                          .build();
-        auto       instance_builder = hgn::instance::builder{}.app(app);
+        auto instance = hgn::get_instance_creator()
+                            .app_name("sui")
+                            .app_version(0, 0, 1)
+                            .engine_name("no engine")
+                            .engine_version(0, 0, 1)
 #ifndef NDEBUG
-        instance_builder.debug(true);
+                            .debug(true)
 #endif
-        auto instance = instance_builder.build();
+                            .create();
+
         if (not instance) return make_error(runtime_error, "Failed to make instance.");
 
         auto surface = win.make_surface(*instance);
