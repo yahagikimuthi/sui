@@ -109,7 +109,7 @@ class physical_device final {
         dynamic_rendering.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
         dynamic_rendering.dynamicRendering = VK_TRUE;
 
-        auto features = VkPhysicalDeviceFeatures{};
+        auto features = VkPhysicalDeviceFeatures{};  //
 
         auto info                    = VkDeviceCreateInfo{};
         info.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
