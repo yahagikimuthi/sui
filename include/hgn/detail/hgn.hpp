@@ -65,7 +65,7 @@ class instance_creator final {
         // 拡張機能のセット
         auto   count        = std::uint32_t{};
         auto** p_extensions = glfwGetRequiredInstanceExtensions(&count);
-        auto   extensions   = std::vector<const char*>();
+        auto   extensions   = std::vector<const char*>{};
         extensions.assign_range(std::span{p_extensions, count});
         if (debug_) extensions.emplace_back("VK_EXT_debug_utils");
 
