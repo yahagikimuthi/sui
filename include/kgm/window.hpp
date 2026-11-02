@@ -15,13 +15,10 @@
 #include "kgm/raii/window.hpp"
 #include "kgm/raw/raw.hpp"
 
-#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#undef GLFW_INCLUDE_VULKAN
 
 namespace kgm {
-class window_user final {};
-class window;
+class window_user;
 }  // namespace kgm
 
 namespace kgm::detail {
@@ -49,7 +46,7 @@ struct callbacks final {
 
 namespace kgm {
 class window final {
-    friend class detail::window_creator;
+    friend class window_creator;
 
   public:
     window(const window&) noexcept                    = delete;
@@ -68,7 +65,7 @@ class window final {
         return *this;
     }
 
-    ~window() noexcept { glfwSetWindowUserPointer(&get(), nullptr); }
+    ~window() noexcept = default;
 
     [[nodiscard]] auto should_close() noexcept -> bool {
         return glfwWindowShouldClose(&get()) != 0;
@@ -146,8 +143,8 @@ class window final {
         glfwSetWindowUserPointer(&get(), nullptr);
     }
 
-    raii::window               raw_;
-    detail::callbacks          callbacks_;
-    std::optional<window_user> user_;
+    raii::window                raw_;
+    detail::callbacks           callbacks_;
+    std::optional<window_user&> user_;
 };
 }  // namespace kgm

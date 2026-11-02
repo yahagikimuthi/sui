@@ -9,16 +9,10 @@
 #include "kgm/enums.hpp"
 #include "kgm/window.hpp"
 
-namespace kgm::detail {
-class window_creator;
-}  // namespace kgm::detail
-
 namespace kgm {
-[[nodiscard]] inline auto get_window_creator() noexcept -> detail::window_creator;
-}  // namespace kgm
-
-namespace kgm::detail {
 class window_creator final {
+    friend auto get_window_creator() noexcept -> window_creator;
+
   public:
     auto hint(const window_hint hint, const window_value value) noexcept -> window_creator& {
         glfwWindowHint(static_cast<std::int32_t>(hint), static_cast<std::int32_t>(value));
@@ -51,4 +45,4 @@ class window_creator final {
     std::int32_t height_{600};
     std::string  title_{"no title"};
 };
-}  // namespace kgm::detail
+}  // namespace kgm

@@ -13,7 +13,7 @@
 #include <hgn/queue_family.hpp>
 #include <hgn/surface.hpp>
 #include <hgn/sync.hpp>
-#include <hgn/window.hpp>
+#include <kgm/window.hpp>
 
 #include "sui/error.hpp"
 
@@ -25,7 +25,7 @@ class hardware final {
     };
 
   public:
-    [[nodiscard]] static auto make(hgn::window& win) noexcept -> std::expected<hardware, error> {
+    [[nodiscard]] static auto make(kgm::window& win) noexcept -> std::expected<hardware, error> {
         auto instance = hgn::get_instance_creator()
                             .app_name("sui")
                             .app_version(0, 0, 1)

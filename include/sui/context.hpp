@@ -7,6 +7,7 @@
 #include <utility>
 
 #include <hgn/enums.hpp>
+#include <kgm/window.hpp>
 
 #include "sui/command.hpp"
 #include "sui/error.hpp"
@@ -18,7 +19,7 @@
 namespace sui {
 class context final {
   public:
-    [[nodiscard]] static auto make(hgn::window& win) noexcept -> std::expected<context, error> {
+    [[nodiscard]] static auto make(kgm::window& win) noexcept -> std::expected<context, error> {
         auto hard = hardware::make(win);
         if (not hard) return make_error(runtime_error, "Failed to make hardware.", hard.error());
 

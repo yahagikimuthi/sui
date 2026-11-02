@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 
 #include "hgn/enums.hpp"

@@ -1,12 +1,17 @@
 #pragma once
 
 #include <cassert>
+#include "kgm/detail/window.hpp"
 
 #include <GLFW/glfw3.h>
 
 namespace kgm {
-[[nodiscard]] inline auto try_init() noexcept -> bool {
+[[nodiscard]] inline auto init() noexcept -> bool {
     return glfwInit() != GLFW_FALSE;
+}
+
+[[nodiscard]] inline auto get_window_creator() noexcept -> window_creator {
+    return window_creator{};
 }
 
 inline void poll_events() noexcept {

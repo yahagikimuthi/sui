@@ -4,8 +4,10 @@
 #include <span>
 #include <utility>
 
-#include <hgn/window.hpp>
+#include <kgm/kgm.hpp>
+#include <kgm/window.hpp>
 
+#include "kgm/enums.hpp"
 #include "sui/context.hpp"
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
@@ -14,10 +16,14 @@ namespace sui {
 class window final {
   public:
     [[nodiscard]] static auto make() noexcept -> std::expected<window, error> {
-        if (not hgn::window::init()) return make_error(runtime_error, "Failed to init GLFW.");
+        if (not kgm::init()) return make_error(runtime_error, "Failed to init GLFW.");
 
-        hgn::window::set_hint(hgn::window_hint::client_api, hgn::window_value::no_api);
-        auto win = hgn::window::make(800, 600, "No Title");
+        auto win = kgm::get_window_creator()
+                       .hint(kgm::window_hint::client_api, kgm::window_value::no_api)
+                       .extent(800, 600)
+                       .title("NoTitle")
+                       .create();
+
         if (not win) return make_error(runtime_error, "Failed to make window.");
 
         auto ctx = context::make(*win);
@@ -26,9 +32,9 @@ class window final {
         return window{std::move(*win), std::move(*ctx)};
     }
 
-    [[nodiscard]] auto is_open() noexcept -> bool { return win_.is_open(); }
+    [[nodiscard]] auto is_open() noexcept -> bool { return not win_.should_close(); }
 
-    void poll_events() noexcept { hgn::window::poll_events(); }  // NOLINT
+    void poll_events() noexcept { kgm::poll_events(); }  // NOLINT
 
     [[nodiscard]] auto begin_rendering() noexcept -> bool { return ctx_.begin_rendering(); }
 
@@ -37,10 +43,10 @@ class window final {
     [[nodiscard]] auto end_rendering() noexcept -> bool { return ctx_.end_rendering(); }
 
   private:
-    explicit window(hgn::window&& win, context&& ctx) noexcept
+    explicit window(kgm::window&& win, context&& ctx) noexcept
         : win_{std::move(win)}, ctx_{std::move(ctx)} {}
 
-    hgn::window win_;
+    kgm::window win_;
     context     ctx_;
 };
 }  // namespace sui
