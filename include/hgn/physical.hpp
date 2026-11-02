@@ -117,7 +117,7 @@ class physical_device final {
         auto info                  = VkDeviceCreateInfo{};
         info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         info.pNext                 = &dynamic_rendering;  // 動的レンダリング拡張の仕様
-        info.queueCreateInfoCount  = 1;                   // キュー郡の数
+        info.queueCreateInfoCount  = 1;                   // 実質キューファミリーの数
         info.pQueueCreateInfos     = &device_queue;
         info.pEnabledFeatures      = &features;
         info.enabledExtensionCount = 1;
