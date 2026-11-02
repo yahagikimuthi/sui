@@ -19,13 +19,9 @@
 
 namespace sui {
 class hardware final {
-    struct queue_family_indices final {
-        std::optional<hgn::queue_family> graphics_family;
-        std::optional<hgn::queue_family> present_family;
-
-        [[nodiscard]] auto is_complete() const noexcept -> bool {
-            return graphics_family.has_value() and present_family.has_value();
-        }
+    struct queue_families final {
+        hgn::queue_family graphics_family;
+        hgn::queue_family present_family;
     };
 
   public:
@@ -52,19 +48,19 @@ class hardware final {
         auto suitable_physicals =
             *physicals |
             std::views::filter([&surface](hgn::physical_device& physical) noexcept -> bool {
-                return find_queue_families(physical, *surface).is_complete();
+                return find_queue_families(physical, *surface).has_value();
             });
         if (suitable_physicals.empty())
             return make_error(runtime_error, "Failed to find suitable physical device.");
 
-        auto       physical = std::move(suitable_physicals.front());
-        const auto families = find_queue_families(physical, *surface);
+        auto physical = std::move(suitable_physicals.front());
+        auto families = *find_queue_families(physical, *surface);
 
-        auto device = physical.create_device(*families.graphics_family);
+        auto device = physical.create_device(families.graphics_family);
         if (not device) return make_error(runtime_error, "Failed to make device.");
 
-        auto graphics_queue = device->get_queue(*families.graphics_family);
-        auto present_queue  = device->get_queue(*families.present_family);
+        auto graphics_queue = device->get_queue(families.graphics_family);
+        auto present_queue  = device->get_queue(families.present_family);
 
         auto sem1  = device->create_semaphore();
         auto sem2  = device->create_semaphore();
@@ -78,8 +74,8 @@ class hardware final {
             std::move(*surface),
             std::move(physical),
             std::move(*device),
-            *families.graphics_family,
-            *families.present_family,
+            families.graphics_family,
+            families.present_family,
             graphics_queue,
             present_queue,
             std::move(*sem1),
@@ -129,28 +125,36 @@ class hardware final {
           render_finished_{std::move(render_finished)},
           in_flight_{std::move(in_flight)} {}
 
+    // 物理デバイスが適合するか判定するか判定し、キューファミリーを返す
     [[nodiscard]] static auto find_queue_families(
         hgn::physical_device& physical, hgn::surface_khr& surface
-    ) noexcept -> queue_family_indices {
-        auto indices = queue_family_indices{};
+    ) noexcept -> std::optional<queue_families> {
+        auto graphics_family = std::optional<hgn::queue_family>{};
+        auto present_family  = std::optional<hgn::queue_family>{};
 
-        auto queue_families = physical.get_queue_families();
-
-        for (auto& queue_family : queue_families) {
+        // 描画が可能でsurfaceをサポートする最初の物理デバイスを選択
+        for (auto& queue_family : physical.get_queue_families()) {
+            // 少なくともgraphics(描画)が可能なものを選ぶ
             if ((queue_family.flags() & hgn::queue_flag_bits::graphics) !=
                 hgn::queue_flag_bits::none) {
-                indices.graphics_family = queue_family;
+                graphics_family = queue_family;
             }
 
-            const auto supporting = queue_family.is_supporting_surface_khr(surface);
+            // surfaceをサポートするか判定
+            const auto supporting = queue_family.is_supporting_surface(surface);
             if (supporting and *supporting) {
-                indices.present_family = queue_family;
+                present_family = queue_family;
             }
 
-            if (indices.is_complete()) break;
+            if (graphics_family and present_family) {
+                return queue_families{
+                    .graphics_family = *graphics_family, .present_family = *present_family
+                };
+            }
         }
 
-        return indices;
+        // 存在しない場合はnull
+        return std::nullopt;
     }
 
     hgn::instance        instance_;
