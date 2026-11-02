@@ -45,10 +45,7 @@ class instance_creator final {
     }
 
     auto debug(const bool is_debug) noexcept -> instance_creator& {
-        if (not is_debug) return *this;
-
-        layer_ = "VK_LAYER_KHRONOS_validation";
-        extensions_.emplace_back("VK_EXT_debug_utils");
+        debug_ = is_debug;
         return *this;
     }
 
@@ -56,12 +53,24 @@ class instance_creator final {
         app_.pApplicationName = app_name_.c_str();
         app_.pEngineName      = engine_name_.c_str();
 
-        info_.pApplicationInfo    = &app_;
-        info_.enabledLayerCount   = 1;
-        info_.ppEnabledLayerNames = &layer_;
+        info_.pApplicationInfo = &app_;
 
-        info_.enabledExtensionCount   = static_cast<std::uint32_t>(extensions_.size());
-        info_.ppEnabledExtensionNames = extensions_.data();
+        // レイヤーのセット
+        constexpr auto layer = "VK_LAYER_KHRONOS_validation";
+        if (debug_) {
+            info_.enabledLayerCount   = 1;
+            info_.ppEnabledLayerNames = &layer;
+        }
+
+        // 拡張機能のセット
+        auto   count        = std::uint32_t{};
+        auto** p_extensions = glfwGetRequiredInstanceExtensions(&count);
+        auto   extensions   = std::vector<const char*>();
+        extensions.assign_range(std::span{p_extensions, count});
+        if (debug_) extensions.emplace_back("VK_EXT_debug_utils");
+
+        info_.enabledExtensionCount   = static_cast<std::uint32_t>(extensions.size());
+        info_.ppEnabledExtensionNames = extensions.data();
 
         auto*      raw = static_cast<raw::instance*>(nullptr);
         const auto res = vkCreateInstance(&info_, nullptr, &raw);
@@ -77,18 +86,12 @@ class instance_creator final {
         app_.apiVersion = VK_API_VERSION_1_3;
 
         info_.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-
-        auto   count      = std::uint32_t{};
-        auto** extensions = glfwGetRequiredInstanceExtensions(&count);
-        extensions_.reserve(count);
-        extensions_.assign_range(std::span{extensions, count});
     }
 
-    VkApplicationInfo        app_{};
-    VkInstanceCreateInfo     info_{};
-    std::string              app_name_;
-    std::string              engine_name_;
-    const char*              layer_{};
-    std::vector<const char*> extensions_;
+    VkApplicationInfo    app_{};
+    VkInstanceCreateInfo info_{};
+    std::string          app_name_;
+    std::string          engine_name_;
+    bool                 debug_{false};
 };
 }  // namespace hgn
