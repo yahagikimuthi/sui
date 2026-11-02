@@ -21,16 +21,17 @@ class queue_family_properties final {
     VkQueueFamilyProperties raw_;
 };
 
-struct extent2d final {
-    std::uint32_t width;
-    std::uint32_t height;
-};
+using extent2d = VkExtent2D;
 
 class surface_capabilities_khr final {
   public:
     [[nodiscard]] auto current_extent() const noexcept -> extent2d {
         return std::bit_cast<extent2d>(raw_.currentExtent);
     }
+
+    [[nodiscard]] auto min_image_extent() const noexcept -> extent2d { return raw_.minImageExtent; }
+
+    [[nodiscard]] auto max_image_extent() const noexcept -> extent2d { return raw_.maxImageExtent; }
 
     [[nodiscard]] auto min_image_count() const noexcept -> std::uint32_t {
         return raw_.minImageCount;

@@ -34,6 +34,7 @@ class device final {
     ~device() noexcept                                = default;
 
     [[nodiscard]] auto get_queue(const queue_family& family) noexcept -> queue {
+        // 指定されたキューファミリーの0番キューを取得する
         auto* raw = static_cast<raw::queue*>(nullptr);
         vkGetDeviceQueue(&get(), family.index(), 0, &raw);
 
@@ -41,13 +42,10 @@ class device final {
         return queue{*raw};
     }
 
-    [[nodiscard]] auto get_swapchain_creator() noexcept -> swapchain_khr_creator {
-        return swapchain_khr_creator{get()};
-    }
-
     [[nodiscard]] auto create_semaphore() noexcept -> std::expected<semaphore, result> {
         auto info  = VkSemaphoreCreateInfo{};
         info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        // 他の値であるpNextとflagsは基本的にnullptr, 0で十分
 
         auto*      raw = static_cast<raw::semaphore*>(nullptr);
         const auto res = vkCreateSemaphore(&get(), &info, nullptr, &raw);
@@ -60,6 +58,8 @@ class device final {
     [[nodiscard]] auto create_fence() noexcept -> std::expected<fence, result> {
         auto info  = VkFenceCreateInfo{};
         info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        // flagsは0の場合、初期化時にGPU処理が終了する保証がないため、最初の描画で待機する可能性がある
+        // 以下の定数を入力した場合、同期が終了した状態で生成されるため、待機することがない
         info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
         auto*      raw = static_cast<raw::fence*>(nullptr);
@@ -70,8 +70,12 @@ class device final {
         return fence{*raw, get()};
     }
 
-    [[nodiscard]] auto create_command_pool(const queue_family& family) noexcept
-        -> std::expected<command_pool, result> {
+    [[nodiscard]] auto get_swapchain_creator() noexcept -> swapchain_khr_creator {
+        return swapchain_khr_creator{get()};
+    }
+
+    [[nodiscard]] auto create_command_pool(const queue_family& family
+    ) noexcept -> std::expected<command_pool, result> {
         auto info             = VkCommandPoolCreateInfo{};
         info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -89,8 +93,8 @@ class device final {
         return image_view_creator{get()};
     }
 
-    [[nodiscard]] auto create_buffer(const std::uint64_t size) noexcept
-        -> std::expected<buffer, result> {
+    [[nodiscard]] auto create_buffer(const std::uint64_t size
+    ) noexcept -> std::expected<buffer, result> {
         auto info        = VkBufferCreateInfo{};
         info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -122,8 +126,8 @@ class device final {
         return device_memory{*raw, get()};
     }
 
-    [[nodiscard]] auto create_shader(const std::span<const char> codes) noexcept
-        -> std::expected<shader_module, result> {
+    [[nodiscard]] auto create_shader(const std::span<const char> codes
+    ) noexcept -> std::expected<shader_module, result> {
         auto info     = VkShaderModuleCreateInfo{};
         info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         info.codeSize = codes.size();
