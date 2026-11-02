@@ -23,7 +23,7 @@ class queue_family final {
         return static_cast<queue_flag_bits>(out);
     }
 
-    [[nodiscard]] auto is_supporting_surface_khr(surface_khr& surface) noexcept
+    [[nodiscard]] auto is_supporting_surface(surface_khr& surface) noexcept
         -> std::expected<bool, result> {
         auto       supporting = VkBool32{};
         const auto res        = vkGetPhysicalDeviceSurfaceSupportKHR(

@@ -23,15 +23,15 @@ class image final {
         auto& physical = hard.physical();
         auto& surface  = hard.surface();
 
-        const auto capabilities = physical.get_surface_capabilities_khr(surface);
+        const auto capabilities = physical.get_surface_capabilities(surface);
         if (not capabilities)
             return make_error(runtime_error, "Failed to get surface capabilities.");
 
-        const auto formats = physical.get_surface_formats_khr(surface);
+        const auto formats = physical.get_surface_formats(surface);
         if (not formats or formats->empty())
             return make_error(runtime_error, "Failed to get surface formats.");
 
-        const auto present_modes = physical.get_surface_present_modes_khr(surface);
+        const auto present_modes = physical.get_surface_present_modes(surface);
         if (not present_modes)
             return make_error(runtime_error, "Failed to get surface present modes.");
 
@@ -81,7 +81,7 @@ class image final {
         auto swapchain = creator.create();
         if (not swapchain) return make_error(runtime_error, "Failed to make swapchain.");
 
-        auto images = swapchain->get_images_khr();
+        auto images = swapchain->get_images();
         if (not images) return make_error(runtime_error, "Failed to get images.");
 
         auto views = std::vector<hgn::image_view>{};

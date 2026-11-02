@@ -46,19 +46,7 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
-    [[nodiscard]] auto is_supporting_surface_khr(
-        const std::uint32_t queue_family_index, surface_khr& surface
-    ) noexcept -> std::expected<bool, result> {
-        auto       supported = VkBool32{};
-        const auto res       = vkGetPhysicalDeviceSurfaceSupportKHR(
-            &get(), queue_family_index, &surface.get(), &supported
-        );
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        return supported != VK_FALSE;
-    }
-
-    [[nodiscard]] auto get_surface_capabilities_khr(surface_khr& surface) noexcept
+    [[nodiscard]] auto get_surface_capabilities(surface_khr& surface) noexcept
         -> std::expected<surface_capabilities_khr, result> {
         auto       capabilities = VkSurfaceCapabilitiesKHR{};  // NOLINT
         const auto res =
@@ -68,7 +56,7 @@ class physical_device final {
         return std::bit_cast<surface_capabilities_khr>(capabilities);
     }
 
-    [[nodiscard]] auto get_surface_formats_khr(surface_khr& surface) noexcept
+    [[nodiscard]] auto get_surface_formats(surface_khr& surface) noexcept
         -> std::expected<std::vector<surface_format_khr>, result> {
         auto       count = std::uint32_t{};
         const auto res1 =
@@ -89,7 +77,7 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
-    [[nodiscard]] auto get_surface_present_modes_khr(surface_khr& surface) noexcept
+    [[nodiscard]] auto get_surface_present_modes(surface_khr& surface) noexcept
         -> std::expected<std::vector<present_mode_khr>, result> {
         auto       count = std::uint32_t{};
         const auto res1 =
