@@ -67,21 +67,21 @@ class present_executor final {
     std::reference_wrapper<raw::queue> queue_;
 };
 
-class submit_executor final {
+class submitter final {
     friend class queue;
 
   public:
-    auto command_buffer(command_buffer& buffer) noexcept -> submit_executor& {
+    auto command_buffer(command_buffer& buffer) noexcept -> submitter& {
         cmd_buffer_ = buffer.get();
         return *this;
     }
 
-    auto wait_semaphore(semaphore& wait) noexcept -> submit_executor& {
+    auto wait_semaphore(semaphore& wait) noexcept -> submitter& {
         wait_ = wait.get();
         return *this;
     }
 
-    auto signal_semaphore(semaphore& signal) noexcept -> submit_executor& {
+    auto signal_semaphore(semaphore& signal) noexcept -> submitter& {
         signal_ = signal.get();
         return *this;
     }
@@ -116,7 +116,7 @@ class submit_executor final {
     }
 
   private:
-    explicit submit_executor(raw::queue& queue) noexcept : queue_{std::ref(queue)} {
+    explicit submitter(raw::queue& queue) noexcept : queue_{std::ref(queue)} {
         info_.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     }
 
@@ -131,23 +131,17 @@ class queue final {
     friend class device;
 
   public:
-    [[nodiscard]] auto queue_family_index() const noexcept -> std::uint32_t { return index_; }
-
     [[nodiscard]] auto get_present_executor() noexcept -> present_executor {
         return present_executor{get()};
     }
 
-    [[nodiscard]] auto get_submit_executor() noexcept -> submit_executor {
-        return submit_executor{get()};
-    }
+    [[nodiscard]] auto get_submitter() noexcept -> submitter { return submitter{get()}; }
 
     [[nodiscard]] auto get() noexcept -> raw::queue& { return raw_; }
 
   private:
-    explicit queue(raw::queue& raw, const std::uint32_t queue_family_index) noexcept
-        : raw_{std::move(raw)}, index_{queue_family_index} {}
+    explicit queue(raw::queue& raw) noexcept : raw_{std::move(raw)} {}
 
-    raii::queue   raw_;
-    std::uint32_t index_;
+    raii::queue raw_;
 };
 }  // namespace hgn

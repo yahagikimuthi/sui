@@ -13,10 +13,10 @@ class command final {
   public:
     [[nodiscard]] static auto make(hardware& hard) noexcept -> std::expected<command, error> {
         auto& dev  = hard.device();
-        auto  pool = dev.make_command_pool(hard.graphics_queue().queue_family_index());
+        auto  pool = dev.create_command_pool(hard.graphics_family());
         if (not pool) return make_error(runtime_error, "Failed to make command pool.");
 
-        auto buffer = pool->allocate_buffer();
+        auto buffer = pool->create_buffer();
         if (not buffer) return make_error(runtime_error, "Failed to allocate command buffer.");
 
         return command{std::move(*pool), std::move(*buffer)};

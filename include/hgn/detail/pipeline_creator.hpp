@@ -9,34 +9,32 @@
 #include <vulkan/vulkan.h>
 
 #include "hgn/enums.hpp"
-#include "hgn/pipeline.hpp"
-#include "hgn/pipeline_layout.hpp"
 #include "hgn/raw/raw.hpp"
-#include "hgn/shader.hpp"
+#include "hgn/rendering.hpp"
 
 namespace hgn {
-class graphics_pipeline_builder final {
+class graphics_pipeline_creator final {
     friend class device;
 
   public:
-    auto vertex_binding(const std::uint32_t stride) noexcept -> graphics_pipeline_builder& {
+    auto vertex_binding(const std::uint32_t stride) noexcept -> graphics_pipeline_creator& {
         vertex_binding_.stride = stride;
         return *this;
     }
 
     auto vertex_offsets(const std::uint32_t pos0, const std::uint32_t pos1) noexcept
-        -> graphics_pipeline_builder& {
+        -> graphics_pipeline_creator& {
         vertex_attributes_[0].offset = pos0;
         vertex_attributes_[1].offset = pos1;
         return *this;
     }
 
-    auto color_attachment(const format fmt) noexcept -> graphics_pipeline_builder& {
+    auto color_attachment(const format fmt) noexcept -> graphics_pipeline_creator& {
         color_attachment_ = static_cast<VkFormat>(fmt);
         return *this;
     }
 
-    auto shaders(shader_module& vert, shader_module& frag) noexcept -> graphics_pipeline_builder& {
+    auto shaders(shader_module& vert, shader_module& frag) noexcept -> graphics_pipeline_creator& {
         shaders_[0].stage  = VK_SHADER_STAGE_VERTEX_BIT;
         shaders_[0].module = &vert.get();
 
@@ -45,12 +43,12 @@ class graphics_pipeline_builder final {
         return *this;
     }
 
-    auto layout(pipeline_layout& layout) noexcept -> graphics_pipeline_builder& {
+    auto layout(pipeline_layout& layout) noexcept -> graphics_pipeline_creator& {
         info_.layout = &layout.get();
         return *this;
     }
 
-    [[nodiscard]] auto build() noexcept -> std::expected<graphics_pipeline, result> {
+    [[nodiscard]] auto create() noexcept -> std::expected<graphics_pipeline, result> {
         vertex_state_.vertexBindingDescriptionCount   = 1;
         vertex_state_.pVertexBindingDescriptions      = &vertex_binding_;
         vertex_state_.vertexAttributeDescriptionCount = 2;
@@ -85,7 +83,7 @@ class graphics_pipeline_builder final {
     }
 
   private:
-    explicit graphics_pipeline_builder(raw::device& dev) noexcept : dev_{std::ref(dev)} {
+    explicit graphics_pipeline_creator(raw::device& dev) noexcept : dev_{std::ref(dev)} {
         info_.sType      = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         info_.renderPass = nullptr;
         info_.subpass    = 0;

@@ -93,8 +93,7 @@ class context final {
     void render(const std::span<const vertex> vertices) noexcept {
         render_.update(vertices);
         cmd_.buffer().bind(render_.buffer());
-        const auto vertex_count = static_cast<std::uint32_t>(vertices.size());
-        cmd_.buffer().draw(vertex_count, 1);
+        cmd_.buffer().draw(static_cast<std::uint32_t>(vertices.size()), 1);
     }
 
     [[nodiscard]] auto end_rendering() noexcept -> bool {
@@ -104,10 +103,11 @@ class context final {
             .layout(hgn::image_layout::color_attachment_optimal, hgn::image_layout::present_src_khr)
             .image(image_.get_image(image_index_))
             .execute();
+
         if (not cmd_.buffer().end()) return false;
 
         if (not hard_.graphics_queue()
-                    .get_submit_executor()
+                    .get_submitter()
                     .command_buffer(cmd_.buffer())
                     .wait_semaphore(hard_.image_available_semaphore())
                     .signal_semaphore(hard_.render_finished_semaphore())

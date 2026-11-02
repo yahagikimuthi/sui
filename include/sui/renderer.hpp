@@ -13,10 +13,7 @@
 #include <hgn/buffer.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/physical.hpp>
-#include <hgn/pipeline.hpp>
-#include <hgn/pipeline_layout.hpp>
-#include <hgn/pipeline_structs.hpp>
-#include <hgn/shader.hpp>
+#include <hgn/rendering.hpp>
 
 #include "sui/error.hpp"
 #include "sui/hardware.hpp"
@@ -32,7 +29,7 @@ class renderer final {
     [[nodiscard]] static auto make(hardware& hard, const hgn::format fmt) noexcept
         -> std::expected<renderer, error> {
         auto& dev    = hard.device();
-        auto  buffer = dev.make_buffer(max_buffer_size);
+        auto  buffer = dev.create_buffer(max_buffer_size);
         if (not buffer) return make_error(runtime_error, "Failed to make buffer.");
 
         const auto mem_requirements = buffer->get_memory_requirements();
@@ -43,7 +40,7 @@ class renderer final {
         );
         if (not memory_type) return make_error(runtime_error, "Failed to find memory type.");
 
-        auto memory = dev.allocate_memory(mem_requirements.size(), *memory_type);
+        auto memory = dev.create_memory(mem_requirements.size(), *memory_type);
         if (not memory) return make_error(runtime_error, "Failed to allocate memory");
 
         if (not memory->bind_buffer(*buffer))
@@ -54,24 +51,24 @@ class renderer final {
 
         auto vert_source = read_file("../include/sui/vert.spv");
         if (not vert_source) return make_error(logic_error, "Failed to read vertex source file.");
-        auto vert = dev.make_shader(*vert_source);
+        auto vert = dev.create_shader(*vert_source);
         if (not vert) return make_error(runtime_error, "Failed to make vertex shader module.");
 
         auto frag_source = read_file("../include/sui/frag.spv");
         if (not frag_source) return make_error(logic_error, "Failed to read fragment source file.");
-        auto frag = dev.make_shader(*frag_source);
+        auto frag = dev.create_shader(*frag_source);
         if (not frag) return make_error(runtime_error, "Failed to make fragment shader module.");
 
-        auto layout = dev.get_pipeline_layout();
+        auto layout = dev.create_pipeline_layout();
         if (not layout) return make_error(runtime_error, "Failed to get pipeline layout");
 
-        auto pipe = dev.get_graphics_pipeline_builder()
+        auto pipe = dev.get_graphics_pipeline_creator()
                         .vertex_binding(sizeof(vertex))
                         .vertex_offsets(offsetof(vertex, position), offsetof(vertex, color))
                         .color_attachment(fmt)
                         .layout(*layout)
                         .shaders(*vert, *frag)
-                        .build();
+                        .create();
 
         if (not pipe) return make_error(runtime_error, "Failed to graphics make pipeline.");
 

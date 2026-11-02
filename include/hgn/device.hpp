@@ -10,15 +10,15 @@
 
 #include "hgn/buffer.hpp"
 #include "hgn/command.hpp"
+#include "hgn/detail/device.hpp"
+#include "hgn/detail/pipeline_creator.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/image.hpp"
-#include "hgn/pipeline_layout.hpp"
-#include "hgn/pipeline_structs.hpp"
 #include "hgn/queue.hpp"
 #include "hgn/queue_family.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw/raw.hpp"
-#include "hgn/shader.hpp"
+#include "hgn/rendering.hpp"
 #include "hgn/swapchain.hpp"
 #include "hgn/sync.hpp"
 
@@ -38,14 +38,14 @@ class device final {
         vkGetDeviceQueue(&get(), family.index(), 0, &raw);
 
         assert(raw != nullptr);
-        return queue{*raw, family.index()};
+        return queue{*raw};
     }
 
-    [[nodiscard]] auto get_swapchain_builder() noexcept -> swapchain_khr_builder {
-        return swapchain_khr_builder{get()};
+    [[nodiscard]] auto get_swapchain_creator() noexcept -> swapchain_khr_creator {
+        return swapchain_khr_creator{get()};
     }
 
-    [[nodiscard]] auto make_semaphore() noexcept -> std::expected<semaphore, result> {
+    [[nodiscard]] auto create_semaphore() noexcept -> std::expected<semaphore, result> {
         auto info  = VkSemaphoreCreateInfo{};
         info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -57,7 +57,7 @@ class device final {
         return semaphore{*raw, get()};
     }
 
-    [[nodiscard]] auto make_fence() noexcept -> std::expected<fence, result> {
+    [[nodiscard]] auto create_fence() noexcept -> std::expected<fence, result> {
         auto info  = VkFenceCreateInfo{};
         info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -70,12 +70,12 @@ class device final {
         return fence{*raw, get()};
     }
 
-    [[nodiscard]] auto make_command_pool(const std::uint32_t queue_family_index) noexcept
+    [[nodiscard]] auto create_command_pool(const queue_family& family) noexcept
         -> std::expected<command_pool, result> {
         auto info             = VkCommandPoolCreateInfo{};
         info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        info.queueFamilyIndex = queue_family_index;
+        info.queueFamilyIndex = family.index();
 
         auto*      raw = static_cast<raw::command_pool*>(nullptr);
         const auto res = vkCreateCommandPool(&get(), &info, nullptr, &raw);
@@ -85,11 +85,11 @@ class device final {
         return command_pool{*raw, get()};
     }
 
-    [[nodiscard]] auto get_image_view_builder() noexcept -> image_view_builder {
-        return image_view_builder{get()};
+    [[nodiscard]] auto get_image_view_creator() noexcept -> image_view_creator {
+        return image_view_creator{get()};
     }
 
-    [[nodiscard]] auto make_buffer(const std::uint32_t size) noexcept
+    [[nodiscard]] auto create_buffer(const std::uint64_t size) noexcept
         -> std::expected<buffer, result> {
         auto info        = VkBufferCreateInfo{};
         info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -106,7 +106,7 @@ class device final {
         return buffer{*raw, get()};
     }
 
-    [[nodiscard]] auto allocate_memory(
+    [[nodiscard]] auto create_memory(
         const std::uint64_t allocation_size, const std::uint32_t memory_type_index
     ) noexcept -> std::expected<device_memory, result> {
         auto info            = VkMemoryAllocateInfo{};
@@ -122,7 +122,7 @@ class device final {
         return device_memory{*raw, get()};
     }
 
-    [[nodiscard]] auto make_shader(const std::span<const char> codes) noexcept
+    [[nodiscard]] auto create_shader(const std::span<const char> codes) noexcept
         -> std::expected<shader_module, result> {
         auto info     = VkShaderModuleCreateInfo{};
         info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -139,7 +139,7 @@ class device final {
         return shader_module{*raw, get()};
     }
 
-    [[nodiscard]] auto get_pipeline_layout() noexcept -> std::expected<pipeline_layout, result> {
+    [[nodiscard]] auto create_pipeline_layout() noexcept -> std::expected<pipeline_layout, result> {
         auto info                   = VkPipelineLayoutCreateInfo{};
         info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         info.setLayoutCount         = 0;
@@ -153,8 +153,8 @@ class device final {
         return pipeline_layout{*raw, get()};
     }
 
-    [[nodiscard]] auto get_graphics_pipeline_builder() noexcept -> graphics_pipeline_builder {
-        return graphics_pipeline_builder{get()};
+    [[nodiscard]] auto get_graphics_pipeline_creator() noexcept -> graphics_pipeline_creator {
+        return graphics_pipeline_creator{get()};
     }
 
     [[nodiscard]] auto wait_idle() noexcept -> std::expected<void, result> {

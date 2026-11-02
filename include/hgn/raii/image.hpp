@@ -53,12 +53,6 @@ class image final {
   public:
     [[nodiscard]] explicit image(raw::image&& raw) noexcept : raw_{raw} {}  // NOLINT
 
-    image(const image&) noexcept                    = delete;
-    auto operator=(const image&) noexcept -> image& = delete;
-    image(image&&) noexcept                         = default;
-    auto operator=(image&&) noexcept -> image&      = default;
-    ~image() noexcept                               = default;
-
     [[nodiscard]] auto get() noexcept -> raw::image& { return raw_; }
 
     [[nodiscard]] operator raw::image&() noexcept { return get(); }

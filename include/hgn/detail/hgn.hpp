@@ -15,18 +15,10 @@
 #include "hgn/instance.hpp"
 #include "hgn/raw/raw.hpp"
 
-namespace hgn::detail {
-class instance_creator;
-}  // namespace hgn::detail
-
 namespace hgn {
-inline auto get_instance_creator() noexcept -> detail::instance_creator;
-}  // namespace hgn
-
-namespace hgn::detail {
 class instance_creator final {
   public:
-    friend auto hgn::get_instance_creator() noexcept -> instance_creator;
+    friend auto get_instance_creator() noexcept -> instance_creator;
 
     auto app_name(const std::string_view name) noexcept -> instance_creator& {
         app_name_ = name;
@@ -99,4 +91,4 @@ class instance_creator final {
     const char*              layer_{};
     std::vector<const char*> extensions_;
 };
-}  // namespace hgn::detail
+}  // namespace hgn

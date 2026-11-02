@@ -15,13 +15,9 @@
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw/raw.hpp"
 
-namespace hgn::detail {
-class instance_creator;
-}  // namespace hgn::detail
-
 namespace hgn {
 class instance final {
-    friend class detail::instance_creator;
+    friend class instance_creator;
 
   public:
     instance(const instance&) noexcept                    = delete;

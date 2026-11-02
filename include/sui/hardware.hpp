@@ -42,7 +42,7 @@ class hardware final {
 
         if (not instance) return make_error(runtime_error, "Failed to make instance.");
 
-        auto surface = win.make_surface(*instance);
+        auto surface = win.create_surface(*instance);
         if (not surface) return make_error(runtime_error, "Failed to make surface.");
 
         auto physicals = instance->get_physicals();
@@ -58,17 +58,17 @@ class hardware final {
             return make_error(runtime_error, "Failed to find suitable physical device.");
 
         auto       physical = std::move(suitable_physicals.front());
-        const auto indices  = find_queue_families(physical, *surface);
+        const auto families = find_queue_families(physical, *surface);
 
-        auto device = physical.make_device(*indices.graphics_family);
+        auto device = physical.create_device(*families.graphics_family);
         if (not device) return make_error(runtime_error, "Failed to make device.");
 
-        auto graphics_queue = device->get_queue(*indices.graphics_family);
-        auto present_queue  = device->get_queue(*indices.present_family);
+        auto graphics_queue = device->get_queue(*families.graphics_family);
+        auto present_queue  = device->get_queue(*families.present_family);
 
-        auto sem1  = device->make_semaphore();
-        auto sem2  = device->make_semaphore();
-        auto fence = device->make_fence();
+        auto sem1  = device->create_semaphore();
+        auto sem2  = device->create_semaphore();
+        auto fence = device->create_fence();
 
         if (not sem1 or not sem2) return make_error(runtime_error, "Failed to make semaphore.");
         if (not fence) return make_error(runtime_error, "Failed to make fence.");
@@ -78,6 +78,8 @@ class hardware final {
             std::move(*surface),
             std::move(physical),
             std::move(*device),
+            *families.graphics_family,
+            *families.present_family,
             graphics_queue,
             present_queue,
             std::move(*sem1),
@@ -89,6 +91,8 @@ class hardware final {
     [[nodiscard]] auto surface() noexcept -> hgn::surface_khr& { return surface_; }
     [[nodiscard]] auto physical() noexcept -> hgn::physical_device& { return physical_; }
     [[nodiscard]] auto device() noexcept -> hgn::device& { return device_; }
+    [[nodiscard]] auto graphics_family() noexcept -> hgn::queue_family& { return graphics_family_; }
+    [[nodiscard]] auto present_family() noexcept -> hgn::queue_family& { return present_family_; }
     [[nodiscard]] auto graphics_queue() noexcept -> hgn::queue& { return graphics_queue_; }
     [[nodiscard]] auto present_queue() noexcept -> hgn::queue& { return present_queue_; }
     [[nodiscard]] auto image_available_semaphore() noexcept -> hgn::semaphore& {
@@ -105,6 +109,8 @@ class hardware final {
         hgn::surface_khr&&   surface,
         hgn::physical_device physical,
         hgn::device&&        device,
+        hgn::queue_family    graphics_family,
+        hgn::queue_family    present_family,
         hgn::queue           graphics,
         hgn::queue           present,
         hgn::semaphore&&     image_available,
@@ -115,6 +121,8 @@ class hardware final {
           surface_{std::move(surface)},
           physical_{std::move(physical)},
           device_{std::move(device)},
+          graphics_family_{graphics_family},
+          present_family_{present_family},
           graphics_queue_{graphics},
           present_queue_{present},
           image_available_{std::move(image_available)},
@@ -149,6 +157,8 @@ class hardware final {
     hgn::surface_khr     surface_;
     hgn::physical_device physical_;
     hgn::device          device_;
+    hgn::queue_family    graphics_family_;
+    hgn::queue_family    present_family_;
     hgn::queue           graphics_queue_;
     hgn::queue           present_queue_;
     hgn::semaphore       image_available_;

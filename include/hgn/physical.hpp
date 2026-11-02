@@ -108,7 +108,7 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
-    [[nodiscard]] auto make_device(const queue_family& family) noexcept
+    [[nodiscard]] auto create_device(const queue_family& family) noexcept
         -> std::expected<device, result> {
         auto           device_queue   = VkDeviceQueueCreateInfo{};
         constexpr auto priority       = 1.f;

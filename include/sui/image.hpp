@@ -62,12 +62,10 @@ class image final {
             image_count = capabilities->max_image_count();
         }
 
-        const auto indices = std::array{
-            hard.graphics_queue().queue_family_index(), hard.present_queue().queue_family_index()
-        };
-        const bool is_duplicate = indices[0] == indices[1];
-        auto       builder      = hard.device()
-                                      .get_swapchain_builder()
+        const auto families     = std::array{hard.graphics_family(), hard.present_family()};
+        const bool is_duplicate = families[0] == families[1];
+        auto       creator      = hard.device()
+                                      .get_swapchain_creator()
                                       .surface(surface)
                                       .min_image_count(image_count)
                                       .image_format(surface_format.format())
@@ -76,25 +74,25 @@ class image final {
                                       .pre_transform(capabilities->current_transform())
                                       .present_mode(present_mode);
         if (is_duplicate) {
-            builder.image_sharing_mode(hgn::sharing_mode::exclusive);
+            creator.image_sharing_mode(hgn::sharing_mode::exclusive);
         } else {
-            builder.image_sharing_mode(hgn::sharing_mode::concurrent).queue_family_indices(indices);
+            creator.image_sharing_mode(hgn::sharing_mode::concurrent).queue_families(families);
         }
-        auto swapchain = builder.build();
+        auto swapchain = creator.create();
         if (not swapchain) return make_error(runtime_error, "Failed to make swapchain.");
 
-        auto images = swapchain->make_images_khr();
+        auto images = swapchain->get_images_khr();
         if (not images) return make_error(runtime_error, "Failed to get images.");
 
         auto views = std::vector<hgn::image_view>{};
         views.reserve(images->size());
 
-        for (const auto i : std::views::indices(images->size())) {
+        for (auto& image : *images) {
             auto view = hard.device()
-                            .get_image_view_builder()
-                            .image((*images)[i])
+                            .get_image_view_creator()
+                            .image(image)
                             .format(swapchain->image_format())
-                            .build();
+                            .create();
             if (not view) return make_error(runtime_error, "Failed to make image view.");
 
             views.emplace_back(std::move(*view));

@@ -55,7 +55,7 @@ class window final {
 
     [[nodiscard]] auto is_open() noexcept -> bool { return glfwWindowShouldClose(&get()) == 0; }
 
-    [[nodiscard]] auto make_surface(instance& instance_ref) noexcept
+    [[nodiscard]] auto create_surface(instance& instance_ref) noexcept
         -> std::expected<surface_khr, result> {
         auto*      raw = static_cast<raw::surface_khr*>(nullptr);
         const auto res = glfwCreateWindowSurface(&instance_ref.get(), &get(), nullptr, &raw);
