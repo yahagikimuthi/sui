@@ -46,8 +46,8 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
-    [[nodiscard]] auto get_surface_capabilities(surface_khr& surface) noexcept
-        -> std::expected<surface_capabilities_khr, result> {
+    [[nodiscard]] auto get_surface_capabilities(surface_khr& surface
+    ) noexcept -> std::expected<surface_capabilities_khr, result> {
         auto       capabilities = VkSurfaceCapabilitiesKHR{};  // NOLINT
         const auto res =
             vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&get(), &surface.get(), &capabilities);
@@ -56,8 +56,8 @@ class physical_device final {
         return std::bit_cast<surface_capabilities_khr>(capabilities);
     }
 
-    [[nodiscard]] auto get_surface_formats(surface_khr& surface) noexcept
-        -> std::expected<std::vector<surface_format_khr>, result> {
+    [[nodiscard]] auto get_surface_formats(surface_khr& surface
+    ) noexcept -> std::expected<std::vector<surface_format_khr>, result> {
         auto       count = std::uint32_t{};
         const auto res1 =
             vkGetPhysicalDeviceSurfaceFormatsKHR(&get(), &surface.get(), &count, nullptr);
@@ -77,8 +77,8 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
-    [[nodiscard]] auto get_surface_present_modes(surface_khr& surface) noexcept
-        -> std::expected<std::vector<present_mode_khr>, result> {
+    [[nodiscard]] auto get_surface_present_modes(surface_khr& surface
+    ) noexcept -> std::expected<std::vector<present_mode_khr>, result> {
         auto       count = std::uint32_t{};
         const auto res1 =
             vkGetPhysicalDeviceSurfacePresentModesKHR(&get(), &surface.get(), &count, nullptr);
@@ -96,28 +96,33 @@ class physical_device final {
                std::ranges::to<std::vector>();
     }
 
-    [[nodiscard]] auto create_device(const queue_family& family) noexcept
-        -> std::expected<device, result> {
+    [[nodiscard]] auto create_device(const queue_family& family
+    ) noexcept -> std::expected<device, result> {
         auto           device_queue   = VkDeviceQueueCreateInfo{};
         constexpr auto priority       = 1.f;
         device_queue.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        device_queue.queueCount       = 1;
         device_queue.queueFamilyIndex = family.index();
+
+        device_queue.queueCount = 1;  // キューファミリーから生成するキューの数
+        // 優先順位(2つ作る場合はstd::array{1.f, 0.5f}.data()などを期待)
         device_queue.pQueuePriorities = &priority;
 
         auto dynamic_rendering  = VkPhysicalDeviceDynamicRenderingFeatures{};
         dynamic_rendering.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
-        dynamic_rendering.dynamicRendering = VK_TRUE;
+        dynamic_rendering.dynamicRendering = VK_TRUE;  // 使用する
 
-        auto features = VkPhysicalDeviceFeatures{};  //
+        auto features =
+            VkPhysicalDeviceFeatures{};  // 物理デバイス機能(ゼロ初期化では何も指定しない)
 
-        auto info                    = VkDeviceCreateInfo{};
-        info.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        info.pNext                   = &dynamic_rendering;
-        info.queueCreateInfoCount    = 1;
-        info.pQueueCreateInfos       = &device_queue;
-        info.pEnabledFeatures        = &features;
-        info.enabledExtensionCount   = 1;
+        auto info                  = VkDeviceCreateInfo{};
+        info.sType                 = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        info.pNext                 = &dynamic_rendering;  // 動的レンダリング拡張の仕様
+        info.queueCreateInfoCount  = 1;                   // キュー郡の数
+        info.pQueueCreateInfos     = &device_queue;
+        info.pEnabledFeatures      = &features;
+        info.enabledExtensionCount = 1;
+
+        // 拡張機能名
         constexpr auto* extension    = "VK_KHR_swapchain";
         info.ppEnabledExtensionNames = &extension;
 
