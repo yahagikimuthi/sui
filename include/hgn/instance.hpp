@@ -26,6 +26,7 @@ class instance final {
     auto operator=(instance&&) noexcept -> instance&      = default;
     ~instance() noexcept                                  = default;
 
+    // 物理デバイスの列挙
     [[nodiscard]] auto get_physicals() noexcept
         -> std::expected<std::vector<physical_device>, result> {
         auto count = std::uint32_t{};
