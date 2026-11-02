@@ -77,9 +77,14 @@ class device final {
 
     [[nodiscard]] auto create_command_pool(const queue_family& family
     ) noexcept -> std::expected<command_pool, result> {
-        auto info             = VkCommandPoolCreateInfo{};
-        info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        auto info  = VkCommandPoolCreateInfo{};
+        info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+
+        // この定数はプールを再利用することを示す
+        // 再利用しない場合はTRANSIENT_BITを指定する
+        // 他にも、PROTECTED_BITは著作権保護コンテンツなど保護メモリを扱う場合に指定する
+        info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
         info.queueFamilyIndex = family.index();
 
         auto*      raw = static_cast<raw::command_pool*>(nullptr);
