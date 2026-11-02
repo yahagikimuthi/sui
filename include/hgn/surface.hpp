@@ -7,9 +7,14 @@
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw/raw.hpp"
 
+namespace kgm {
+class window;
+}  // namespace kgm
+
 namespace hgn {
 class surface_khr final {
     friend class window;
+    friend class kgm::window;
 
   public:
     surface_khr(const surface_khr&) noexcept                    = delete;

@@ -22,6 +22,10 @@
 
 namespace hgn {
 
+[[nodiscard]] inline auto init() noexcept -> bool {
+    return glfwInit() != GLFW_FALSE;
+}
+
 enum class window_hint : std::int32_t { client_api = GLFW_CLIENT_API };
 enum class window_value : std::uint8_t { no_api = GLFW_NO_API };
 

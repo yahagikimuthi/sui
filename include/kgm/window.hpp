@@ -1,86 +1,102 @@
 #pragma once
 
 #include <cassert>
-#include <cstdint>
 #include <expected>
-#include <functional>
 #include <optional>
-#include <string>
-#include <string_view>
 #include <type_traits>
 #include <utility>
 
 #include <vulkan/vulkan.h>
+#include <hgn/enums.hpp>
 #include <hgn/instance.hpp>
+#include <hgn/raw/raw.hpp>
 #include <hgn/surface.hpp>
+
+#include "kgm/enums.hpp"
+#include "kgm/raii/window.hpp"
+#include "kgm/raw/raw.hpp"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #undef GLFW_INCLUDE_VULKAN
 
+namespace kgm::detail {
+class window_creator;
+}  // namespace kgm::detail
+
+class window_user final {};
+
 namespace kgm {
-enum class window_hint : std::int32_t { client_api = GLFW_CLIENT_API };
+class window final {
+    friend class detail::window_creator;
 
-enum class window_value : std::int32_t { no_api = GLFW_NO_API };  // NOLINT
+  public:
+    window(const window&) noexcept                    = delete;
+    auto operator=(const window&) noexcept -> window& = delete;
 
-inline void set_window_hint(const window_hint hint, const window_value value) noexcept {
-    glfwWindowHint(std::to_underlying(hint), std::to_underlying(value));
-}
+    window(window&& other) noexcept : raw_{std::move(other.raw_)} {
+        glfwSetWindowUserPointer(&get(), this);
+    }
 
-inline void set_default_window_hints() noexcept {
-    glfwDefaultWindowHints();
-}
+    auto operator=(window&& other) noexcept -> window& {
+        if (this == &other) return *this;
 
-using window = GLFWwindow;
+        raw_ = std::move(other.raw_);
 
-inline void destroy_window(window& target) noexcept {
-    glfwDestroyWindow(&target);
-}
+        glfwSetWindowUserPointer(&get(), this);
+        return *this;
+    }
 
-[[nodiscard]] inline auto try_make_window(
-    const std::uint32_t width, const std::uint32_t height, const std::string_view title
-) noexcept -> std::optional<window&> {
-    auto* ptr = glfwCreateWindow(
-        static_cast<std::int32_t>(width),
-        static_cast<std::int32_t>(height),
-        std::string{title}.c_str(),
-        nullptr,
-        nullptr
-    );
-    if (ptr == nullptr) return std::nullopt;
-    return *ptr;
-}
+    ~window() noexcept { glfwSetWindowUserPointer(&get(), nullptr); }
 
-[[nodiscard]] inline auto should_window_close(window& win) noexcept -> bool {
-    return glfwWindowShouldClose(&win) != 0;
-}
+    [[nodiscard]] auto should_close() noexcept -> bool {
+        return glfwWindowShouldClose(&get()) != 0;
+    }
 
-template <typename T>
-    requires std::is_class_v<T>
-inline void set_window_user(window& win, T& user) noexcept {
-    glfwSetWindowUserPointer(&win, &user);
-}
+    static void set_user(window_user& user) noexcept { user_ = user; }
 
-inline void reset_window_user(window& win) noexcept {
-    glfwSetWindowUserPointer(&win, nullptr);
-}
+    static void reset_user() noexcept { user_.reset(); }
 
-template <typename T>
-    requires std::is_class_v<std::remove_const_t<T>>
-[[nodiscard]] inline auto try_get_window_user(window& win) noexcept -> std::optional<T&> {
-    auto* user = static_cast<T*>(glfwGetWindowUserPointer(&win));
-    if (user == nullptr) return std::nullopt;
-    return *user;
-}
+    [[nodiscard]] static auto get_user() noexcept -> std::optional<window_user&> { return user_; }
 
-[[nodiscard]] inline auto try_make_window_surface(hgn::instance& instance_ref, window& win) noexcept
-    -> std::expected<std::reference_wrapper<hgn::surface_khr>, hgn::result> {
-    auto*      surface = static_cast<hgn::surface_khr*>(nullptr);
-    const auto result  = glfwCreateWindowSurface(&instance_ref, &win, nullptr, &surface);
-    if (result != VK_SUCCESS) return hgn::make_result(result);
+    [[nodiscard]] auto create_surface(hgn::instance& instance)
+        -> std::expected<hgn::surface_khr, hgn::result> {
+        auto*      raw = static_cast<hgn::raw::surface_khr*>(nullptr);
+        const auto res = glfwCreateWindowSurface(&instance.get(), &get(), nullptr, &raw);
+        if (res != VK_SUCCESS) return hgn::make_unexpected(res);
 
-    assert(surface != nullptr);
+        assert(raw != nullptr);
+        return hgn::surface_khr{*raw, instance.get()};
+    }
 
-    return std::ref(*surface);
-}
+    template <detail::callbackable<key, action> F>
+    void set_key_callback(F&& callback) noexcept {
+        static thread_local auto fn             = F{};
+        fn                                      = std::forward<F>(callback);
+        static thread_local constinit auto* raw = static_cast<raw::window*>(nullptr);
+        raw                                     = &get();
+
+        glfwSetKeyCallback(
+            &get(),
+            [](raw::window*         ptr,
+               int                  button,
+               [[maybe_unused]] int scancode,
+               int                  act,
+               [[maybe_unused]] int mods) noexcept -> void {
+                auto* self = static_cast<window*>(glfwGetWindowUserPointer(ptr));
+                fn(self)
+            }
+        );
+    }
+
+    [[nodiscard]] auto get() noexcept -> raw::window& { return raw_; }
+
+  private:
+    explicit window(GLFWwindow& raw) noexcept : raw_{std::move(raw)} {
+        glfwSetWindowUserPointer(&get(), nullptr);
+    }
+
+    raii::window                       raw_;
+    static std::optional<window_user&> user_;
+};
 }  // namespace kgm

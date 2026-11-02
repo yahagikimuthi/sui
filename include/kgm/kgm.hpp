@@ -1,36 +1,12 @@
 #pragma once
 
 #include <cassert>
-#include <cstdint>
-#include <ranges>
-#include <span>
-#include <string_view>
-#include <vector>
 
 #include <GLFW/glfw3.h>
 
 namespace kgm {
 [[nodiscard]] inline auto try_init() noexcept -> bool {
-    const auto error_code = glfwInit();
-    return (error_code == GLFW_TRUE);
-}
-
-[[nodiscard]] inline auto get_required_instance_extensions() noexcept
-    -> std::vector<std::string_view> {
-    auto         count          = std::uint32_t{};
-    const auto** extensions_ptr = glfwGetRequiredInstanceExtensions(&count);
-
-    if (extensions_ptr == nullptr or count == 0) {
-        return std::vector<std::string_view>{};
-    }
-
-    const auto extensions = std::span<const char* const>{extensions_ptr, count};
-
-    return extensions | std::views::transform([](const char* ptr) noexcept -> std::string_view {
-               assert(ptr != nullptr);
-               return std::string_view{ptr};
-           }) |
-           std::ranges::to<std::vector>();
+    return glfwInit() != GLFW_FALSE;
 }
 
 inline void poll_events() noexcept {
