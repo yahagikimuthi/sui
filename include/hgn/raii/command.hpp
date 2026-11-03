@@ -28,9 +28,24 @@ class allocator final {
     [[nodiscard]] operator raw::allocator&() noexcept { return get(); }
 
   private:
-    void destroy() noexcept { vmaDestroyAllocator(&get()); }
+    void destroy() noexcept {
+        if (raw_) vmaDestroyAllocator(&get());
+    }
 
     std::optional<raw::allocator&> raw_;
+};
+
+class allocation final {
+  public:
+    explicit allocation(raw::allocation&& raw) noexcept  // NOLINT
+        : raw_{std::ref(raw)} {}
+
+    [[nodiscard]] auto get() noexcept -> raw::allocation& { return raw_; }
+
+    [[nodiscard]] operator raw::allocation&() noexcept { return get(); }
+
+  private:
+    std::reference_wrapper<raw::allocation> raw_;
 };
 
 class command_pool final {
