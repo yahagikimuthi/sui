@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <expected>
 #include <functional>
+#include <utility>
 
 #include <vulkan/vulkan.h>
 
@@ -53,10 +54,8 @@ class image_memory_barrier_executor final {
             raw_.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             source             = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destination        = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        } else if (
-            raw_.oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL and
-            raw_.newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-        ) {
+        } else if (raw_.oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL and
+                   raw_.newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
             raw_.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             raw_.dstAccessMask = 0;
             source             = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
