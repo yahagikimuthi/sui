@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <expected>
 
 #include <hgn/detail/vk_mem_alloc.h>
