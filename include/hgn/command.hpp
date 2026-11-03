@@ -197,9 +197,17 @@ class command_pool final {
     [[nodiscard]] auto get() noexcept -> raw::command_pool& { return raw_; }
 
     [[nodiscard]] auto create_buffer() noexcept -> std::expected<command_buffer, result> {
-        auto info               = VkCommandBufferAllocateInfo{};
-        info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        auto info  = VkCommandBufferAllocateInfo{};
+        info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+
+        // コマンドバッファのレベルを示す
+        // これは選択可能
+        // PRIMARYは直接キューにSubmitできるメイン
+        // SECONDARYはプライマリから呼び出して実行するためのサブ
+        info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+        // 一度に割り当てるコマンドバッファの数
+        // 複数の場合も配列として渡すことが可能
         info.commandBufferCount = 1;
         info.commandPool        = &get();
 
