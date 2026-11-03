@@ -117,6 +117,7 @@ class device final {
     }
 
     [[nodiscard]] auto create_pipeline_layout() noexcept -> std::expected<pipeline_layout, result> {
+        // シェーダーのソースコード(layoutキーワード)の解釈を伝える
         auto info                   = VkPipelineLayoutCreateInfo{};
         info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         info.setLayoutCount         = 0;
