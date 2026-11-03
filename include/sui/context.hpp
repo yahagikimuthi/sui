@@ -10,9 +10,9 @@
 #include <kgm/window.hpp>
 
 #include "sui/command.hpp"
+#include "sui/display.hpp"
 #include "sui/error.hpp"
 #include "sui/hardware.hpp"
-#include "sui/image.hpp"
 #include "sui/renderer.hpp"
 #include "sui/vertex.hpp"
 
