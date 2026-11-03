@@ -11,14 +11,6 @@ find_package(Vulkan REQUIRED)
 find_package(glfw3 REQUIRED)
 find_program(GLSLC_EXECUTABLE glslc)
 
-include(FetchContent)
-FetchContent_Declare(
-    VulkanMemoryAllocator
-    GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-    GIT_TAG        v3.4.0
-)
-FetchContent_MakeAvailable(VulkanMemoryAllocator)
-
 add_library(sui_lib INTERFACE)
 add_library(sui::sui_lib ALIAS sui_lib)
 
@@ -29,7 +21,6 @@ target_include_directories(sui_lib INTERFACE
 target_link_libraries(sui_lib INTERFACE
     Vulkan::Vulkan
     glfw
-    GPUOpen::VulkanMemoryAllocator
 )
 
 if(PROJECT_IS_TOP_LEVEL)
