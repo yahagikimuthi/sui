@@ -20,7 +20,6 @@ using command_pool   = VkCommandPool_T;
 using command_buffer = VkCommandBuffer_T;
 
 using buffer          = VkBuffer_T;
-using device_memory   = VkDeviceMemory_T;
 using shader_module   = VkShaderModule_T;
 using pipeline_layout = VkPipelineLayout_T;
 using pipeline        = VkPipeline_T;
