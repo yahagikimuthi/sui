@@ -1,5 +1,6 @@
 #pragma once
 
+#include <hgn/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 namespace hgn::raw {
@@ -23,4 +24,7 @@ using device_memory   = VkDeviceMemory_T;
 using shader_module   = VkShaderModule_T;
 using pipeline_layout = VkPipelineLayout_T;
 using pipeline        = VkPipeline_T;
+
+using allocator  = VmaAllocator_T;
+using allocation = VmaAllocation_T;
 }  // namespace hgn::raw
