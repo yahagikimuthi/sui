@@ -313,7 +313,7 @@ extern PFN_vkGetPhysicalDeviceMemoryProperties2 vkGetPhysicalDeviceMemoryPropert
 // see: https://clang.llvm.org/docs/AttributeReference.html#nullable
 #ifndef VMA_NULLABLE
 #ifdef __clang__
-#define VMA_NULLABLE *
+#define VMA_NULLABLE
 #else
 #define VMA_NULLABLE
 #endif
@@ -323,7 +323,7 @@ extern PFN_vkGetPhysicalDeviceMemoryProperties2 vkGetPhysicalDeviceMemoryPropert
 // see: https://clang.llvm.org/docs/AttributeReference.html#nonnull
 #ifndef VMA_NOT_NULL
 #ifdef __clang__
-#define VMA_NOT_NULL *
+#define VMA_NOT_NULL
 #else
 #define VMA_NOT_NULL
 #endif
