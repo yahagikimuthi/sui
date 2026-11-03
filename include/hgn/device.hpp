@@ -3,7 +3,6 @@
 #include <cassert>
 #include <cstdint>
 #include <expected>
-#include <functional>
 #include <span>
 #include <utility>
 
@@ -176,10 +175,8 @@ class device final {
     [[nodiscard]] auto get() noexcept -> raw::device& { return raw_; }
 
   private:
-    explicit device(raw::device& raw, raw::physical_device& physical) noexcept
-        : raw_{std::move(raw)}, physical_{std::ref(physical)} {}
+    explicit device(raw::device& raw) noexcept : raw_{std::move(raw)} {}
 
-    raii::device                                 raw_;
-    std::reference_wrapper<raw::physical_device> physical_;
+    raii::device raw_;
 };
 }  // namespace hgn

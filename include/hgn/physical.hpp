@@ -133,7 +133,7 @@ class physical_device final {
             const auto res = vkCreateDevice(&get(), &info, nullptr, &raw);
             if (res != VK_SUCCESS) return make_unexpected(res);
 
-            return device{*raw, get()};
+            return device{*raw};
         }
     }
 
