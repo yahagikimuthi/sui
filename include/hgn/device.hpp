@@ -106,7 +106,7 @@ class device final {
         info.codeSize = codes.size();
 
         // charとunsigned intのビット再解釈は厳密エイリアス規則の例外
-        info.pCode = reinterpret_cast<const std::uint32_t*>(codes.data());
+        info.pCode = reinterpret_cast<const std::uint32_t*>(codes.data());  // NOLINT
 
         auto*      raw = static_cast<raw::shader_module*>(nullptr);
         const auto res = vkCreateShaderModule(&get(), &info, nullptr, &raw);
