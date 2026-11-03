@@ -105,7 +105,7 @@ class device final {
         info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         info.codeSize = codes.size();
 
-        // TODO Configure this!
+        // charとunsigned intのビット再解釈は厳密エイリアス規則の例外
         info.pCode = reinterpret_cast<const std::uint32_t*>(codes.data());
 
         auto*      raw = static_cast<raw::shader_module*>(nullptr);
