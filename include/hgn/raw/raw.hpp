@@ -1,6 +1,6 @@
 #pragma once
 
-#include <hgn/vk_mem_alloc.h>
+#include <hgn/detail/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 namespace hgn::raw {

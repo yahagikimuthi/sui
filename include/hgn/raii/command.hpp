@@ -4,11 +4,35 @@
 #include <optional>
 #include <utility>
 
+#include <hgn/detail/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "hgn/raw/raw.hpp"
 
 namespace hgn::raii {
+class allocator final {
+  public:
+    explicit allocator(raw::allocator&& raw) noexcept : raw_{raw} {}  // NOLINT
+
+    allocator(const allocator&) noexcept                    = delete;
+    auto operator=(const allocator&) noexcept -> allocator& = delete;
+
+    allocator(allocator&& other) noexcept : raw_{std::exchange(other.raw_, std::nullopt)} {}
+
+    auto operator=(allocator&& other) noexcept -> allocator&;
+
+    ~allocator() noexcept;
+
+    [[nodiscard]] auto get() noexcept -> raw::allocator& { return *raw_; }
+
+    [[nodiscard]] operator raw::allocator&() noexcept { return get(); }
+
+  private:
+    void destroy() noexcept { vmaDestroyAllocator(&get()); }
+
+    std::optional<raw::allocator&> raw_;
+};
+
 class command_pool final {
   public:
     explicit command_pool(raw::command_pool&& raw, raw::device& dev) noexcept  // NOLINT
