@@ -18,9 +18,9 @@
 #include "sui/hardware.hpp"
 
 namespace sui {
-class image final {
+class display final {
   public:
-    [[nodiscard]] static auto make(hardware& hard) noexcept -> std::expected<image, error> {
+    [[nodiscard]] static auto make(hardware& hard) noexcept -> std::expected<display, error> {
         auto& physical = hard.physical();
         auto& surface  = hard.surface();
 
@@ -125,7 +125,7 @@ class image final {
             views.emplace_back(std::move(*view));
         }
 
-        return image{std::move(*swapchain), std::move(*images), std::move(views)};
+        return display{std::move(*swapchain), std::move(*images), std::move(views)};
     }
 
     [[nodiscard]] auto get_image(const std::size_t i) noexcept -> hgn::image& { return images_[i]; }
@@ -136,7 +136,7 @@ class image final {
     [[nodiscard]] auto swapchain() noexcept -> hgn::swapchain_khr& { return swapchain_; }
 
   private:
-    explicit image(
+    explicit display(
         hgn::swapchain_khr&&           swapchain,
         std::vector<hgn::image>&&      images,
         std::vector<hgn::image_view>&& views
