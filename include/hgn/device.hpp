@@ -9,7 +9,6 @@
 #include <hgn/detail/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-#include "hgn/buffer.hpp"
 #include "hgn/command.hpp"
 #include "hgn/detail/device.hpp"
 #include "hgn/detail/pipeline_creator.hpp"
