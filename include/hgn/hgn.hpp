@@ -1,7 +1,13 @@
 #pragma once
 
+#include <expected>
+
+#include <hgn/detail/vk_mem_alloc.h>
+
 #include "hgn/allocator.hpp"
 #include "hgn/detail/hgn.hpp"
+#include "hgn/enums.hpp"
+#include "hgn/raw/raw.hpp"
 
 namespace hgn {
 [[nodiscard]] inline auto get_instance_creator() noexcept -> instance_creator {
