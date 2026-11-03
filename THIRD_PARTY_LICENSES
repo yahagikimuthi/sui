@@ -91,6 +91,7 @@ END OF TERMS AND CONDITIONS
 3. Vulkan Memory Allocator (https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/blob/master/LICENSE.txt)
 MIT License
 -------------------------------------------------------------------------------
+
 Copyright (c) 2017-2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
