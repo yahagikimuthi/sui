@@ -63,18 +63,6 @@ class surface_format_khr final {
     VkSurfaceFormatKHR raw_;
 };
 
-class memory_requirements final {
-  public:
-    [[nodiscard]] auto memory_type_bits() const noexcept -> std::uint32_t {
-        return raw_.memoryTypeBits;
-    }
-
-    [[nodiscard]] auto size() const noexcept -> std::uint64_t { return raw_.size; }
-
-  private:
-    VkMemoryRequirements raw_;
-};
-
 class memory_type final {
   public:
     [[nodiscard]] auto property_flags() const noexcept -> memory_property_flags {

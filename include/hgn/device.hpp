@@ -6,6 +6,7 @@
 #include <span>
 #include <utility>
 
+#include <hgn/detail/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "hgn/buffer.hpp"
@@ -96,39 +97,6 @@ class device final {
 
     [[nodiscard]] auto get_image_view_creator() noexcept -> image_view_creator {
         return image_view_creator{get()};
-    }
-
-    [[nodiscard]] auto create_buffer(const std::uint64_t size
-    ) noexcept -> std::expected<buffer, result> {
-        auto info        = VkBufferCreateInfo{};
-        info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        info.usage       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        info.size        = size;
-        info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-        auto*      raw = static_cast<raw::buffer*>(nullptr);
-        const auto res = vkCreateBuffer(&get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return buffer{*raw, get()};
-    }
-
-    [[nodiscard]] auto create_memory(
-        const std::uint64_t allocation_size, const std::uint32_t memory_type_index
-    ) noexcept -> std::expected<device_memory, result> {
-        auto info            = VkMemoryAllocateInfo{};
-        info.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        info.allocationSize  = allocation_size;
-        info.memoryTypeIndex = memory_type_index;
-
-        auto*      raw = static_cast<raw::device_memory*>(nullptr);
-        const auto res = vkAllocateMemory(&get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return device_memory{*raw, get()};
     }
 
     [[nodiscard]] auto create_shader(const std::span<const char> codes

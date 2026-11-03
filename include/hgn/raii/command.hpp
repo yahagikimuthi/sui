@@ -19,9 +19,16 @@ class allocator final {
 
     allocator(allocator&& other) noexcept : raw_{std::exchange(other.raw_, std::nullopt)} {}
 
-    auto operator=(allocator&& other) noexcept -> allocator&;
+    auto operator=(allocator&& other) noexcept -> allocator& {
+        if (this == &other) return *this;
 
-    ~allocator() noexcept;
+        destroy();
+
+        raw_ = std::exchange(other.raw_, std::nullopt);
+        return *this;
+    }
+
+    ~allocator() noexcept { destroy(); }
 
     [[nodiscard]] auto get() noexcept -> raw::allocator& { return *raw_; }
 

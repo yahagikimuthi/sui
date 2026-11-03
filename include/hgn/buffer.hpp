@@ -1,6 +1,5 @@
 #pragma once
 
-#include <bit>
 #include <cassert>
 #include <cstddef>
 #include <expected>
@@ -12,11 +11,10 @@
 #include "hgn/enums.hpp"
 #include "hgn/raii/buffer.hpp"
 #include "hgn/raw/raw.hpp"
-#include "hgn/structs.hpp"
 
 namespace hgn {
 class buffer final {
-    friend class device;
+    friend class allocator;
 
   public:
     buffer(const buffer&) noexcept                    = delete;
@@ -25,18 +23,28 @@ class buffer final {
     auto operator=(buffer&&) noexcept -> buffer&;
     ~buffer() noexcept = default;
 
-    [[nodiscard]] auto get_memory_requirements() noexcept -> memory_requirements {
-        auto requirements = VkMemoryRequirements{};
-        vkGetBufferMemoryRequirements(&raw_.init_device(), &get(), &requirements);
-        return std::bit_cast<memory_requirements>(requirements);
-    }
-
     [[nodiscard]] auto get() noexcept -> raw::buffer& { return raw_; }
 
-  private:
-    explicit buffer(raw::buffer& raw, raw::device& dev) noexcept : raw_{std::move(raw), dev} {}
+    [[nodiscard]] auto map() noexcept -> std::expected<std::span<std::byte>, result> {
+        auto*      data = static_cast<void*>(nullptr);
+        const auto res  = vmaMapMemory(&raw_.init_allocator(), &raw_.init_allocation(), &data);
+        if (res != VK_SUCCESS) return make_unexpected(res);
 
-    raii::buffer raw_;
+        assert(data != nullptr);
+        return std::span{static_cast<std::byte*>(data), size_};
+    }
+
+  private:
+    explicit buffer(
+        raw::buffer&        raw,
+        raw::allocator&     allocator,
+        raw::allocation&    alloc,
+        const std::uint64_t size
+    ) noexcept
+        : raw_{std::move(raw), allocator, alloc}, size_{size} {}
+
+    raii::buffer  raw_;
+    std::uint64_t size_;
 };
 
 class device_memory final {

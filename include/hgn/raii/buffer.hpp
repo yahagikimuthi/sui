@@ -49,22 +49,27 @@ class device_memory final {
 
 class buffer final {
   public:
-    [[nodiscard]] explicit buffer(raw::buffer&& native, raw::device& dev) noexcept  // NOLINT
-        : raw_{native}, dev_{std::ref(dev)} {}
+    [[nodiscard]] explicit buffer(
+        raw::buffer&& native, raw::allocator& allocator, raw::allocation& alloc  // NOLINT
+    ) noexcept
+        : raw_{native}, allocator_{std::ref(allocator)}, alloc_{std::ref(alloc)} {}
 
     buffer(const buffer&) noexcept                    = delete;
     auto operator=(const buffer&) noexcept -> buffer& = delete;
 
     buffer(buffer&& other) noexcept
-        : raw_{std::exchange(other.raw_, std::nullopt)}, dev_{other.dev_} {}
+        : raw_{std::exchange(other.raw_, std::nullopt)},
+          allocator_{other.allocator_},
+          alloc_{other.alloc_} {}
 
     auto operator=(buffer&& other) noexcept -> buffer& {
         if (this == &other) return *this;
 
         destroy();
 
-        raw_ = std::exchange(other.raw_, std::nullopt);
-        dev_ = other.dev_;
+        raw_       = std::exchange(other.raw_, std::nullopt);
+        allocator_ = other.allocator_;
+        alloc_     = other.alloc_;
         return *this;
     }
 
@@ -74,14 +79,16 @@ class buffer final {
 
     [[nodiscard]] operator raw::buffer&() noexcept { return get(); }
 
-    [[nodiscard]] auto init_device() noexcept -> raw::device& { return dev_; }
+    [[nodiscard]] auto init_allocator() noexcept -> raw::allocator& { return allocator_; }
+    [[nodiscard]] auto init_allocation() noexcept -> raw::allocation& { return alloc_; }
 
   private:
     void destroy() noexcept {
-        if (raw_) vkDestroyBuffer(&dev_.get(), &get(), nullptr);
+        if (raw_) vmaDestroyBuffer(&allocator_.get(), &get(), &alloc_.get());
     }
 
-    std::optional<raw::buffer&>         raw_;
-    std::reference_wrapper<raw::device> dev_;
+    std::optional<raw::buffer&>             raw_;
+    std::reference_wrapper<raw::allocator>  allocator_;
+    std::reference_wrapper<raw::allocation> alloc_;
 };
 }  // namespace hgn::raii

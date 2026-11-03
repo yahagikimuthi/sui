@@ -15,6 +15,8 @@
 #include <hgn/physical.hpp>
 #include <hgn/rendering.hpp>
 
+#include "hgn/allocator.hpp"
+#include "hgn/hgn.hpp"
 #include "sui/error.hpp"
 #include "sui/hardware.hpp"
 #include "sui/others.hpp"
@@ -28,25 +30,20 @@ class renderer final {
   public:
     [[nodiscard]] static auto make(hardware& hard, const hgn::format fmt) noexcept
         -> std::expected<renderer, error> {
+        auto allocator = hgn::get_allocator_creator()
+                             .instance(hard.instance())
+                             .physical(hard.physical())
+                             .device(hard.device())
+                             .create();
+        if (not allocator) return make_error(runtime_error, "Failed to make allocator");
+
         auto& dev    = hard.device();
-        auto  buffer = dev.create_buffer(max_buffer_size);
+        auto  buffer = allocator->create_buffer(max_buffer_size);
         if (not buffer) return make_error(runtime_error, "Failed to make buffer.");
 
-        const auto mem_requirements = buffer->get_memory_requirements();
-        const auto memory_type      = find_memory_type(
-            hard.physical(),
-            mem_requirements.memory_type_bits(),
-            hgn::memory_property_flags::host_visible | hgn::memory_property_flags::host_coherent
-        );
-        if (not memory_type) return make_error(runtime_error, "Failed to find memory type.");
-
-        auto memory = dev.create_memory(mem_requirements.size(), *memory_type);
-        if (not memory) return make_error(runtime_error, "Failed to allocate memory");
-
-        if (not memory->bind_buffer(*buffer))
-            return make_error(runtime_error, "Failed to bind buffer.");
-
-        auto data = memory->map<max_buffer_size>();
+        // TODO プログラム終了時にunmapを呼び出して
+        // RAIIクラスにラップするのもいいかも
+        auto data = buffer->map();
         if (not data) return make_error(runtime_error, "Failed to map memory.");
 
         auto vert_source = read_file("../include/sui/vert.spv");
@@ -73,8 +70,8 @@ class renderer final {
         if (not pipe) return make_error(runtime_error, "Failed to graphics make pipeline.");
 
         return renderer{
+            std::move(*allocator),
             std::move(*buffer),
-            std::move(*memory),
             *data,
             std::move(*vert),
             std::move(*frag),
@@ -93,16 +90,16 @@ class renderer final {
 
   private:
     explicit renderer(
-        hgn::buffer&&                         buffer,
-        hgn::device_memory&&                  memory,
-        std::span<std::byte, max_buffer_size> data,
-        hgn::shader_module&&                  vert,
-        hgn::shader_module&&                  frag,
-        hgn::pipeline_layout&&                layout,
-        hgn::graphics_pipeline&&              pipe
+        hgn::allocator&&         allocator,
+        hgn::buffer&&            buffer,
+        std::span<std::byte>     data,
+        hgn::shader_module&&     vert,
+        hgn::shader_module&&     frag,
+        hgn::pipeline_layout&&   layout,
+        hgn::graphics_pipeline&& pipe
     ) noexcept
-        : buffer_{std::move(buffer)},
-          memory_{std::move(memory)},
+        : allocator_{std::move(allocator)},
+          buffer_{std::move(buffer)},
           data_{data},
           vert_{std::move(vert)},
           frag_{std::move(frag)},
@@ -127,12 +124,12 @@ class renderer final {
         return std::nullopt;
     }
 
-    hgn::buffer                           buffer_;
-    hgn::device_memory                    memory_;
-    std::span<std::byte, max_buffer_size> data_;
-    hgn::shader_module                    vert_;
-    hgn::shader_module                    frag_;
-    hgn::pipeline_layout                  layout_;
-    hgn::graphics_pipeline                pipe_;
+    hgn::allocator         allocator_;
+    hgn::buffer            buffer_;
+    std::span<std::byte>   data_;
+    hgn::shader_module     vert_;
+    hgn::shader_module     frag_;
+    hgn::pipeline_layout   layout_;
+    hgn::graphics_pipeline pipe_;
 };
 }  // namespace sui
