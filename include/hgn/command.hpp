@@ -123,7 +123,7 @@ class command_buffer final {
     friend class command_pool;
 
   public:
-    [[nodiscard]] auto begin_command() noexcept -> std::expected<void, result> {
+    [[nodiscard]] auto begin() noexcept -> std::expected<void, result> {
         auto info      = VkCommandBufferBeginInfo{};
         info.sType     = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         info.flags     = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;

@@ -71,7 +71,7 @@ class context final {
         if (not image_index) return false;
         image_index_ = *image_index;
 
-        if (not cmd_.buffer().begin_command()) return false;
+        if (not cmd_.buffer().begin()) return false;
         cmd_.buffer()
             .get_image_memory_barrier_executor()
             .layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
