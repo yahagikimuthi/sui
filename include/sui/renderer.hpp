@@ -57,7 +57,7 @@ class renderer final {
         if (not frag) return make_error(runtime_error, "Failed to make fragment shader module.");
 
         auto layout = dev.create_pipeline_layout();
-        if (not layout) return make_error(runtime_error, "Failed to get pipeline layout");
+        if (not layout) return make_error(runtime_error, "Failed to make pipeline layout");
 
         auto pipe = dev.get_graphics_pipeline_creator()
                         .vertex_binding(sizeof(vertex))
@@ -67,7 +67,7 @@ class renderer final {
                         .shaders(*vert, *frag)
                         .create();
 
-        if (not pipe) return make_error(runtime_error, "Failed to graphics make pipeline.");
+        if (not pipe) return make_error(runtime_error, "Failed to make graphics pipeline.");
 
         return renderer{
             std::move(*allocator),
