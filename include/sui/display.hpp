@@ -30,7 +30,7 @@ class display final {
 
         // 解像度の決定
         auto extent = capabilities->current_extent();
-        // maxと等しい場合は固定解像度であるため何もしない
+        // maxでない場合は固定解像度であるため何もしない
         if (extent.width == std::numeric_limits<std::uint32_t>::max()) {
             // 動的解像度の場合は、clampする
             extent.width = std::clamp(
