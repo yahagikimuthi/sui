@@ -2,11 +2,9 @@
 
 #include <cassert>
 #include <cstddef>
-#include <cstdint>
 #include <cstring>
 #include <expected>
 #include <optional>
-#include <ranges>
 #include <span>
 #include <utility>
 
@@ -105,24 +103,6 @@ class renderer final {
           frag_{std::move(frag)},
           layout_{std::move(layout)},
           pipe_{std::move(pipe)} {}
-
-    [[nodiscard]] static auto find_memory_type(
-        hgn::physical_device&            physical,
-        const std::uint32_t              type_filter,
-        const hgn::memory_property_flags properties
-    ) noexcept -> std::optional<std::uint32_t> {
-        const auto mem_properties = physical.get_memory_properties();
-        const auto memory_types   = mem_properties.memory_types();
-
-        for (const auto& [i, type] : std::views::enumerate(memory_types)) {
-            if ((type_filter & (1 << i)) != 0 and
-                (type.property_flags() & properties) == properties) {
-                return i;
-            }
-        }
-
-        return std::nullopt;
-    }
 
     hgn::allocator         allocator_;
     hgn::buffer            buffer_;
