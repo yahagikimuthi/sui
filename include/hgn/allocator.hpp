@@ -54,13 +54,13 @@ class allocator final {
         auto*      raw            = static_cast<raw::buffer*>(nullptr);
         auto*      raw_allocation = static_cast<raw::allocation*>(nullptr);
         auto       alloc_info     = VmaAllocationInfo{};
-        const auto res =
+        const auto res1 =
             vmaCreateBuffer(&get(), &info, &alloc_create_info, &raw, &raw_allocation, &alloc_info);
-
-        if (res != VK_SUCCESS) return make_unexpected(res);
+        if (res1 != VK_SUCCESS) return make_unexpected(res1);
 
         assert(raw != nullptr);
         assert(raw_allocation != nullptr);
+
         return buffer{*raw, get(), *raw_allocation, alloc_info.size};
     }
 
