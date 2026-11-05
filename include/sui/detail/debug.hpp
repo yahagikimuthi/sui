@@ -6,7 +6,7 @@
 namespace sui::detail {
 class debugger final {
   public:
-    static void set_fn(void (*fn)(std::string_view)) noexcept { fn_ = fn; }
+    static void set_fn(void (&fn)(std::string_view)) noexcept { fn_ = &fn; }
 
     static void set_default() noexcept { is_default_ = true; }
 
@@ -23,4 +23,9 @@ class debugger final {
     static constinit inline auto* fn_         = static_cast<void (*)(std::string_view)>(nullptr);
     static constinit inline auto  is_default_ = false;
 };
+
+[[nodiscard]] inline auto fail(const std::string_view message) noexcept -> bool {
+    debugger::notify(message);
+    return false;
+}
 }  // namespace sui::detail
