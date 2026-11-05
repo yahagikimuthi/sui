@@ -50,7 +50,8 @@ class buffer final {
 
     template <typename T>
     void cpy(const std::span<const T> data) noexcept {
-        if (data_ != nullptr) std::memcpy(data_, data.data(), sizeof(T) * data.size());
+        assert(data_ == nullptr);
+        std::memcpy(data_, data.data(), sizeof(T) * data.size());
     }
 
   private:
