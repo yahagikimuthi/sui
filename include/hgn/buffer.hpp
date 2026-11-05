@@ -39,18 +39,18 @@ class buffer final {
     [[nodiscard]] auto get() noexcept -> raw::buffer& { return raw_; }
 
     [[nodiscard]] auto map() noexcept -> std::expected<void, result> {
-        auto*      data = static_cast<void*>(nullptr);
-        const auto res  = vmaMapMemory(&raw_.init_allocator(), &raw_.init_allocation(), &data);
+        assert(data_ != nullptr);
+
+        auto*      ptr = static_cast<void*>(data_);
+        const auto res = vmaMapMemory(&raw_.init_allocator(), &raw_.init_allocation(), &ptr);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
-        assert(data != nullptr);
-        data_ = static_cast<std::byte*>(data);
         return {};
     }
 
     template <typename T>
-    void cpy(const std::span<const T> datas) noexcept {
-        if (data_ != nullptr) std::memcpy(data_, datas.data(), sizeof(T) * datas.size());
+    void cpy(const std::span<const T> data) noexcept {
+        if (data_ != nullptr) std::memcpy(data_, data.data(), sizeof(T) * data.size());
     }
 
   private:
