@@ -8,7 +8,7 @@
 #include <kgm/window.hpp>
 
 #include "kgm/enums.hpp"
-#include "sui/context.hpp"
+#include "sui/detail/context.hpp"
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
 
@@ -26,7 +26,7 @@ class window final {
 
         if (not win) return make_error(runtime_error, "Failed to make window.");
 
-        auto ctx = context::make(*win);
+        auto ctx = detail::context::make(*win);
         if (not ctx) return make_error(runtime_error, "Failed to make context.", ctx.error());
 
         return window{std::move(*win), std::move(*ctx)};
@@ -43,10 +43,10 @@ class window final {
     [[nodiscard]] auto end_rendering() noexcept -> bool { return ctx_.end_rendering(); }
 
   private:
-    explicit window(kgm::window&& win, context&& ctx) noexcept
+    explicit window(kgm::window&& win, detail::context&& ctx) noexcept
         : win_{std::move(win)}, ctx_{std::move(ctx)} {}
 
-    kgm::window win_;
-    context     ctx_;
+    kgm::window     win_;
+    detail::context ctx_;
 };
 }  // namespace sui

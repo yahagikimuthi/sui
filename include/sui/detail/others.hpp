@@ -7,9 +7,9 @@
 #include <optional>
 #include <vector>
 
-namespace sui {
-[[nodiscard]] inline auto read_file(const std::filesystem::path& path) noexcept
-    -> std::optional<std::vector<char>> {
+namespace sui::detail {
+[[nodiscard]] inline auto read_file(const std::filesystem::path& path
+) noexcept -> std::optional<std::vector<char>> {
     auto file = std::ifstream{path, std::ios::ate | std::ios::binary};
 
     if (not file.is_open()) return std::nullopt;
@@ -23,4 +23,4 @@ namespace sui {
 
     return buffer;
 }
-}  // namespace sui
+}  // namespace sui::detail

@@ -14,10 +14,10 @@
 #include <hgn/structs.hpp>
 #include <hgn/swapchain.hpp>
 
+#include "sui/detail/hardware.hpp"
 #include "sui/error.hpp"
-#include "sui/hardware.hpp"
 
-namespace sui {
+namespace sui::detail {
 class display final {
   public:
     [[nodiscard]] static auto make(hardware& hard) noexcept -> std::expected<display, error> {
@@ -147,4 +147,4 @@ class display final {
     std::vector<hgn::image>      images_;
     std::vector<hgn::image_view> views_;
 };
-}  // namespace sui
+}  // namespace sui::detail

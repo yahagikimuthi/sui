@@ -9,14 +9,14 @@
 #include <hgn/enums.hpp>
 #include <kgm/window.hpp>
 
-#include "sui/command.hpp"
-#include "sui/display.hpp"
+#include "sui/detail/command.hpp"
+#include "sui/detail/display.hpp"
+#include "sui/detail/hardware.hpp"
+#include "sui/detail/renderer.hpp"
 #include "sui/error.hpp"
-#include "sui/hardware.hpp"
-#include "sui/renderer.hpp"
 #include "sui/vertex.hpp"
 
-namespace sui {
+namespace sui::detail {
 class context final {
   public:
     [[nodiscard]] static auto make(kgm::window& win) noexcept -> std::expected<context, error> {
@@ -150,4 +150,4 @@ class context final {
     std::uint32_t image_index_{};
     bool          is_valid_{true};
 };
-}  // namespace sui
+}  // namespace sui::detail

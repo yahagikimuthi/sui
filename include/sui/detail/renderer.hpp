@@ -14,12 +14,12 @@
 #include <hgn/physical.hpp>
 #include <hgn/rendering.hpp>
 
+#include "sui/detail/hardware.hpp"
+#include "sui/detail/others.hpp"
 #include "sui/error.hpp"
-#include "sui/hardware.hpp"
-#include "sui/others.hpp"
 #include "sui/vertex.hpp"
 
-namespace sui {
+namespace sui::detail {
 class renderer final {
     static constexpr auto max_vertices    = 5000;
     static constexpr auto max_buffer_size = sizeof(vertex) * max_vertices;
@@ -104,4 +104,4 @@ class renderer final {
     hgn::pipeline_layout   layout_;
     hgn::graphics_pipeline pipe_;
 };
-}  // namespace sui
+}  // namespace sui::detail

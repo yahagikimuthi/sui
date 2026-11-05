@@ -17,7 +17,7 @@
 
 #include "sui/error.hpp"
 
-namespace sui {
+namespace sui::detail {
 class hardware final {
     struct queue_families final {
         hgn::queue_family graphics_family;
@@ -170,4 +170,4 @@ class hardware final {
     hgn::semaphore       render_finished_;
     hgn::fence           in_flight_;
 };
-}  // namespace sui
+}  // namespace sui::detail

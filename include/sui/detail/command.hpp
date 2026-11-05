@@ -5,10 +5,10 @@
 
 #include <hgn/command.hpp>
 
+#include "sui/detail/hardware.hpp"
 #include "sui/error.hpp"
-#include "sui/hardware.hpp"
 
-namespace sui {
+namespace sui::detail {
 class command final {
   public:
     [[nodiscard]] static auto make(hardware& hard) noexcept -> std::expected<command, error> {
@@ -31,4 +31,4 @@ class command final {
     hgn::command_pool   pool_;
     hgn::command_buffer buffer_;
 };
-}  // namespace sui
+}  // namespace sui::detail
