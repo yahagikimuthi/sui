@@ -86,6 +86,7 @@ class context final {
             .execute();
 
         cmd_.buffer().bind(render_.pipeline());
+        cmd_.buffer().bind(render_.buffer());
 
         cmd_.buffer().set_viewport(800, 600);
         cmd_.buffer().set_scissor(800, 600);
@@ -94,7 +95,6 @@ class context final {
 
     void render(const std::span<const vertex> vertices) noexcept {
         render_.update(vertices);
-        cmd_.buffer().bind(render_.buffer());
         cmd_.buffer().draw(static_cast<std::uint32_t>(vertices.size()), 1);
     }
 
