@@ -28,6 +28,7 @@ sudo apt-get update && sudo apt-get install -y \
     vulkan-tools \
     vulkan-validationlayers \
     libglfw3-dev \
+    libglm-dev \
     libx11-xcb-dev \
     libxcb1-dev \
     libasound2-dev \
