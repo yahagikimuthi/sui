@@ -10,6 +10,7 @@
 #include <kgm/window.hpp>
 
 #include "sui/detail/command.hpp"
+#include "sui/detail/debug.hpp"
 #include "sui/detail/display.hpp"
 #include "sui/detail/hardware.hpp"
 #include "sui/detail/renderer.hpp"
@@ -63,72 +64,89 @@ class context final {
     ~context() noexcept { destroy(); }
 
     [[nodiscard]] auto begin_rendering() noexcept -> bool {
-        if (not hard_.in_flight_fence().wait()) return false;
-        if (not hard_.in_flight_fence().reset()) return false;
+        // GPUの処理待機
+        if (not hard_.in_flight_fence().wait()) return fail("Failed to wait fence.\n");
 
+        // 今回の描画で使用する画面を選択
         const auto image_index =
             display_.swapchain().acquire_next_image(hard_.image_available_semaphore());
-        if (not image_index) return false;
+        if (not image_index) return fail("Failed to acquire next image.\n");
         image_index_ = *image_index;
 
-        if (not cmd_.buffer().begin()) return false;
+        // コマンドバッファの記録を開始
+        if (not cmd_.buffer().begin()) return fail("Failed to begin command buffer.\n");
+
+        // 画面の状態遷移をする
+        // 最初の画像は中身が不定な状態なので、これから色を書き込む状態として設定をする
         cmd_.buffer()
             .get_image_memory_barrier_executor()
             .layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
             .image(display_.get_image(image_index_))
-            .execute();
+            .barrier();
 
+        // ダイナミックレンダリングの開始
         cmd_.buffer()
             .get_begin_rendering_executor()
             .image_view(display_.get_view(image_index_))
             .clear_color(0.1f, 0.2f, 0.4f, 1.f)
             .extent(800, 600)
-            .execute();
+            .begin();
 
+        // 使用するバッファとパイプラインのバインド
         cmd_.buffer().bind(render_.pipeline());
         cmd_.buffer().bind(render_.buffer());
 
+        // ビューポートとシーザーの設定
         cmd_.buffer().set_viewport(800, 600);
         cmd_.buffer().set_scissor(800, 600);
         return true;
     }
 
     void render(const std::span<const vertex> vertices) noexcept {
-        render_.update(vertices);
+        // 頂点データをバッファに書き込み
+        render_.buffer().cpy(vertices);
+        // コマンドバッファにポリゴンの描画命令を記録
         cmd_.buffer().draw(static_cast<std::uint32_t>(vertices.size()), 1);
     }
 
     [[nodiscard]] auto end_rendering() noexcept -> bool {
+        // ダイナミックレンダリングの終了
         cmd_.buffer().end_rendering();
+
+        // 画面の状態を映し出す形式へと設定変更
         cmd_.buffer()
             .get_image_memory_barrier_executor()
             .layout(hgn::image_layout::color_attachment_optimal, hgn::image_layout::present_src_khr)
             .image(display_.get_image(image_index_))
-            .execute();
+            .barrier();
 
-        if (not cmd_.buffer().end()) return false;
+        // コマンドバッファの記録終了
+        if (not cmd_.buffer().end()) return fail("Failed to end command buffer.\n");
 
+        // 記録したコマンドバッファをGPUのキューに提出
+        // このとき、画像が準備できるのを待つセマフォと書き終わったらシグナルを送るセマフォの連動を行う
         if (not hard_.graphics_queue()
                     .get_submitter()
                     .command_buffer(cmd_.buffer())
                     .wait_semaphore(hard_.image_available_semaphore())
                     .signal_semaphore(hard_.render_finished_semaphore())
                     .submit(hard_.in_flight_fence()))
-            return false;
+            return fail("Failed to submit.\n");
 
+        // 画面への表示
         const auto res = hard_.present_queue()
                              .get_present_executor()
                              .image_index(image_index_)
                              .semaphore(hard_.render_finished_semaphore())
                              .swapchain(display_.swapchain())
-                             .execute();
+                             .present();
         if (res) return true;
 
         const auto code = res.error();
         if (code == hgn::result::error_out_of_date_khr or code == hgn::result::suboptimal_khr) {
             // Resize
         }
-        return false;
+        return fail("Resize is occurring.\n");
     }
 
   private:

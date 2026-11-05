@@ -36,7 +36,7 @@ class present_executor final {
         return *this;
     }
 
-    [[nodiscard]] auto execute() noexcept -> std::expected<void, result> {
+    [[nodiscard]] auto present() noexcept -> std::expected<void, result> {
         auto* p_swapchain = static_cast<VkSwapchainKHR_T*>(nullptr);
         auto* p_semapho   = static_cast<raw::semaphore*>(nullptr);
 
