@@ -142,21 +142,35 @@ class graphics_pipeline_creator final {
         rendering_.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
     }
 
-    VkGraphicsPipelineCreateInfo                     info_{};
-    VkPipelineVertexInputStateCreateInfo             vertex_state_{};
-    VkVertexInputBindingDescription                  vertex_binding_{};
+    // すべての設定
+    VkGraphicsPipelineCreateInfo info_{};
+    // 頂点データの大枠。下2つと組み合わせる
+    VkPipelineVertexInputStateCreateInfo vertex_state_{};
+    // 頂点データが何Bずつならんでいるか
+    VkVertexInputBindingDescription vertex_binding_{};
+    // 頂点データの属性
     std::array<VkVertexInputAttributeDescription, 2> vertex_attributes_{};
-    VkPipelineInputAssemblyStateCreateInfo           assembly_{};
-    VkPipelineDynamicStateCreateInfo                 dynamic_state_{};
-    std::array<VkDynamicState, 2>                    dynamic_states_{};
-    VkPipelineViewportStateCreateInfo                viewport_{};
-    VkPipelineRasterizationStateCreateInfo           rasterization_{};
-    VkPipelineMultisampleStateCreateInfo             multisample_{};  // NOLINT
-    VkPipelineColorBlendAttachmentState              color_blend_attachment_{};
-    VkPipelineColorBlendStateCreateInfo              color_blend_{};
-    std::array<VkPipelineShaderStageCreateInfo, 2>   shaders_{};  // NOLINT
-    VkPipelineRenderingCreateInfo                    rendering_{};
-    VkFormat                                         color_attachment_{};
-    std::reference_wrapper<raw::device>              dev_;
+    // 頂点をどう結んで図形にするかの指定(三角形か線かなど)
+    VkPipelineInputAssemblyStateCreateInfo assembly_{};
+    // 動的レンダリング用の管理構造体
+    VkPipelineDynamicStateCreateInfo dynamic_state_{};
+    // 具体的に何を動的に変更するのかのリスト
+    std::array<VkDynamicState, 2> dynamic_states_{};
+    // ウィンドウのどの領域に描画し、どこから内側を切り捨てるかを管理する
+    VkPipelineViewportStateCreateInfo viewport_{};
+    // 3Dポリゴンを画面上のピクセルに変換する際のルール。ウラ面を削るか、中身をベタ塗りにするか、深度テストに関わる
+    VkPipelineRasterizationStateCreateInfo rasterization_{};
+    // 輪郭のギザギザを滑らかにするアンチエイリアス
+    VkPipelineMultisampleStateCreateInfo multisample_{};  // NOLINT
+    // 個々のカラー出力先に対するすでに描かれた色と新規の色をどう混ぜるかのルール
+    VkPipelineColorBlendAttachmentState color_blend_attachment_{};
+    // カラーブレンド全体の設定をまとめる構造体。複数のアタッチメントを受けたりブレンド定数を指定できる
+    VkPipelineColorBlendStateCreateInfo color_blend_{};
+    // パイプラインで使用するシェーダー構造体の配列
+    std::array<VkPipelineShaderStageCreateInfo, 2> shaders_{};  // NOLINT
+    // ダイナミックレンダリング用の構造体。どんなカラーフォーマットの画像に対して描画するか直接設定する
+    VkPipelineRenderingCreateInfo       rendering_{};
+    VkFormat                            color_attachment_{};
+    std::reference_wrapper<raw::device> dev_;
 };
 }  // namespace hgn
