@@ -48,8 +48,8 @@ class renderer final {
         if (not ibo) return make_error(runtime_error, "Failed to make index buffer.");
 
         auto vert_source = read_file("../include/sui/detail/vert.spv");
-        auto vert        = dev.create_shader(*vert_source);
         if (not vert_source) return make_error(logic_error, "Failed to read vertex source file.");
+        auto vert        = dev.create_shader(*vert_source);
         if (not vert) return make_error(runtime_error, "Failed to make vertex shader module.");
 
         auto frag_source = read_file("../include/sui/detail/frag.spv");
