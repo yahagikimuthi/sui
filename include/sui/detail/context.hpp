@@ -64,8 +64,9 @@ class context final {
     ~context() noexcept { destroy(); }
 
     [[nodiscard]] auto begin_rendering() noexcept -> bool {
-        // GPUの処理待機
+        // GPUの待機処理
         if (not hard_.in_flight_fence().wait()) return fail("Failed to wait fence.\n");
+        if (not hard_.in_flight_fence().reset()) return fail("Failed to reset fence.\n");
 
         // 今回の描画で使用する画面を選択
         const auto image_index =
