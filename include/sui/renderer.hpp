@@ -38,10 +38,7 @@ class renderer final {
         auto  buffer = allocator->create_buffer(max_buffer_size);
         if (not buffer) return make_error(runtime_error, "Failed to make buffer.");
 
-        // TODO プログラム終了時にunmapを呼び出して
-        // RAIIクラスにラップするのもいいかも
-        auto data = buffer->map();
-        if (not data) return make_error(runtime_error, "Failed to map memory.");
+        if (not buffer->map()) return make_error(runtime_error, "Failed to map memory.");
 
         auto vert_source = read_file("../include/sui/vert.spv");
         if (not vert_source) return make_error(logic_error, "Failed to read vertex source file.");
