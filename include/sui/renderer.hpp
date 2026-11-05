@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <cstddef>
-#include <cstring>
 #include <expected>
 #include <optional>
 #include <span>
@@ -70,7 +69,6 @@ class renderer final {
         return renderer{
             std::move(*allocator),
             std::move(*buffer),
-            *data,
             std::move(*vert),
             std::move(*frag),
             std::move(*layout),
@@ -80,7 +78,7 @@ class renderer final {
 
     void update(const std::span<const vertex> vertices) noexcept {
         assert(vertices.size() <= max_vertices);
-        std::memcpy(data_.data(), vertices.data(), sizeof(vertex) * vertices.size());
+        buffer_.cpy(vertices);
     }
 
     [[nodiscard]] auto buffer() noexcept -> hgn::buffer& { return buffer_; }
@@ -90,7 +88,6 @@ class renderer final {
     explicit renderer(
         hgn::allocator&&         allocator,
         hgn::buffer&&            buffer,
-        std::span<std::byte>     data,
         hgn::shader_module&&     vert,
         hgn::shader_module&&     frag,
         hgn::pipeline_layout&&   layout,
@@ -98,7 +95,6 @@ class renderer final {
     ) noexcept
         : allocator_{std::move(allocator)},
           buffer_{std::move(buffer)},
-          data_{data},
           vert_{std::move(vert)},
           frag_{std::move(frag)},
           layout_{std::move(layout)},
@@ -106,7 +102,6 @@ class renderer final {
 
     hgn::allocator         allocator_;
     hgn::buffer            buffer_;
-    std::span<std::byte>   data_;
     hgn::shader_module     vert_;
     hgn::shader_module     frag_;
     hgn::pipeline_layout   layout_;

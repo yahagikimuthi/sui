@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 #include <expected>
 #include <span>
 #include <utility>
@@ -19,31 +20,48 @@ class buffer final {
   public:
     buffer(const buffer&) noexcept                    = delete;
     auto operator=(const buffer&) noexcept -> buffer& = delete;
-    buffer(buffer&&) noexcept                         = default;
-    auto operator=(buffer&&) noexcept -> buffer&;
-    ~buffer() noexcept = default;
+
+    buffer(buffer&& other) noexcept
+        : raw_{std::move(other.raw_)}, data_{std::exchange(other.data_, nullptr)} {}
+
+    auto operator=(buffer&& other) noexcept -> buffer& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        raw_  = std::move(other.raw_);
+        data_ = std::exchange(other.data_, nullptr);
+        return *this;
+    }
+
+    ~buffer() noexcept { destroy(); }
 
     [[nodiscard]] auto get() noexcept -> raw::buffer& { return raw_; }
 
-    [[nodiscard]] auto map() noexcept -> std::expected<std::span<std::byte>, result> {
+    [[nodiscard]] auto map() noexcept -> std::expected<void, result> {
         auto*      data = static_cast<void*>(nullptr);
         const auto res  = vmaMapMemory(&raw_.init_allocator(), &raw_.init_allocation(), &data);
         if (res != VK_SUCCESS) return make_unexpected(res);
 
         assert(data != nullptr);
-        return std::span{static_cast<std::byte*>(data), size_};
+        data_ = static_cast<std::byte*>(data);
+        return {};
+    }
+
+    template <typename T>
+    void cpy(const std::span<const T> datas) noexcept {
+        if (data_ != nullptr) std::memcpy(data_, datas.data(), sizeof(T) * datas.size());
     }
 
   private:
-    explicit buffer(
-        raw::buffer&        raw,
-        raw::allocator&     allocator,
-        raw::allocation&    alloc,
-        const std::uint64_t size
-    ) noexcept
-        : raw_{std::move(raw), allocator, alloc}, size_{size} {}
+    explicit buffer(raw::buffer& raw, raw::allocator& allocator, raw::allocation& alloc) noexcept
+        : raw_{std::move(raw), allocator, alloc} {}
 
-    raii::buffer  raw_;
-    std::uint64_t size_;
+    void destroy() noexcept {
+        if (data_ != nullptr) vmaUnmapMemory(&raw_.init_allocator(), &raw_.init_allocation());
+    }
+
+    raii::buffer raw_;
+    std::byte*   data_{nullptr};
 };
 }  // namespace hgn

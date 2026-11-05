@@ -61,7 +61,7 @@ class allocator final {
         assert(raw != nullptr);
         assert(raw_allocation != nullptr);
 
-        return buffer{*raw, get(), *raw_allocation, alloc_info.size};
+        return buffer{*raw, get(), *raw_allocation};
     }
 
     [[nodiscard]] auto get() noexcept -> raw::allocator& { return raw_; }
