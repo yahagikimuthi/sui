@@ -158,7 +158,7 @@ class graphics_pipeline_creator final {
     std::array<VkDynamicState, 2> dynamic_states_{};
     // ウィンドウのどの領域に描画し、どこから内側を切り捨てるかを管理する
     VkPipelineViewportStateCreateInfo viewport_{};
-    // 3Dポリゴンを画面上のピクセルに変換する際のルール。ウラ面を削るか、中身をベタ塗りにするか、深度テストに関わる
+    // 3Dポリゴンを画面上のピクセルに変換する際のルール。ウラ面を削るか、中身をベタ塗りにするかなど深度テストに関わる
     VkPipelineRasterizationStateCreateInfo rasterization_{};
     // 輪郭のギザギザを滑らかにするアンチエイリアス
     VkPipelineMultisampleStateCreateInfo multisample_{};  // NOLINT
