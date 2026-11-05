@@ -40,6 +40,12 @@ class window final {
 
     void render(const std::span<const vertex> vertices) noexcept { ctx_.render(vertices); }
 
+    void render(
+        const std::span<const vertex> vertices, const std::span<const std::uint32_t> indices
+    ) noexcept {
+        ctx_.render(vertices, indices);
+    }
+
     [[nodiscard]] auto end_rendering() noexcept -> bool { return ctx_.end_rendering(); }
 
   private:

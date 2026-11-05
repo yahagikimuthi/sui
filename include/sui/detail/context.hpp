@@ -94,8 +94,9 @@ class context final {
             .begin();
 
         // 使用するバッファとパイプラインのバインド
-        cmd_.buffer().bind(render_.pipeline());
-        cmd_.buffer().bind(render_.buffer());
+        cmd_.buffer().bind_pipeline(render_.pipeline());
+        cmd_.buffer().bind_vertex_buffer(render_.vbo());
+        cmd_.buffer().bind_index_buffer(render_.ibo());
 
         // ビューポートとシーザーの設定
         cmd_.buffer().set_viewport(800, 600);
@@ -105,9 +106,17 @@ class context final {
 
     void render(const std::span<const vertex> vertices) noexcept {
         // 頂点データをバッファに書き込み
-        render_.buffer().cpy(vertices);
+        render_.vbo().cpy(vertices);
         // コマンドバッファにポリゴンの描画命令を記録
         cmd_.buffer().draw(static_cast<std::uint32_t>(vertices.size()), 1);
+    }
+
+    void render(
+        const std::span<const vertex> vertices, const std::span<const std::uint32_t> indices
+    ) noexcept {
+        render_.ibo().cpy(indices);
+        render_.vbo().cpy(vertices);
+        cmd_.buffer().draw_indexed(static_cast<std::uint32_t>(indices.size()), 1);
     }
 
     [[nodiscard]] auto end_rendering() noexcept -> bool {

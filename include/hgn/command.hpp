@@ -116,13 +116,16 @@ class command_begin_rendering_executor final {
     explicit command_begin_rendering_executor(raw::command_buffer& buffer) noexcept
         : buffer_{std::ref(buffer)} {
         raw_.sType             = VK_STRUCTURE_TYPE_RENDERING_INFO;
-        raw_.renderArea.offset = {.x = 0, .y = 0};
+        raw_.renderArea.offset = {.x = 0, .y = 0};  // 画面描画範囲のオフセット
         raw_.layerCount        = 1;
 
-        attachment_.sType            = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-        attachment_.imageLayout      = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attachment_.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+        // 書いている最中の画像のレイアウト
+        attachment_.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        // 書き始める前にそのキャンバスをどうするか。以下なら最初に指定した色で塗りつぶす
+        attachment_.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        // 書き終わった後にその結果をどう扱うか。以下なら次の処理のためVRAMに保存
         attachment_.storeOp          = VK_ATTACHMENT_STORE_OP_STORE;
-        attachment_.loadOp           = VK_ATTACHMENT_LOAD_OP_CLEAR;
         attachment_.clearValue.color = {{1.f, 1.f, 1.f, 1.f}};
     }
 
@@ -154,18 +157,28 @@ class command_buffer final {
         return command_begin_rendering_executor{get()};
     }
 
-    void bind(graphics_pipeline& pipe) noexcept {
+    void bind_pipeline(graphics_pipeline& pipe) noexcept {
         vkCmdBindPipeline(&get(), VK_PIPELINE_BIND_POINT_GRAPHICS, &pipe.get());
     }
 
-    void bind(buffer& buffer) noexcept {
+    void bind_vertex_buffer(buffer& buffer) noexcept {
         const auto offset = std::uint64_t{};
         auto*      ptr    = &buffer.get();
         vkCmdBindVertexBuffers(&get(), 0, 1, &ptr, &offset);
     }
 
+    void bind_index_buffer(buffer& buffer) noexcept {
+        vkCmdBindIndexBuffer(&get(), &buffer.get(), 0, VK_INDEX_TYPE_UINT32);
+    }
+
     void draw(const std::uint32_t vertex_count, const std::uint32_t instance_count) noexcept {
         vkCmdDraw(&get(), vertex_count, instance_count, 0, 1);
+    }
+
+    void draw_indexed(
+        const std::uint32_t index_count, const std::uint32_t instance_count
+    ) noexcept {
+        vkCmdDrawIndexed(&get(), index_count, instance_count, 0, 0, 0);
     }
 
     void set_viewport(const float width, const float height) noexcept {

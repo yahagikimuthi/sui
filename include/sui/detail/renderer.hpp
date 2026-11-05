@@ -34,15 +34,22 @@ class renderer final {
                              .create();
         if (not allocator) return make_error(runtime_error, "Failed to make allocator");
 
-        auto& dev    = hard.device();
-        auto  buffer = allocator->create_buffer(max_buffer_size);
-        if (not buffer) return make_error(runtime_error, "Failed to make buffer.");
+        auto& dev = hard.device();
+        auto  vbo = allocator->get_buffer_creator()
+                       .size(max_buffer_size)
+                       .usage(hgn::buffer_usage_flag_bits::vertex)
+                       .create();
+        if (not vbo) return make_error(runtime_error, "Failed to make buffer.");
 
-        if (not buffer->map()) return make_error(runtime_error, "Failed to map memory.");
+        auto ibo = allocator->get_buffer_creator()
+                       .size(sizeof(std::uint32_t) * 1000)
+                       .usage(hgn::buffer_usage_flag_bits::index)
+                       .create();
+        if (not ibo) return make_error(runtime_error, "Failed to make index buffer.");
 
         auto vert_source = read_file("../include/sui/detail/vert.spv");
+        auto vert        = dev.create_shader(*vert_source);
         if (not vert_source) return make_error(logic_error, "Failed to read vertex source file.");
-        auto vert = dev.create_shader(*vert_source);
         if (not vert) return make_error(runtime_error, "Failed to make vertex shader module.");
 
         auto frag_source = read_file("../include/sui/detail/frag.spv");
@@ -65,7 +72,8 @@ class renderer final {
 
         return renderer{
             std::move(*allocator),
-            std::move(*buffer),
+            std::move(*vbo),
+            std::move(*ibo),
             std::move(*vert),
             std::move(*frag),
             std::move(*layout),
@@ -75,30 +83,34 @@ class renderer final {
 
     void update(const std::span<const vertex> vertices) noexcept {
         assert(vertices.size() <= max_vertices);
-        buffer_.cpy(vertices);
+        vbo_.cpy(vertices);
     }
 
-    [[nodiscard]] auto buffer() noexcept -> hgn::buffer& { return buffer_; }
+    [[nodiscard]] auto vbo() noexcept -> hgn::buffer& { return vbo_; }
+    [[nodiscard]] auto ibo() noexcept -> hgn::buffer& { return ibo_; }
     [[nodiscard]] auto pipeline() noexcept -> hgn::graphics_pipeline& { return pipe_; }
 
   private:
     explicit renderer(
         hgn::allocator&&         allocator,
         hgn::buffer&&            buffer,
+        hgn::buffer&&            ibo,
         hgn::shader_module&&     vert,
         hgn::shader_module&&     frag,
         hgn::pipeline_layout&&   layout,
         hgn::graphics_pipeline&& pipe
     ) noexcept
         : allocator_{std::move(allocator)},
-          buffer_{std::move(buffer)},
+          vbo_{std::move(buffer)},
+          ibo_{std::move(ibo)},
           vert_{std::move(vert)},
           frag_{std::move(frag)},
           layout_{std::move(layout)},
           pipe_{std::move(pipe)} {}
 
     hgn::allocator         allocator_;
-    hgn::buffer            buffer_;
+    hgn::buffer            vbo_;
+    hgn::buffer            ibo_;
     hgn::shader_module     vert_;
     hgn::shader_module     frag_;
     hgn::pipeline_layout   layout_;

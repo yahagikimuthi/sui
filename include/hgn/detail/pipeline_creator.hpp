@@ -95,11 +95,11 @@ class graphics_pipeline_creator final {
 
         vertex_attributes_[0].binding  = 0;
         vertex_attributes_[0].location = 0;
-        vertex_attributes_[0].format   = VK_FORMAT_R32G32_SFLOAT;
+        vertex_attributes_[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
 
         vertex_attributes_[1].binding  = 0;
         vertex_attributes_[1].location = 1;
-        vertex_attributes_[1].format   = VK_FORMAT_R32G32_SFLOAT;
+        vertex_attributes_[1].format   = VK_FORMAT_R32G32B32_SFLOAT;
 
         assembly_.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         assembly_.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;

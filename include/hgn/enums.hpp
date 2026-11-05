@@ -12,8 +12,8 @@ enum class result : std::int32_t {
     suboptimal_khr        = VK_SUBOPTIMAL_KHR
 };
 
-[[nodiscard]] constexpr auto make_unexpected(const VkResult res) noexcept
-    -> std::unexpected<result> {
+[[nodiscard]] constexpr auto make_unexpected(const VkResult res
+) noexcept -> std::unexpected<result> {
     return std::unexpected{static_cast<result>(res)};
 }
 
@@ -81,5 +81,10 @@ enum class image_layout : std::int32_t {
     undefined                = VK_IMAGE_LAYOUT_UNDEFINED,
     color_attachment_optimal = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
     present_src_khr          = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+};
+
+enum class buffer_usage_flag_bits : std::int32_t {  // NOLINT
+    vertex       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+    index        = VK_BUFFER_USAGE_INDEX_BUFFER_BIT
 };
 }  // namespace hgn
