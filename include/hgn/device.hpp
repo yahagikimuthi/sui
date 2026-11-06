@@ -124,6 +124,23 @@ class device final {
         return pipeline_layout{*raw, get()};
     }
 
+    [[nodiscard]] auto create_pipeline_layout(descriptor_set_layout& set
+    ) noexcept -> std::expected<pipeline_layout, result> {
+        auto* ptr                   = &set.get();
+        auto  info                  = VkPipelineLayoutCreateInfo{};
+        info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        info.setLayoutCount         = 1;
+        info.pSetLayouts            = &ptr;
+        info.pushConstantRangeCount = 0;
+
+        auto*      raw = static_cast<raw::pipeline_layout*>(nullptr);
+        const auto res = vkCreatePipelineLayout(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return pipeline_layout{*raw, get()};
+    }
+
     [[nodiscard]] auto get_graphics_pipeline_creator() noexcept -> graphics_pipeline_creator {
         return graphics_pipeline_creator{get()};
     }
