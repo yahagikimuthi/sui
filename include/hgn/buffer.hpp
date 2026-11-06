@@ -27,8 +27,6 @@ class buffer final {
 
     [[nodiscard]] auto size() noexcept -> std::uint64_t { return info().size; }
 
-    [[nodiscard]] auto get() noexcept -> raw::buffer& { return raw_; }
-
     template <typename T>
     void cpy(const std::span<T> data) noexcept {
         assert(data_ != nullptr);
@@ -39,6 +37,8 @@ class buffer final {
     void cpy(T& data) noexcept {
         std::memcpy(data_, &data, sizeof(T));
     }
+
+    [[nodiscard]] auto get() noexcept -> raw::buffer& { return raw_; }
 
   private:
     explicit buffer(
