@@ -97,7 +97,7 @@ class context final {
         cmd_.buffer().bind_pipeline(render_.pipeline());
         cmd_.buffer().bind_vertex_buffer(render_.vbo());
         cmd_.buffer().bind_index_buffer(render_.ibo());
-        //   cmd_.buffer().bind_descriptor_set(render_.pipeline_layout(), render_.descriptor_set());
+        cmd_.buffer().bind_descriptor_set(render_.pipeline_layout(), render_.descriptor_set());
 
         // ビューポートとシーザーの設定
         cmd_.buffer().set_viewport(800, 600);
