@@ -19,9 +19,23 @@
 
 namespace hgn {
 class swapchain_khr_creator final {
-    friend class device;
-
   public:
+    explicit swapchain_khr_creator(raw::device& dev) noexcept : dev_{std::ref(dev)} {
+        info_.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+
+        // 描画先としてメモリを確保する場合は以下の定数を設定
+        // 他にもコピー先/コピー元として扱う、読み書き用などがある
+        info_.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        info_.imageArrayLayers = 1;  // 各画像の層数. 立体視やVRを除き通常は1
+
+        // アルファチャンネル(通常は不透明値のこの定数を設定)
+        info_.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+
+        info_.clipped = VK_TRUE;  // ウィンドウに隠れたピクセルを省略するかを設定
+        info_.oldSwapchain = nullptr;  // リサイズ時などに古いswapchainを破棄, 再利用するため設定
+    }
+
     auto surface(surface_khr& surface) noexcept -> swapchain_khr_creator& {
         info_.surface = &surface.get();
         return *this;
@@ -92,22 +106,6 @@ class swapchain_khr_creator final {
     }
 
   private:
-    explicit swapchain_khr_creator(raw::device& dev) noexcept : dev_{std::ref(dev)} {
-        info_.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-
-        // 描画先としてメモリを確保する場合は以下の定数を設定
-        // 他にもコピー先/コピー元として扱う、読み書き用などがある
-        info_.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-        info_.imageArrayLayers = 1;  // 各画像の層数. 立体視やVRを除き通常は1
-
-        // アルファチャンネル(通常は不透明値のこの定数を設定)
-        info_.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-
-        info_.clipped = VK_TRUE;  // ウィンドウに隠れたピクセルを省略するかを設定
-        info_.oldSwapchain = nullptr;  // リサイズ時などに古いswapchainを破棄, 再利用するため設定
-    }
-
     VkSwapchainCreateInfoKHR            info_{};  // NOLINT
     std::vector<std::uint32_t>          queue_family_indices_;
     std::reference_wrapper<raw::device> dev_;

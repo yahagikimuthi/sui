@@ -16,9 +16,11 @@
 
 namespace hgn {
 class present_executor final {
-    friend class queue;
-
   public:
+    explicit present_executor(raw::queue& queue) noexcept : queue_{std::ref(queue)} {
+        info_.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    }
+
     [[nodiscard]] auto swapchain(swapchain_khr& swapchain) noexcept -> present_executor& {
         swapchain_ = swapchain.get();
         return *this;
@@ -58,10 +60,6 @@ class present_executor final {
     }
 
   private:
-    explicit present_executor(raw::queue& queue) noexcept : queue_{std::ref(queue)} {
-        info_.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    }
-
     VkPresentInfoKHR                   info_{};
     std::uint32_t                      image_index_{};
     std::optional<VkSwapchainKHR_T&>   swapchain_;
@@ -70,9 +68,11 @@ class present_executor final {
 };
 
 class submitter final {
-    friend class queue;
-
   public:
+    explicit submitter(raw::queue& queue) noexcept : queue_{std::ref(queue)} {
+        info_.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    }
+
     auto command_buffer(command_buffer& buffer) noexcept -> submitter& {
         cmd_buffer_ = buffer.get();
         return *this;
@@ -111,17 +111,10 @@ class submitter final {
             info_.pSignalSemaphores    = &p_signal_semaphore;
         }
 
-        const auto res = vkQueueSubmit(&queue_.get(), 1, &info_, &fence.get());
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        return {};
+        return make_expected(vkQueueSubmit(&queue_.get(), 1, &info_, &fence.get()));
     }
 
   private:
-    explicit submitter(raw::queue& queue) noexcept : queue_{std::ref(queue)} {
-        info_.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    }
-
     VkSubmitInfo                        info_{};
     std::optional<raw::command_buffer&> cmd_buffer_;
     std::optional<raw::semaphore&>      wait_;

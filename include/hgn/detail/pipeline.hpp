@@ -14,9 +14,66 @@
 
 namespace hgn {
 class graphics_pipeline_creator final {
-    friend class device;
-
   public:
+    explicit graphics_pipeline_creator(raw::device& dev) noexcept : dev_{std::ref(dev)} {
+        info_.sType      = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        info_.renderPass = nullptr;
+        info_.subpass    = 0;
+
+        vertex_state_.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+        vertex_binding_.binding   = 0;
+        vertex_binding_.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        vertex_attributes_[0].binding  = 0;
+        vertex_attributes_[0].location = 0;
+        vertex_attributes_[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
+
+        vertex_attributes_[1].binding  = 0;
+        vertex_attributes_[1].location = 1;
+        vertex_attributes_[1].format   = VK_FORMAT_R32G32B32_SFLOAT;
+
+        assembly_.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        assembly_.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        assembly_.primitiveRestartEnable = VK_FALSE;
+
+        dynamic_states_      = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        dynamic_state_.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+
+        viewport_.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        viewport_.viewportCount = 1;
+        viewport_.scissorCount  = 1;
+
+        rasterization_.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rasterization_.depthClampEnable        = VK_FALSE;
+        rasterization_.rasterizerDiscardEnable = VK_FALSE;
+        rasterization_.polygonMode             = VK_POLYGON_MODE_FILL;
+        rasterization_.lineWidth               = 1.f;
+        rasterization_.cullMode                = VK_CULL_MODE_NONE;
+        rasterization_.frontFace               = VK_FRONT_FACE_CLOCKWISE;
+        rasterization_.depthBiasEnable         = VK_FALSE;
+
+        multisample_.sType               = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+        multisample_.sampleShadingEnable = VK_FALSE;
+        multisample_.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+        color_blend_attachment_.colorWriteMask =
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+            VK_COLOR_COMPONENT_A_BIT;
+        color_blend_attachment_.blendEnable = VK_FALSE;
+
+        color_blend_.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        color_blend_.logicOpEnable = VK_FALSE;
+
+        shaders_[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shaders_[0].pName = "main";
+
+        shaders_[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shaders_[1].pName = "main";
+
+        rendering_.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+    }
+
     auto vertex_binding(const std::uint32_t stride) noexcept -> graphics_pipeline_creator& {
         vertex_binding_.stride = stride;
         return *this;
@@ -92,65 +149,6 @@ class graphics_pipeline_creator final {
     }
 
   private:
-    explicit graphics_pipeline_creator(raw::device& dev) noexcept : dev_{std::ref(dev)} {
-        info_.sType      = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        info_.renderPass = nullptr;
-        info_.subpass    = 0;
-
-        vertex_state_.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-        vertex_binding_.binding   = 0;
-        vertex_binding_.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-        vertex_attributes_[0].binding  = 0;
-        vertex_attributes_[0].location = 0;
-        vertex_attributes_[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
-
-        vertex_attributes_[1].binding  = 0;
-        vertex_attributes_[1].location = 1;
-        vertex_attributes_[1].format   = VK_FORMAT_R32G32B32_SFLOAT;
-
-        assembly_.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        assembly_.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        assembly_.primitiveRestartEnable = VK_FALSE;
-
-        dynamic_states_      = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-        dynamic_state_.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-
-        viewport_.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        viewport_.viewportCount = 1;
-        viewport_.scissorCount  = 1;
-
-        rasterization_.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-        rasterization_.depthClampEnable        = VK_FALSE;
-        rasterization_.rasterizerDiscardEnable = VK_FALSE;
-        rasterization_.polygonMode             = VK_POLYGON_MODE_FILL;
-        rasterization_.lineWidth               = 1.f;
-        rasterization_.cullMode                = VK_CULL_MODE_NONE;
-        rasterization_.frontFace               = VK_FRONT_FACE_CLOCKWISE;
-        rasterization_.depthBiasEnable         = VK_FALSE;
-
-        multisample_.sType               = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        multisample_.sampleShadingEnable = VK_FALSE;
-        multisample_.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-        color_blend_attachment_.colorWriteMask =
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT;
-        color_blend_attachment_.blendEnable = VK_FALSE;
-
-        color_blend_.sType         = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-        color_blend_.logicOpEnable = VK_FALSE;
-
-        shaders_[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        shaders_[0].pName = "main";
-
-        shaders_[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        shaders_[1].pName = "main";
-
-        rendering_.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-    }
-
     // すべての設定
     VkGraphicsPipelineCreateInfo info_{};
     // 頂点データの大枠。下2つと組み合わせる

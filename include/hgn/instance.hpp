@@ -16,14 +16,8 @@
 
 namespace hgn {
 class instance final {
-    friend class instance_creator;
-
   public:
-    instance(const instance&) noexcept                    = delete;
-    auto operator=(const instance&) noexcept -> instance& = delete;
-    instance(instance&&) noexcept                         = default;
-    auto operator=(instance&&) noexcept -> instance&      = default;
-    ~instance() noexcept                                  = default;
+    explicit instance(raw::instance& raw) noexcept : raw_{std::move(raw)} {}
 
     // 物理デバイスの列挙
     [[nodiscard]] auto get_physicals() noexcept
@@ -51,8 +45,6 @@ class instance final {
     [[nodiscard]] auto get() noexcept -> raw::instance& { return raw_; }
 
   private:
-    explicit instance(raw::instance& raw) noexcept : raw_{std::move(raw)} {}
-
     raii::instance raw_;
 };
 }  // namespace hgn

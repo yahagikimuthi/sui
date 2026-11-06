@@ -21,15 +21,8 @@
 
 namespace hgn {
 class physical_device final {
-    friend class instance;
-    friend class device;
-
   public:
-    physical_device(const physical_device&) noexcept                    = delete;
-    auto operator=(const physical_device&) noexcept -> physical_device& = delete;
-    physical_device(physical_device&&) noexcept                         = default;
-    auto operator=(physical_device&&) noexcept -> physical_device&      = default;
-    ~physical_device() noexcept                                         = default;
+    explicit physical_device(raw::physical_device& raw) noexcept : raw_{std::move(raw)} {}
 
     [[nodiscard]] auto name() const noexcept -> std::string {
         const auto property = get_property();
@@ -141,8 +134,6 @@ class physical_device final {
     [[nodiscard]] auto get() const noexcept -> raw::physical_device& { return raw_; }
 
   private:
-    explicit physical_device(raw::physical_device& raw) noexcept : raw_{std::move(raw)} {}
-
     [[nodiscard]] auto get_property() const noexcept -> VkPhysicalDeviceProperties {
         auto property = VkPhysicalDeviceProperties{};
         vkGetPhysicalDeviceProperties(&get(), &property);

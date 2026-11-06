@@ -13,9 +13,12 @@
 
 namespace hgn {
 class buffer_creator final {
-    friend class allocator;
-
   public:
+    explicit buffer_creator(raw::allocator& allocator) noexcept : allocator_{std::ref(allocator)} {
+        info_.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        info_.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    }
+
     auto size(const std::uint64_t size) noexcept -> buffer_creator& {
         info_.size = size;
         return *this;
@@ -57,11 +60,6 @@ class buffer_creator final {
     }
 
   private:
-    explicit buffer_creator(raw::allocator& allocator) noexcept : allocator_{std::ref(allocator)} {
-        info_.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        info_.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    }
-
     VkBufferCreateInfo                     info_{};
     std::reference_wrapper<raw::allocator> allocator_;
 };

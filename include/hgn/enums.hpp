@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <utility>
@@ -15,6 +16,20 @@ enum class result : std::int32_t {
 [[nodiscard]] constexpr auto make_unexpected(const VkResult res
 ) noexcept -> std::unexpected<result> {
     return std::unexpected{static_cast<result>(res)};
+}
+
+template <typename T>
+[[nodiscard]] constexpr auto make_expected(const VkResult res, T* ptr) noexcept
+    -> std::expected<T*, result> {
+    if (res != VK_SUCCESS) return make_unexpected(res);
+    assert(ptr != nullptr);
+    return ptr;
+}
+
+[[nodiscard]] constexpr auto make_expected(const VkResult res
+) noexcept -> std::expected<void, result> {
+    if (res != VK_SUCCESS) return make_unexpected(res);
+    return {};
 }
 
 enum class queue_flag_bits : std::int32_t { none = 0, graphics = VK_QUEUE_GRAPHICS_BIT };  // NOLINT

@@ -18,17 +18,15 @@
 
 namespace hgn {
 class command_buffer final {
-    friend class command_pool;
-
   public:
-    [[nodiscard]] auto begin() noexcept -> std::expected<void, result> {
-        auto info      = VkCommandBufferBeginInfo{};
-        info.sType     = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        info.flags     = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        const auto res = vkBeginCommandBuffer(&get(), &info);
-        if (res != VK_SUCCESS) return make_unexpected(res);
+    explicit command_buffer(raw::command_buffer& raw) noexcept : raw_{std::move(raw)} {}
 
-        return {};
+    [[nodiscard]] auto begin() noexcept -> std::expected<void, result> {
+        auto info  = VkCommandBufferBeginInfo{};
+        info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        return make_expected(vkBeginCommandBuffer(&get(), &info));
     }
 
     [[nodiscard]] auto get_image_memory_barrier_executor() noexcept
@@ -84,9 +82,7 @@ class command_buffer final {
     void end_rendering() noexcept { vkCmdEndRendering(&get()); }
 
     [[nodiscard]] auto end() noexcept -> std::expected<void, result> {
-        const auto res = vkEndCommandBuffer(&get());
-        if (res != VK_SUCCESS) return make_unexpected(res);
-        return {};
+        return make_expected(vkEndCommandBuffer(&get()));
     }
 
     void set_scissor(const std::uint32_t width, const std::uint32_t height) noexcept {
@@ -100,15 +96,14 @@ class command_buffer final {
     [[nodiscard]] auto get() noexcept -> raw::command_buffer& { return raw_; }
 
   private:
-    explicit command_buffer(raw::command_buffer& raw) noexcept : raw_{std::move(raw)} {}
-
     raii::command_buffer raw_;
 };
 
 class command_pool final {
-    friend class device;
-
   public:
+    explicit command_pool(raw::command_pool& raw, raw::device& dev) noexcept
+        : raw_{std::move(raw), dev} {}
+
     [[nodiscard]] auto create_buffer() noexcept -> std::expected<command_buffer, result> {
         auto info  = VkCommandBufferAllocateInfo{};
         info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -124,20 +119,16 @@ class command_pool final {
         info.commandBufferCount = 1;
         info.commandPool        = &get();
 
-        auto*      raw = static_cast<raw::command_buffer*>(nullptr);
-        const auto res = vkAllocateCommandBuffers(&raw_.init_device(), &info, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return command_buffer{*raw};
+        auto* raw = static_cast<raw::command_buffer*>(nullptr);
+        return make_expected(vkAllocateCommandBuffers(&raw_.init_device(), &info, &raw), raw)
+            .transform([](raw::command_buffer* raw) noexcept -> command_buffer {
+                return command_buffer{*raw};
+            });
     }
 
     [[nodiscard]] auto get() noexcept -> raw::command_pool& { return raw_; }
 
   private:
-    explicit command_pool(raw::command_pool& raw, raw::device& dev) noexcept
-        : raw_{std::move(raw), dev} {}
-
     raii::command_pool raw_;
 };
 }  // namespace hgn

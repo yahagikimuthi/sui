@@ -10,7 +10,8 @@
 namespace hgn {
 class descriptor_pool final {
   public:
-    friend class device;
+    explicit descriptor_pool(raw::descriptor_pool& raw, raw::device& dev) noexcept
+        : raw_{std::move(raw), dev} {}
 
     [[nodiscard]] auto get() noexcept -> raw::descriptor_pool& { return raw_; }
 
@@ -33,9 +34,6 @@ class descriptor_pool final {
     }
 
   private:
-    explicit descriptor_pool(raw::descriptor_pool& raw, raw::device& dev) noexcept
-        : raw_{std::move(raw), dev} {}
-
     raii::descriptor_pool raw_;
 };
 }  // namespace hgn

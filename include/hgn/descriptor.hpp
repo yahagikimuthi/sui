@@ -9,22 +9,21 @@
 
 namespace hgn {
 class descriptor_set_layout final {
-    friend class device;
-
   public:
-    [[nodiscard]] auto get() noexcept -> raw::descriptor_set_layout& { return raw_; }
-
-  private:
     explicit descriptor_set_layout(raw::descriptor_set_layout& raw, raw::device& dev) noexcept
         : raw_{std::move(raw), dev} {}
 
+    [[nodiscard]] auto get() noexcept -> raw::descriptor_set_layout& { return raw_; }
+
+  private:
     raii::descriptor_set_layout raw_;
 };
 
 class descriptor_set final {
-    friend class descriptor_pool;
-
   public:
+    explicit descriptor_set(raw::descriptor_set& raw, raw::device& dev) noexcept
+        : raw_{raw}, dev_{std::ref(dev)} {}
+
     void update(buffer& buffer) noexcept {
         auto info   = VkDescriptorBufferInfo{};
         info.buffer = &buffer.get();
@@ -46,9 +45,6 @@ class descriptor_set final {
     [[nodiscard]] auto get() noexcept -> raw::descriptor_set& { return raw_; }
 
   private:
-    explicit descriptor_set(raw::descriptor_set& raw, raw::device& dev) noexcept
-        : raw_{raw}, dev_{std::ref(dev)} {}
-
     raii::descriptor_set                raw_;
     std::reference_wrapper<raw::device> dev_;
 };

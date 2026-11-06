@@ -16,9 +16,9 @@ namespace hgn {
 }
 
 class allocator_creator final {
-    friend auto get_allocator_creator() noexcept -> allocator_creator;
-
   public:
+    explicit allocator_creator() noexcept { info_.vulkanApiVersion = VK_API_VERSION_1_3; }
+
     [[nodiscard]] auto instance(instance& ref) noexcept -> allocator_creator& {
         info_.instance = &ref.get();
         return *this;
@@ -44,8 +44,6 @@ class allocator_creator final {
     }
 
   private:
-    explicit allocator_creator() noexcept { info_.vulkanApiVersion = VK_API_VERSION_1_3; }
-
     VmaAllocatorCreateInfo info_{};
 };
 

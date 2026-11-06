@@ -15,9 +15,10 @@
 
 namespace hgn {
 class queue_family final {
-    friend class physical_device;
-
   public:
+    explicit queue_family(std::uint32_t index, raw::physical_device& physical) noexcept
+        : raw_{index, physical} {}
+
     [[nodiscard]] auto index() const noexcept -> std::uint32_t { return raw_.index(); }
 
     [[nodiscard]] auto flags() noexcept -> queue_flag_bits {
@@ -40,9 +41,6 @@ class queue_family final {
     }
 
   private:
-    explicit queue_family(std::uint32_t index, raw::physical_device& physical) noexcept
-        : raw_{index, physical} {}
-
     [[nodiscard]] auto get_properties() noexcept -> VkQueueFamilyProperties {
         auto count = std::uint32_t{};
         vkGetPhysicalDeviceQueueFamilyProperties(&raw_.init_physical(), &count, nullptr);
@@ -57,9 +55,9 @@ class queue_family final {
 };
 
 class queue final {
-    friend class device;
-
   public:
+    explicit queue(raw::queue& raw) noexcept : raw_{std::move(raw)} {}
+
     [[nodiscard]] auto get_present_executor() noexcept -> present_executor {
         return present_executor{get()};
     }
@@ -69,8 +67,6 @@ class queue final {
     [[nodiscard]] auto get() noexcept -> raw::queue& { return raw_; }
 
   private:
-    explicit queue(raw::queue& raw) noexcept : raw_{std::move(raw)} {}
-
     raii::queue raw_;
 };
 }  // namespace hgn

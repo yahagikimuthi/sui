@@ -12,31 +12,7 @@
 
 namespace hgn {
 class image_view_creator final {
-    friend class device;
-
   public:
-    // 元となる画像
-    auto image(image& image) noexcept -> image_view_creator& {
-        info_.image = &image.get();
-        return *this;
-    }
-
-    // ビット解釈の設定
-    auto format(const format fmt) noexcept -> image_view_creator& {
-        info_.format = static_cast<VkFormat>(fmt);
-        return *this;
-    }
-
-    [[nodiscard]] auto create() const noexcept -> std::expected<image_view, result> {
-        auto*      raw = static_cast<raw::image_view*>(nullptr);
-        const auto res = vkCreateImageView(&dev_.get(), &info_, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return image_view{*raw, dev_.get()};
-    }
-
-  private:
     explicit image_view_creator(raw::device& dev) noexcept : dev_{std::ref(dev)} {
         info_.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 
@@ -76,6 +52,28 @@ class image_view_creator final {
         info_.flags = 0;  // アトミック操作など特別な動作を有効にする場合は使用
     }
 
+    // 元となる画像
+    auto image(image& image) noexcept -> image_view_creator& {
+        info_.image = &image.get();
+        return *this;
+    }
+
+    // ビット解釈の設定
+    auto format(const format fmt) noexcept -> image_view_creator& {
+        info_.format = static_cast<VkFormat>(fmt);
+        return *this;
+    }
+
+    [[nodiscard]] auto create() const noexcept -> std::expected<image_view, result> {
+        auto*      raw = static_cast<raw::image_view*>(nullptr);
+        const auto res = vkCreateImageView(&dev_.get(), &info_, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return image_view{*raw, dev_.get()};
+    }
+
+  private:
     VkImageViewCreateInfo               info_{};
     std::reference_wrapper<raw::device> dev_;
 };

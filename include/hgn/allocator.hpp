@@ -10,9 +10,9 @@
 
 namespace hgn {
 class allocator final {
-    friend class allocator_creator;
-
   public:
+    explicit allocator(raw::allocator& raw) noexcept : raw_{std::move(raw)} {}
+
     [[nodiscard]] auto get_buffer_creator() noexcept -> buffer_creator {
         return buffer_creator{get()};
     }
@@ -20,8 +20,6 @@ class allocator final {
     [[nodiscard]] auto get() noexcept -> raw::allocator& { return raw_; }
 
   private:
-    explicit allocator(raw::allocator& raw) noexcept : raw_{std::move(raw)} {}
-
     raii::allocator raw_;
 };
 }  // namespace hgn

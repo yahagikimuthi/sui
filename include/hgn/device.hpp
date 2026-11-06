@@ -23,9 +23,9 @@
 
 namespace hgn {
 class device final {
-    friend class physical_device;
-
   public:
+    explicit device(raw::device& raw) noexcept : raw_{std::move(raw)} {}
+
     [[nodiscard]] auto get_queue(const queue_family& family) noexcept -> queue {
         // 指定されたキューファミリーの0番キューを取得する
         auto* raw = static_cast<raw::queue*>(nullptr);
@@ -185,16 +185,12 @@ class device final {
     }
 
     [[nodiscard]] auto wait_idle() noexcept -> std::expected<void, result> {
-        const auto res = vkDeviceWaitIdle(&get());
-        if (res != VK_SUCCESS) return make_unexpected(res);
-        return {};
+        return make_expected(vkDeviceWaitIdle(&get()));
     }
 
     [[nodiscard]] auto get() noexcept -> raw::device& { return raw_; }
 
   private:
-    explicit device(raw::device& raw) noexcept : raw_{std::move(raw)} {}
-
     raii::device raw_;
 };
 }  // namespace hgn

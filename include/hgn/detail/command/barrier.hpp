@@ -10,9 +10,26 @@
 
 namespace hgn {
 class image_memory_barrier_executor final {
-    friend class command_buffer;
-
   public:
+    explicit image_memory_barrier_executor(raw::command_buffer& buffer) noexcept
+        : buffer_{std::ref(buffer)} {
+        raw_.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+
+        // キューファミリー間の所有権行こうを行う場合の移行元のインデックスを指定
+        raw_.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        // 移行先のインデックス。なお、同じキューファミリ内で処理するならIGNOREDを指定
+        raw_.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        // 例えば、Transferで読み込んだ画像をGraphicsに移行するときに使う
+
+        // 画像に対し、どのミップマップレベル、どのレイヤー、どのカラー深度アスペクト
+        // に対してバリアを適用するかを指定する
+        raw_.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;  // カラー深度アスペクト
+        raw_.subresourceRange.baseMipLevel = 0;  // 基準ミップマップ(元画像サイズは0)
+        raw_.subresourceRange.levelCount   = 1;  // ミップマップレベルの指定
+        raw_.subresourceRange.baseArrayLayer = 0;  // 画像が配列なら開始インデックスを指定
+        raw_.subresourceRange.layerCount = 1;  // いくつのレイヤーを対象にするかを指定
+    }
+
     auto layout(const image_layout olds, const image_layout news) noexcept
         -> image_memory_barrier_executor& {
         raw_.oldLayout = static_cast<VkImageLayout>(olds);
@@ -55,25 +72,6 @@ class image_memory_barrier_executor final {
     }
 
   private:
-    explicit image_memory_barrier_executor(raw::command_buffer& buffer) noexcept
-        : buffer_{std::ref(buffer)} {
-        raw_.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-
-        // キューファミリー間の所有権行こうを行う場合の移行元のインデックスを指定
-        raw_.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        // 移行先のインデックス。なお、同じキューファミリ内で処理するならIGNOREDを指定
-        raw_.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        // 例えば、Transferで読み込んだ画像をGraphicsに移行するときに使う
-
-        // 画像に対し、どのミップマップレベル、どのレイヤー、どのカラー深度アスペクト
-        // に対してバリアを適用するかを指定する
-        raw_.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;  // カラー深度アスペクト
-        raw_.subresourceRange.baseMipLevel = 0;  // 基準ミップマップ(元画像サイズは0)
-        raw_.subresourceRange.levelCount   = 1;  // ミップマップレベルの指定
-        raw_.subresourceRange.baseArrayLayer = 0;  // 画像が配列なら開始インデックスを指定
-        raw_.subresourceRange.layerCount = 1;  // いくつのレイヤーを対象にするかを指定
-    }
-
     VkImageMemoryBarrier                        raw_{};
     std::reference_wrapper<raw::command_buffer> buffer_;
 };

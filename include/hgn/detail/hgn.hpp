@@ -18,7 +18,12 @@
 namespace hgn {
 class instance_creator final {
   public:
-    friend auto get_instance_creator() noexcept -> instance_creator;
+    explicit instance_creator() noexcept {
+        app_.sType      = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        app_.apiVersion = VK_API_VERSION_1_3;
+
+        info_.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    }
 
     auto app_name(const std::string_view name) noexcept -> instance_creator& {
         app_name_ = name;
@@ -81,13 +86,6 @@ class instance_creator final {
     }
 
   private:
-    explicit instance_creator() noexcept {
-        app_.sType      = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        app_.apiVersion = VK_API_VERSION_1_3;
-
-        info_.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    }
-
     VkApplicationInfo    app_{};
     VkInstanceCreateInfo info_{};
     std::string          app_name_;
