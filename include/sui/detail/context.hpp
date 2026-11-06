@@ -3,9 +3,11 @@
 #include <cstdint>
 #include <exception>
 #include <expected>
+#include <glm/trigonometric.hpp>
 #include <span>
 #include <utility>
 
+#include <glm/gtc/matrix_transform.hpp>
 #include <hgn/enums.hpp>
 #include <kgm/window.hpp>
 
@@ -14,6 +16,7 @@
 #include "sui/detail/display.hpp"
 #include "sui/detail/hardware.hpp"
 #include "sui/detail/renderer.hpp"
+#include "sui/detail/ubo.hpp"
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
 
@@ -117,6 +120,10 @@ class context final {
     ) noexcept {
         render_.ibo().cpy(indices);
         render_.vbo().cpy(vertices);
+        auto ubo  = uniform_buffer_object{};
+        ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f));
+        ubo.proj  = glm::ortho(0.0f, 800.f, 600.f, 0.0f, -1.0f, 1.0f);
+        render_.ubo().cpy(ubo);
         cmd_.buffer().draw_indexed(static_cast<std::uint32_t>(indices.size()), 1);
     }
 
