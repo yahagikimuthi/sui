@@ -21,6 +21,7 @@ sudo apt-get update && sudo apt-get install -y \
     gcc-16 \
     g++-16 \
     cmake \
+    clang-format \
     ninja-build \
     gdb \
     lldb \
