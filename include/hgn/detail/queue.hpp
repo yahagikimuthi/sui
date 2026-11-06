@@ -38,14 +38,18 @@ class present_executor final {
         auto* p_swapchain = static_cast<VkSwapchainKHR_T*>(nullptr);
         auto* p_semapho   = static_cast<raw::semaphore*>(nullptr);
 
-        if (swapchain_) p_swapchain = &*swapchain_;
-        if (semapho_) p_semapho = &*semapho_;
+        if (swapchain_) {
+            p_swapchain          = &*swapchain_;
+            info_.pSwapchains    = &p_swapchain;
+            info_.swapchainCount = 1;
+        }
+        if (semapho_) {
+            p_semapho                = &*semapho_;
+            info_.pWaitSemaphores    = &p_semapho;
+            info_.waitSemaphoreCount = 1;
+        }
 
-        info_.pSwapchains        = &p_swapchain;
-        info_.swapchainCount     = 1;
-        info_.pWaitSemaphores    = &p_semapho;
-        info_.waitSemaphoreCount = 1;
-        info_.pImageIndices      = &image_index_;
+        info_.pImageIndices = &image_index_;
 
         const auto res = vkQueuePresentKHR(&queue_.get(), &info_);
         if (res != VK_SUCCESS) return make_unexpected(res);
