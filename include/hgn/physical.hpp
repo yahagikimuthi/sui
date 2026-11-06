@@ -20,7 +20,6 @@
 #include "hgn/surface.hpp"
 
 namespace hgn {
-class device;
 class physical_device final {
     friend class instance;
     friend class device;
