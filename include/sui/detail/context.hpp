@@ -3,11 +3,14 @@
 #include <cstdint>
 #include <exception>
 #include <expected>
-#include <glm/trigonometric.hpp>
 #include <span>
 #include <utility>
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/trigonometric.hpp>
 #include <hgn/enums.hpp>
 #include <kgm/window.hpp>
 
@@ -111,6 +114,13 @@ class context final {
     void render(const std::span<const vertex> vertices) noexcept {
         // 頂点データをバッファに書き込み
         render_.vbo().cpy(vertices);
+
+        auto ubo  = uniform_buffer_object{};
+        ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.5f));
+        ubo.proj  = glm::ortho(0.0f, 800.f, 600.f, 0.f, -0.5f, 0.5f);
+        ubo.proj[1][1] *= -1;
+        render_.ubo().cpy(ubo);
+
         // コマンドバッファにポリゴンの描画命令を記録
         cmd_.buffer().draw(static_cast<std::uint32_t>(vertices.size()), 1);
     }
@@ -121,8 +131,7 @@ class context final {
         render_.ibo().cpy(indices);
         render_.vbo().cpy(vertices);
         auto ubo  = uniform_buffer_object{};
-        ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f));
-        ubo.proj  = glm::ortho(0.0f, 800.f, 600.f, 0.0f, -1.0f, 1.0f);
+        ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.5f));
         render_.ubo().cpy(ubo);
         cmd_.buffer().draw_indexed(static_cast<std::uint32_t>(indices.size()), 1);
     }
