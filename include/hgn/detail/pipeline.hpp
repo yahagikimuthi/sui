@@ -63,6 +63,14 @@ class graphics_pipeline_creator final {
         rendering_.colorAttachmentCount    = 1;
         rendering_.pColorAttachmentFormats = &color_attachment_;
 
+        auto depth_stencil             = VkPipelineDepthStencilStateCreateInfo{};
+        depth_stencil.sType            = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        depth_stencil.depthTestEnable  = VK_TRUE;
+        depth_stencil.depthWriteEnable = VK_TRUE;
+        depth_stencil.depthCompareOp   = VK_COMPARE_OP_LESS;
+        depth_stencil.depthBoundsTestEnable = VK_TRUE;
+        depth_stencil.stencilTestEnable     = VK_TRUE;
+
         info_.pVertexInputState   = &vertex_state_;
         info_.pInputAssemblyState = &assembly_;
         info_.pDynamicState       = &dynamic_state_;
@@ -73,6 +81,7 @@ class graphics_pipeline_creator final {
         info_.stageCount          = 2;
         info_.pStages             = shaders_.data();
         info_.pNext               = &rendering_;
+        info_.pDepthStencilState  = &depth_stencil;
 
         auto*      raw = static_cast<raw::pipeline*>(nullptr);
         const auto res = vkCreateGraphicsPipelines(&dev_.get(), nullptr, 1, &info_, nullptr, &raw);
@@ -117,7 +126,7 @@ class graphics_pipeline_creator final {
         rasterization_.rasterizerDiscardEnable = VK_FALSE;
         rasterization_.polygonMode             = VK_POLYGON_MODE_FILL;
         rasterization_.lineWidth               = 1.f;
-        rasterization_.cullMode                = VK_CULL_MODE_BACK_BIT;
+        rasterization_.cullMode                = VK_CULL_MODE_NONE;
         rasterization_.frontFace               = VK_FRONT_FACE_CLOCKWISE;
         rasterization_.depthBiasEnable         = VK_FALSE;
 
