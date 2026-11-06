@@ -186,6 +186,8 @@ class descriptor_pool final {
 
     [[nodiscard]] operator raw::descriptor_pool&() noexcept { return get(); }
 
+    [[nodiscard]] auto init_device() noexcept -> raw::device& { return dev_; }
+
   private:
     void destroy() noexcept {
         if (raw_) vkDestroyDescriptorPool(&dev_.get(), &get(), nullptr);
