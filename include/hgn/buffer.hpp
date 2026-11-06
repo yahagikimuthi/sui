@@ -2,10 +2,12 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <span>
 #include <utility>
 
+#include <hgn/detail/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "hgn/raii/buffer.hpp"
@@ -23,6 +25,8 @@ class buffer final {
 
     ~buffer() noexcept = default;
 
+    [[nodiscard]] auto size() noexcept -> std::uint64_t { return info().size; }
+
     [[nodiscard]] auto get() noexcept -> raw::buffer& { return raw_; }
 
     template <typename T>
@@ -36,6 +40,12 @@ class buffer final {
         raw::buffer& raw, raw::allocator& allocator, raw::allocation& alloc, std::byte* data
     ) noexcept
         : raw_{std::move(raw), allocator, alloc}, data_{data} {}
+
+    [[nodiscard]] auto info() noexcept -> VmaAllocationInfo {
+        auto info = VmaAllocationInfo{};
+        vmaGetAllocationInfo(&raw_.init_allocator(), &raw_.init_allocation(), &info);
+        return info;
+    }
 
     raii::buffer raw_;
     std::byte*   data_;

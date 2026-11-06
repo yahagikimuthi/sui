@@ -9,9 +9,11 @@
 #include <vulkan/vulkan.h>
 
 #include "hgn/command.hpp"
+#include "hgn/descriptor.hpp"
+#include "hgn/detail/device/descriptor.hpp"
 #include "hgn/detail/device/image_view.hpp"
 #include "hgn/detail/device/swapchain.hpp"
-#include "hgn/detail/pipeline_creator.hpp"
+#include "hgn/detail/pipeline.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/queue.hpp"
 #include "hgn/queue_family.hpp"
@@ -124,6 +126,50 @@ class device final {
 
     [[nodiscard]] auto get_graphics_pipeline_creator() noexcept -> graphics_pipeline_creator {
         return graphics_pipeline_creator{get()};
+    }
+
+    [[nodiscard]] auto create_descriptor_set_layout() noexcept
+        -> std::expected<descriptor_set_layout, result> {
+        auto binding            = VkDescriptorSetLayoutBinding{};
+        binding.binding         = 0;
+        binding.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        binding.descriptorCount = 1;
+        binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
+
+        auto info         = VkDescriptorSetLayoutCreateInfo{};
+        info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        info.bindingCount = 1;
+        info.pBindings    = &binding;
+
+        auto*      raw = static_cast<raw::descriptor_set_layout*>(nullptr);
+        const auto res = vkCreateDescriptorSetLayout(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return descriptor_set_layout{*raw, get()};
+    }
+
+    [[nodiscard]] auto create_descriptor_pool() noexcept -> std::expected<descriptor_pool, result> {
+        auto size            = VkDescriptorPoolSize{};
+        size.type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        size.descriptorCount = 1;
+
+        auto info          = VkDescriptorPoolCreateInfo{};
+        info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        info.poolSizeCount = 1;
+        info.pPoolSizes    = &size;
+        info.maxSets       = 1;
+
+        auto*      raw = static_cast<raw::descriptor_pool*>(nullptr);
+        const auto res = vkCreateDescriptorPool(&get(), &info, nullptr, &raw);
+        if (res != VK_SUCCESS) return make_unexpected(res);
+
+        assert(raw != nullptr);
+        return descriptor_pool{*raw, get()};
+    }
+
+    [[nodiscard]] auto get_descriptor_set_getter() noexcept -> descriptor_set_getter {
+        return descriptor_set_getter{get()};
     }
 
     [[nodiscard]] auto wait_idle() noexcept -> std::expected<void, result> {

@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.h>
 
 #include "hgn/buffer.hpp"
+#include "hgn/descriptor.hpp"
 #include "hgn/detail/command/barrier.hpp"
 #include "hgn/detail/command/begin_render.hpp"
 #include "hgn/enums.hpp"
@@ -51,6 +52,13 @@ class command_buffer final {
 
     void bind_index_buffer(buffer& buffer) noexcept {
         vkCmdBindIndexBuffer(&get(), &buffer.get(), 0, VK_INDEX_TYPE_UINT32);
+    }
+
+    void bind_descriptor_set(pipeline_layout& layout, descriptor_set& set) noexcept {
+        auto* ptr = &set.get();
+        vkCmdBindDescriptorSets(
+            &get(), VK_PIPELINE_BIND_POINT_GRAPHICS, &layout.get(), 0, 1, &ptr, 0, nullptr
+        );
     }
 
     void draw(const std::uint32_t vertex_count, const std::uint32_t instance_count) noexcept {
