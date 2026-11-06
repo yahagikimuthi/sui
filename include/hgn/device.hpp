@@ -10,7 +10,7 @@
 
 #include "hgn/command.hpp"
 #include "hgn/descriptor.hpp"
-#include "hgn/detail/device/descriptor.hpp"
+#include "hgn/descriptor_pool.hpp"
 #include "hgn/detail/device/image_view.hpp"
 #include "hgn/detail/device/swapchain.hpp"
 #include "hgn/detail/pipeline.hpp"
@@ -166,10 +166,6 @@ class device final {
 
         assert(raw != nullptr);
         return descriptor_pool{*raw, get()};
-    }
-
-    [[nodiscard]] auto get_descriptor_set_getter() noexcept -> descriptor_set_getter {
-        return descriptor_set_getter{get()};
     }
 
     [[nodiscard]] auto wait_idle() noexcept -> std::expected<void, result> {
