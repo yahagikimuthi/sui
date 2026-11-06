@@ -124,6 +124,8 @@ class descriptor final {
         return descriptor{std::move(*layout), std::move(*pool), *set};
     }
 
+    [[nodiscard]] auto layout() noexcept -> hgn::descriptor_set_layout& { return layout_; }
+
     [[nodiscard]] auto set() noexcept -> hgn::descriptor_set& { return set_; }
 
   private:
@@ -149,7 +151,11 @@ class renderer final {
         auto shader = shader::make(dev);
         if (not shader) return make_error(runtime_error, "Failed to make shader", shader.error());
 
-        auto layout = dev.create_pipeline_layout();
+        auto descriptor = descriptor::make(dev, buffer->uniform());
+        if (not descriptor)
+            return make_error(runtime_error, "Failed to make descriptor", descriptor.error());
+
+        auto layout = dev.create_pipeline_layout(descriptor->layout());
         if (not layout) return make_error(runtime_error, "Failed to make pipeline layout");
 
         auto pipe = dev.get_graphics_pipeline_creator()
@@ -161,10 +167,6 @@ class renderer final {
                         .create();
 
         if (not pipe) return make_error(runtime_error, "Failed to make graphics pipeline.");
-
-        auto descriptor = descriptor::make(dev, buffer->uniform());
-        if (not descriptor)
-            return make_error(runtime_error, "Failed to make descriptor", descriptor.error());
 
         return renderer{
             std::move(*buffer),
@@ -194,14 +196,14 @@ class renderer final {
     ) noexcept
         : buffer_{std::move(buffer)},
           shader_{std::move(shader)},
+          descriptor_{std::move(descriptor)},
           layout_{std::move(layout)},
-          pipe_{std::move(pipe)},
-          descriptor_{std::move(descriptor)} {}
+          pipe_{std::move(pipe)} {}
 
     buffer                 buffer_;
     shader                 shader_;
+    descriptor             descriptor_;
     hgn::pipeline_layout   layout_;
     hgn::graphics_pipeline pipe_;
-    descriptor             descriptor_;
 };
 }  // namespace sui::detail
