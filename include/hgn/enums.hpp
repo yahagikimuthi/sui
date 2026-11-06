@@ -44,39 +44,6 @@ enum class sharing_mode : std::int32_t {  // NOLINT
     exclusive  = VK_SHARING_MODE_EXCLUSIVE
 };
 
-enum class memory_property_flags : std::int32_t {  // NOLINT
-    host_visible  = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-    host_coherent = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-};
-
-[[nodiscard]] constexpr auto operator&(
-    const memory_property_flags a, const memory_property_flags b
-) noexcept -> memory_property_flags {
-    const auto raw_a = std::to_underlying(a);
-    const auto raw_b = std::to_underlying(b);
-    const auto out   = raw_a & raw_b;
-    return static_cast<memory_property_flags>(out);
-}
-
-[[nodiscard]] constexpr auto operator|(
-    const memory_property_flags a, const memory_property_flags b
-) noexcept -> memory_property_flags {
-    const auto casted_a = std::to_underlying(a);
-    const auto casted_b = std::to_underlying(b);
-    const auto out      = casted_a | casted_b;
-    return static_cast<memory_property_flags>(out);
-}
-
-enum class shader_stage_flag_bits : std::int32_t {  // NOLINT
-    vertex   = VK_SHADER_STAGE_VERTEX_BIT,
-    fragment = VK_SHADER_STAGE_FRAGMENT_BIT
-};
-
-enum class dynamic_state : std::int32_t {  // NOLINT
-    viewport = VK_DYNAMIC_STATE_VIEWPORT,
-    scissor  = VK_DYNAMIC_STATE_SCISSOR
-};
-
 enum class image_layout : std::int32_t {
     undefined                = VK_IMAGE_LAYOUT_UNDEFINED,
     color_attachment_optimal = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,

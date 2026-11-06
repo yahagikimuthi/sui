@@ -137,12 +137,6 @@ class physical_device final {
         }
     }
 
-    [[nodiscard]] auto get_memory_properties() noexcept -> physical_device_memory_properties {
-        auto property = VkPhysicalDeviceMemoryProperties{};
-        vkGetPhysicalDeviceMemoryProperties(&get(), &property);
-        return std::bit_cast<physical_device_memory_properties>(property);
-    }
-
     [[nodiscard]] auto get() noexcept -> raw::physical_device& { return raw_; }
 
     [[nodiscard]] auto get() const noexcept -> raw::physical_device& { return raw_; }
