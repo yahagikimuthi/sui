@@ -28,6 +28,7 @@ sudo apt-get update && sudo apt-get install -y \
     libvulkan-dev \
     vulkan-tools \
     vulkan-validationlayers \
+    glslang-tools \
     libglfw3-dev \
     libglm-dev \
     libx11-xcb-dev \
