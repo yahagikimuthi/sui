@@ -6,7 +6,6 @@
 #include <span>
 #include <utility>
 
-#include <hgn/detail/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "hgn/command.hpp"
@@ -14,13 +13,11 @@
 #include "hgn/detail/device/swapchain.hpp"
 #include "hgn/detail/pipeline_creator.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/image.hpp"
 #include "hgn/queue.hpp"
 #include "hgn/queue_family.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw/raw.hpp"
 #include "hgn/rendering.hpp"
-#include "hgn/swapchain.hpp"
 #include "hgn/sync.hpp"
 
 namespace hgn {
@@ -28,12 +25,6 @@ class device final {
     friend class physical_device;
 
   public:
-    device(const device&) noexcept                    = delete;
-    auto operator=(const device&) noexcept -> device& = delete;
-    device(device&&) noexcept                         = default;
-    auto operator=(device&&) noexcept -> device&      = default;
-    ~device() noexcept                                = default;
-
     [[nodiscard]] auto get_queue(const queue_family& family) noexcept -> queue {
         // 指定されたキューファミリーの0番キューを取得する
         auto* raw = static_cast<raw::queue*>(nullptr);
