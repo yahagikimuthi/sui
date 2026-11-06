@@ -10,7 +10,8 @@
 #include <vulkan/vulkan.h>
 
 #include "hgn/command.hpp"
-#include "hgn/detail/device.hpp"
+#include "hgn/detail/device/image_view.hpp"
+#include "hgn/detail/device/swapchain.hpp"
 #include "hgn/detail/pipeline_creator.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/image.hpp"

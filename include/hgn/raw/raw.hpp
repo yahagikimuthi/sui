@@ -19,10 +19,13 @@ using image_view    = VkImageView_T;
 using command_pool   = VkCommandPool_T;
 using command_buffer = VkCommandBuffer_T;
 
-using buffer          = VkBuffer_T;
-using shader_module   = VkShaderModule_T;
-using pipeline_layout = VkPipelineLayout_T;
-using pipeline        = VkPipeline_T;
+using buffer                = VkBuffer_T;
+using shader_module         = VkShaderModule_T;
+using pipeline_layout       = VkPipelineLayout_T;
+using pipeline              = VkPipeline_T;
+using descriptor_set_layout = VkDescriptorSetLayout_T;
+using descriptor_pool       = VkDescriptorPool_T;
+using descriptor_set        = VkDescriptorSet_T;
 
 using allocator  = VmaAllocator_T;
 using allocation = VmaAllocation_T;

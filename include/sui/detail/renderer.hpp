@@ -47,9 +47,14 @@ class renderer final {
                        .create();
         if (not ibo) return make_error(runtime_error, "Failed to make index buffer.");
 
+        auto ubo = allocator->get_buffer_creator()
+                       .size(sizeof(std::uint32_t) * 1000)
+                       .usage(hgn::buffer_usage_flag_bits::uniform)
+                       .create();
+
         auto vert_source = read_file("../include/sui/detail/vert.spv");
         if (not vert_source) return make_error(logic_error, "Failed to read vertex source file.");
-        auto vert        = dev.create_shader(*vert_source);
+        auto vert = dev.create_shader(*vert_source);
         if (not vert) return make_error(runtime_error, "Failed to make vertex shader module.");
 
         auto frag_source = read_file("../include/sui/detail/frag.spv");
