@@ -11,7 +11,7 @@
 #include <vulkan/vulkan.h>
 
 #include "hgn/enums.hpp"
-#include "hgn/queue_family.hpp"
+#include "hgn/queue.hpp"
 #include "hgn/raw/raw.hpp"
 #include "hgn/structs.hpp"
 #include "hgn/surface.hpp"

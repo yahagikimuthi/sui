@@ -10,7 +10,6 @@
 #include <hgn/instance.hpp>
 #include <hgn/physical.hpp>
 #include <hgn/queue.hpp>
-#include <hgn/queue_family.hpp>
 #include <hgn/surface.hpp>
 #include <hgn/sync.hpp>
 #include <kgm/window.hpp>

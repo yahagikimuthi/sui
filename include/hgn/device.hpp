@@ -16,7 +16,6 @@
 #include "hgn/detail/pipeline.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/queue.hpp"
-#include "hgn/queue_family.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw/raw.hpp"
 #include "hgn/rendering.hpp"

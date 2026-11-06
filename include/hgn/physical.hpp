@@ -13,7 +13,7 @@
 
 #include "hgn/device.hpp"
 #include "hgn/enums.hpp"
-#include "hgn/queue_family.hpp"
+#include "hgn/queue.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw/raw.hpp"
 #include "hgn/structs.hpp"
