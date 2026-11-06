@@ -35,6 +35,11 @@ class buffer final {
         std::memcpy(data_, data.data(), sizeof(T) * data.size());
     }
 
+    template <typename T>
+    void cpy(T& data) noexcept {
+        std::memcpy(data_, &data, sizeof(T));
+    }
+
   private:
     explicit buffer(
         raw::buffer& raw, raw::allocator& allocator, raw::allocation& alloc, std::byte* data
