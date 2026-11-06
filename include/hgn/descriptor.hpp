@@ -21,21 +21,8 @@ class descriptor_set_layout final {
     raii::descriptor_set_layout raw_;
 };
 
-class descriptor_pool final {
-  public:
-    friend class device;
-
-    [[nodiscard]] auto get() noexcept -> raw::descriptor_pool& { return raw_; }
-
-  private:
-    explicit descriptor_pool(raw::descriptor_pool& raw, raw::device& dev) noexcept
-        : raw_{std::move(raw), dev} {}
-
-    raii::descriptor_pool raw_;
-};
-
 class descriptor_set final {
-    friend class descriptor_set_getter;
+    friend class descriptor_pool;
 
   public:
     void update(buffer& buffer) noexcept {
