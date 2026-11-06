@@ -7,11 +7,9 @@ layout(binding = 0) uniform UniformBufferObject {
 }
 ubo;
 
-// 頂点バッファのレイアウトに対応するインデックス
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
 
-// フラグメントシェーダーへ渡す色
 layout(location = 0) out vec3 fragColor;
 
 void main() {
