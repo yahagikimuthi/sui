@@ -6,11 +6,8 @@
 #include <span>
 #include <utility>
 
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/ext/matrix_clip_space.hpp>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/trigonometric.hpp>
+#include <glm/ext.hpp>
+#include <glm/glm.hpp>
 #include <hgn/enums.hpp>
 #include <kgm/window.hpp>
 
@@ -117,8 +114,8 @@ class context final {
 
         auto ubo  = uniform_buffer_object{};
         ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.5f));
-        ubo.proj  = glm::ortho(0.0f, 800.f, 600.f, 0.f, -0.5f, 0.5f);
-        ubo.proj[1][1] *= -1;
+        ubo.proj  = glm::perspectiveZO(glm::radians(45.f), 800.f / 600.f, 0.1f, 10.f);
+
         render_.ubo().cpy(ubo);
 
         // コマンドバッファにポリゴンの描画命令を記録
