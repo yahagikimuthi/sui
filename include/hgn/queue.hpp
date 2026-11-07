@@ -28,12 +28,11 @@ class queue_family final {
 
     [[nodiscard]] auto is_supporting_surface(surface_khr& surface
     ) noexcept -> std::expected<bool, result> {
-        auto       supporting = VkBool32{};
-        const auto res        = vkGetPhysicalDeviceSurfaceSupportKHR(
-            &raw_.init_physical(), index(), &surface.get(), &supporting
-        );
-        if (res != VK_SUCCESS) return make_unexpected(res);
-        return supporting != VK_FALSE;
+        auto supporting = VkBool32{};
+        return make_expected(vkGetPhysicalDeviceSurfaceSupportKHR(
+                                 &raw_.init_physical(), index(), &surface.get(), &supporting
+                             ))
+            .transform([&]() noexcept -> bool { return supporting != VK_FALSE; });
     }
 
     [[nodiscard]] auto operator==(const queue_family& other) const noexcept -> bool {

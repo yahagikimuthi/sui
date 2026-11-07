@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <utility>
@@ -9,6 +8,7 @@
 
 namespace hgn {
 enum class result : std::int32_t {
+    success               = VK_SUCCESS,
     error_out_of_date_khr = VK_ERROR_OUT_OF_DATE_KHR,
     suboptimal_khr        = VK_SUBOPTIMAL_KHR
 };
@@ -18,18 +18,10 @@ enum class result : std::int32_t {
     return std::unexpected{static_cast<result>(res)};
 }
 
-template <typename T>
-[[nodiscard]] constexpr auto make_expected(const VkResult res, T* ptr) noexcept
-    -> std::expected<T*, result> {
-    if (res != VK_SUCCESS) return make_unexpected(res);
-    assert(ptr != nullptr);
-    return ptr;
-}
-
 [[nodiscard]] constexpr auto make_expected(const VkResult res
 ) noexcept -> std::expected<void, result> {
-    if (res != VK_SUCCESS) return make_unexpected(res);
-    return {};
+    return res == VK_SUCCESS ? std::expected<void, result>{}
+                             : std::unexpected{static_cast<result>(res)};
 }
 
 enum class queue_flag_bits : std::int32_t { none = 0, graphics = VK_QUEUE_GRAPHICS_BIT };  // NOLINT

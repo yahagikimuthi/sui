@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <functional>
@@ -53,10 +52,7 @@ class present_executor final {
 
         info_.pImageIndices = &image_index_;
 
-        const auto res = vkQueuePresentKHR(&queue_.get(), &info_);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        return {};
+        return make_expected(vkQueuePresentKHR(&queue_.get(), &info_));
     }
 
   private:

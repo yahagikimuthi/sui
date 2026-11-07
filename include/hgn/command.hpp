@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <utility>
@@ -120,10 +119,8 @@ class command_pool final {
         info.commandPool        = &get();
 
         auto* raw = static_cast<raw::command_buffer*>(nullptr);
-        return make_expected(vkAllocateCommandBuffers(&raw_.init_device(), &info, &raw), raw)
-            .transform([](raw::command_buffer* raw) noexcept -> command_buffer {
-                return command_buffer{*raw};
-            });
+        return make_expected(vkAllocateCommandBuffers(&raw_.init_device(), &info, &raw))
+            .transform([&]() noexcept -> command_buffer { return command_buffer{*raw}; });
     }
 
     [[nodiscard]] auto get() noexcept -> raw::command_pool& { return raw_; }

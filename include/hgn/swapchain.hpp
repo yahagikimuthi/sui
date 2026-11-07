@@ -23,13 +23,17 @@ class swapchain_khr final {
         : raw_{std::move(raw), dev}, image_format_{fmt} {}
 
     [[nodiscard]] auto get_images() noexcept -> std::expected<std::vector<image>, result> {
-        auto       count = std::uint32_t{};
-        const auto res1  = vkGetSwapchainImagesKHR(&raw_.init_device(), &get(), &count, nullptr);
-        if (res1 != VK_SUCCESS) return make_unexpected(res1);
-
-        auto       raws = std::vector<raw::image*>(count);
-        const auto res2 = vkGetSwapchainImagesKHR(&raw_.init_device(), &get(), &count, raws.data());
-        if (res2 != VK_SUCCESS) return make_unexpected(res2);
+        auto count = std::uint32_t{};
+        if (const auto res = vkGetSwapchainImagesKHR(&raw_.init_device(), &get(), &count, nullptr);
+            res != VK_SUCCESS) {
+            return make_unexpected(res);
+        }
+        auto raws = std::vector<raw::image*>(count);
+        if (const auto res =
+                vkGetSwapchainImagesKHR(&raw_.init_device(), &get(), &count, raws.data());
+            res != VK_SUCCESS) {
+            return make_unexpected(res);
+        }
 
         return raws | std::views::transform([](raw::image* raw) noexcept -> image {
                    assert(raw != nullptr);
@@ -40,18 +44,16 @@ class swapchain_khr final {
 
     [[nodiscard]] auto acquire_next_image(semaphore& semapho
     ) noexcept -> std::expected<std::uint32_t, result> {
-        auto       index = std::uint32_t{};
-        const auto res   = vkAcquireNextImageKHR(
-            &raw_.init_device(),
-            &get(),
-            std::numeric_limits<std::uint32_t>::max(),
-            &semapho.get(),
-            nullptr,
-            &index
-        );
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        return index;
+        auto index = std::uint32_t{};
+        return make_expected(vkAcquireNextImageKHR(
+                                 &raw_.init_device(),
+                                 &get(),
+                                 std::numeric_limits<std::uint32_t>::max(),
+                                 &semapho.get(),
+                                 nullptr,
+                                 &index
+                             ))
+            .transform([&]() noexcept -> std::uint32_t { return index; });
     }
 
     [[nodiscard]] auto image_format() const noexcept -> format { return image_format_; }

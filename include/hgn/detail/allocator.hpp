@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <functional>
@@ -43,20 +42,25 @@ class buffer_creator final {
             .minAlignment   = 0
         };
 
-        auto*      raw            = static_cast<raw::buffer*>(nullptr);
-        auto*      raw_allocation = static_cast<raw::allocation*>(nullptr);
-        auto       alloc_info     = VmaAllocationInfo{};
-        const auto res1           = vmaCreateBuffer(
-            &allocator_.get(), &info_, &alloc_create_info, &raw, &raw_allocation, &alloc_info
-        );
-        if (res1 != VK_SUCCESS) return make_unexpected(res1);
-
-        assert(raw != nullptr);
-        assert(raw_allocation != nullptr);
-
-        return buffer{
-            *raw, allocator_.get(), *raw_allocation, static_cast<std::byte*>(alloc_info.pMappedData)
-        };
+        auto* raw            = static_cast<raw::buffer*>(nullptr);
+        auto* raw_allocation = static_cast<raw::allocation*>(nullptr);
+        auto  alloc_info     = VmaAllocationInfo{};
+        return make_expected(vmaCreateBuffer(
+                                 &allocator_.get(),
+                                 &info_,
+                                 &alloc_create_info,
+                                 &raw,
+                                 &raw_allocation,
+                                 &alloc_info
+                             ))
+            .transform([&]() noexcept -> buffer {
+                return buffer{
+                    *raw,
+                    allocator_.get(),
+                    *raw_allocation,
+                    static_cast<std::byte*>(alloc_info.pMappedData)
+                };
+            });
     }
 
   private:

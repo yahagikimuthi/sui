@@ -35,12 +35,9 @@ class allocator_creator final {
     }
 
     [[nodiscard]] auto create() noexcept -> std::expected<allocator, result> {
-        auto*      raw = static_cast<raw::allocator*>(nullptr);
-        const auto res = vmaCreateAllocator(&info_, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return allocator{*raw};
+        auto* raw = static_cast<raw::allocator*>(nullptr);
+        return make_expected(vmaCreateAllocator(&info_, &raw))
+            .transform([&]() noexcept -> allocator { return allocator{*raw}; });
     }
 
   private:

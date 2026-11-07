@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <span>
@@ -77,12 +76,9 @@ class instance_creator final {
         info_.enabledExtensionCount   = static_cast<std::uint32_t>(extensions.size());
         info_.ppEnabledExtensionNames = extensions.data();
 
-        auto*      raw = static_cast<raw::instance*>(nullptr);
-        const auto res = vkCreateInstance(&info_, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return instance{*raw};
+        auto* raw = static_cast<raw::instance*>(nullptr);
+        return make_expected(vkCreateInstance(&info_, nullptr, &raw))
+            .transform([&]() noexcept -> instance { return instance{*raw}; });
     }
 
   private:

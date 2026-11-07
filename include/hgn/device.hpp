@@ -40,12 +40,9 @@ class device final {
         info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
         // 他の値であるpNextとflagsは基本的にnullptr, 0で十分
 
-        auto*      raw = static_cast<raw::semaphore*>(nullptr);
-        const auto res = vkCreateSemaphore(&get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return semaphore{*raw, get()};
+        auto* raw = static_cast<raw::semaphore*>(nullptr);
+        return make_expected(vkCreateSemaphore(&get(), &info, nullptr, &raw))
+            .transform([&]() noexcept -> semaphore { return semaphore{*raw, get()}; });
     }
 
     [[nodiscard]] auto create_fence() noexcept -> std::expected<fence, result> {
@@ -55,12 +52,9 @@ class device final {
         // 以下の定数を入力した場合、同期が終了した状態で生成されるため、待機することがない
         info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        auto*      raw = static_cast<raw::fence*>(nullptr);
-        const auto res = vkCreateFence(&get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return fence{*raw, get()};
+        auto* raw = static_cast<raw::fence*>(nullptr);
+        return make_expected(vkCreateFence(&get(), &info, nullptr, &raw))
+            .transform([&]() noexcept -> fence { return fence{*raw, get()}; });
     }
 
     [[nodiscard]] auto get_swapchain_creator() noexcept -> swapchain_khr_creator {
@@ -79,12 +73,9 @@ class device final {
 
         info.queueFamilyIndex = family.index();
 
-        auto*      raw = static_cast<raw::command_pool*>(nullptr);
-        const auto res = vkCreateCommandPool(&get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return command_pool{*raw, get()};
+        auto* raw = static_cast<raw::command_pool*>(nullptr);
+        return make_expected(vkCreateCommandPool(&get(), &info, nullptr, &raw))
+            .transform([&]() noexcept -> command_pool { return command_pool{*raw, get()}; });
     }
 
     [[nodiscard]] auto get_image_view_creator() noexcept -> image_view_creator {
@@ -100,12 +91,9 @@ class device final {
         // charとunsigned intのビット再解釈は厳密エイリアス規則の例外
         info.pCode = reinterpret_cast<const std::uint32_t*>(codes.data());  // NOLINT
 
-        auto*      raw = static_cast<raw::shader_module*>(nullptr);
-        const auto res = vkCreateShaderModule(&get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return shader_module{*raw, get()};
+        auto* raw = static_cast<raw::shader_module*>(nullptr);
+        return make_expected(vkCreateShaderModule(&get(), &info, nullptr, &raw))
+            .transform([&]() noexcept -> shader_module { return shader_module{*raw, get()}; });
     }
 
     [[nodiscard]] auto create_pipeline_layout() noexcept -> std::expected<pipeline_layout, result> {
@@ -115,12 +103,9 @@ class device final {
         info.setLayoutCount         = 0;
         info.pushConstantRangeCount = 0;
 
-        auto*      raw = static_cast<raw::pipeline_layout*>(nullptr);
-        const auto res = vkCreatePipelineLayout(&get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return pipeline_layout{*raw, get()};
+        auto* raw = static_cast<raw::pipeline_layout*>(nullptr);
+        return make_expected(vkCreatePipelineLayout(&get(), &info, nullptr, &raw))
+            .transform([&]() noexcept -> pipeline_layout { return pipeline_layout{*raw, get()}; });
     }
 
     [[nodiscard]] auto create_pipeline_layout(descriptor_set_layout& set
@@ -132,12 +117,9 @@ class device final {
         info.pSetLayouts            = &ptr;
         info.pushConstantRangeCount = 0;
 
-        auto*      raw = static_cast<raw::pipeline_layout*>(nullptr);
-        const auto res = vkCreatePipelineLayout(&get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return pipeline_layout{*raw, get()};
+        auto* raw = static_cast<raw::pipeline_layout*>(nullptr);
+        return make_expected(vkCreatePipelineLayout(&get(), &info, nullptr, &raw))
+            .transform([&]() noexcept -> pipeline_layout { return pipeline_layout{*raw, get()}; });
     }
 
     [[nodiscard]] auto get_graphics_pipeline_creator() noexcept -> graphics_pipeline_creator {
@@ -157,12 +139,11 @@ class device final {
         info.bindingCount = 1;
         info.pBindings    = &binding;
 
-        auto*      raw = static_cast<raw::descriptor_set_layout*>(nullptr);
-        const auto res = vkCreateDescriptorSetLayout(&get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return descriptor_set_layout{*raw, get()};
+        auto* raw = static_cast<raw::descriptor_set_layout*>(nullptr);
+        return make_expected(vkCreateDescriptorSetLayout(&get(), &info, nullptr, &raw))
+            .transform([&]() noexcept -> descriptor_set_layout {
+                return descriptor_set_layout{*raw, get()};
+            });
     }
 
     [[nodiscard]] auto create_descriptor_pool() noexcept -> std::expected<descriptor_pool, result> {
@@ -176,12 +157,9 @@ class device final {
         info.pPoolSizes    = &size;
         info.maxSets       = 1;
 
-        auto*      raw = static_cast<raw::descriptor_pool*>(nullptr);
-        const auto res = vkCreateDescriptorPool(&get(), &info, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return descriptor_pool{*raw, get()};
+        auto* raw = static_cast<raw::descriptor_pool*>(nullptr);
+        return make_expected(vkCreateDescriptorPool(&get(), &info, nullptr, &raw))
+            .transform([&]() noexcept -> descriptor_pool { return descriptor_pool{*raw, get()}; });
     }
 
     [[nodiscard]] auto wait_idle() noexcept -> std::expected<void, result> {

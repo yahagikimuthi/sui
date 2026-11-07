@@ -1,7 +1,6 @@
 #pragma once
 
 #include <bit>
-#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <ranges>
@@ -42,25 +41,30 @@ class physical_device final {
 
     [[nodiscard]] auto get_surface_capabilities(surface_khr& surface
     ) noexcept -> std::expected<surface_capabilities_khr, result> {
-        auto       capabilities = VkSurfaceCapabilitiesKHR{};  // NOLINT
-        const auto res =
-            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&get(), &surface.get(), &capabilities);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        return std::bit_cast<surface_capabilities_khr>(capabilities);
+        auto capabilities = VkSurfaceCapabilitiesKHR{};  // NOLINT
+        return make_expected(
+                   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&get(), &surface.get(), &capabilities)
+        )
+            .transform([&]() noexcept -> surface_capabilities_khr {
+                return std::bit_cast<surface_capabilities_khr>(capabilities);
+            });
     }
 
     [[nodiscard]] auto get_surface_formats(surface_khr& surface
     ) noexcept -> std::expected<std::vector<surface_format_khr>, result> {
-        auto       count = std::uint32_t{};
-        const auto res1 =
-            vkGetPhysicalDeviceSurfaceFormatsKHR(&get(), &surface.get(), &count, nullptr);
-        if (res1 != VK_SUCCESS) return make_unexpected(res1);
+        auto count = std::uint32_t{};
+        if (const auto res =
+                vkGetPhysicalDeviceSurfaceFormatsKHR(&get(), &surface.get(), &count, nullptr);
+            res != VK_SUCCESS) {
+            return make_unexpected(res);
+        }
 
-        auto       formats = std::vector<VkSurfaceFormatKHR>(count);
-        const auto res2 =
-            vkGetPhysicalDeviceSurfaceFormatsKHR(&get(), &surface.get(), &count, formats.data());
-        if (res2 != VK_SUCCESS) return make_unexpected(res2);
+        auto formats = std::vector<VkSurfaceFormatKHR>(count);
+        if (const auto res = vkGetPhysicalDeviceSurfaceFormatsKHR(
+                &get(), &surface.get(), &count, formats.data()
+            )) {
+            return make_unexpected(res);
+        }
 
         return formats |
                std::views::transform(
@@ -73,15 +77,20 @@ class physical_device final {
 
     [[nodiscard]] auto get_surface_present_modes(surface_khr& surface
     ) noexcept -> std::expected<std::vector<present_mode_khr>, result> {
-        auto       count = std::uint32_t{};
-        const auto res1 =
-            vkGetPhysicalDeviceSurfacePresentModesKHR(&get(), &surface.get(), &count, nullptr);
-        if (res1 != VK_SUCCESS) return make_unexpected(res1);
+        auto count = std::uint32_t{};
+        if (const auto res =
+                vkGetPhysicalDeviceSurfacePresentModesKHR(&get(), &surface.get(), &count, nullptr);
+            res != VK_SUCCESS) {
+            return make_unexpected(res);
+        }
 
-        auto       modes = std::vector<VkPresentModeKHR>(count);
-        const auto res2 =
-            vkGetPhysicalDeviceSurfacePresentModesKHR(&get(), &surface.get(), &count, modes.data());
-        if (res2 != VK_SUCCESS) return make_unexpected(res2);
+        auto modes = std::vector<VkPresentModeKHR>(count);
+        if (const auto res = vkGetPhysicalDeviceSurfacePresentModesKHR(
+                &get(), &surface.get(), &count, modes.data()
+            );
+            res != VK_SUCCESS) {
+            return make_unexpected(res);
+        }
 
         return modes |
                std::views::transform([](VkPresentModeKHR& mode) noexcept -> present_mode_khr {
@@ -121,11 +130,9 @@ class physical_device final {
             constexpr auto* extension    = "VK_KHR_swapchain";
             info.ppEnabledExtensionNames = &extension;
 
-            auto*      raw = static_cast<raw::device*>(nullptr);
-            const auto res = vkCreateDevice(&get(), &info, nullptr, &raw);
-            if (res != VK_SUCCESS) return make_unexpected(res);
-
-            return device{*raw};
+            auto* raw = static_cast<raw::device*>(nullptr);
+            return make_expected(vkCreateDevice(&get(), &info, nullptr, &raw))
+                .transform([&]() noexcept -> device { return device{*raw}; });
         }
     }
 

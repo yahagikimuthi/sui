@@ -23,16 +23,13 @@ class instance final {
     [[nodiscard]] auto get_physicals() noexcept
         -> std::expected<std::vector<physical_device>, result> {
         auto count = std::uint32_t{};
-        if (const auto res = vkEnumeratePhysicalDevices(&get(), &count, nullptr);
-            res != VK_SUCCESS) {
+        if (const auto res = vkEnumeratePhysicalDevices(&get(), &count, nullptr); res != VK_SUCCESS)
             return make_unexpected(res);
-        }
 
         auto devices = std::vector<raw::physical_device*>(count);
         if (const auto res = vkEnumeratePhysicalDevices(&get(), &count, devices.data());
-            res != VK_SUCCESS) {
+            res != VK_SUCCESS)
             return make_unexpected(res);
-        }
 
         return devices |
                std::views::transform([](raw::physical_device* ptr) noexcept -> physical_device {

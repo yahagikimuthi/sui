@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <functional>
@@ -140,12 +139,13 @@ class graphics_pipeline_creator final {
         info_.pNext               = &rendering_;
         info_.pDepthStencilState  = &depth_stencil;
 
-        auto*      raw = static_cast<raw::pipeline*>(nullptr);
-        const auto res = vkCreateGraphicsPipelines(&dev_.get(), nullptr, 1, &info_, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return graphics_pipeline{*raw, dev_.get()};
+        auto* raw = static_cast<raw::pipeline*>(nullptr);
+        return make_expected(
+                   vkCreateGraphicsPipelines(&dev_.get(), nullptr, 1, &info_, nullptr, &raw)
+        )
+            .transform([&]() noexcept -> graphics_pipeline {
+                return graphics_pipeline{*raw, dev_.get()};
+            });
     }
 
   private:

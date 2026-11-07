@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <cstdint>
 #include <expected>
 #include <functional>
@@ -97,12 +96,11 @@ class swapchain_khr_creator final {
         info_.queueFamilyIndexCount = static_cast<std::uint32_t>(queue_family_indices_.size());
         info_.pQueueFamilyIndices   = queue_family_indices_.data();
 
-        auto*      raw = static_cast<raw::swapchain_khr*>(nullptr);
-        const auto res = vkCreateSwapchainKHR(&dev_.get(), &info_, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return swapchain_khr{*raw, dev_.get(), static_cast<format>(info_.imageFormat)};
+        auto* raw = static_cast<raw::swapchain_khr*>(nullptr);
+        return make_expected(vkCreateSwapchainKHR(&dev_.get(), &info_, nullptr, &raw))
+            .transform([&]() noexcept -> swapchain_khr {
+                return swapchain_khr{*raw, dev_.get(), static_cast<format>(info_.imageFormat)};
+            });
     }
 
   private:

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <expected>
 #include <functional>
 
@@ -65,12 +64,9 @@ class image_view_creator final {
     }
 
     [[nodiscard]] auto create() const noexcept -> std::expected<image_view, result> {
-        auto*      raw = static_cast<raw::image_view*>(nullptr);
-        const auto res = vkCreateImageView(&dev_.get(), &info_, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-
-        assert(raw != nullptr);
-        return image_view{*raw, dev_.get()};
+        auto* raw = static_cast<raw::image_view*>(nullptr);
+        return make_expected(vkCreateImageView(&dev_.get(), &info_, nullptr, &raw))
+            .transform([&]() noexcept -> image_view { return image_view{*raw, dev_.get()}; });
     }
 
   private:
