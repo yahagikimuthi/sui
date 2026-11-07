@@ -10,10 +10,11 @@
 #include "kgm/window.hpp"
 
 namespace kgm {
+template <typename User>
 class window_creator final {
-    friend auto get_window_creator() noexcept -> window_creator;
-
   public:
+    explicit window_creator() noexcept = default;
+
     auto hint(const window_hint hint, const window_value value) noexcept -> window_creator& {
         glfwWindowHint(static_cast<std::int32_t>(hint), static_cast<std::int32_t>(value));
         return *this;
@@ -30,17 +31,15 @@ class window_creator final {
         return *this;
     }
 
-    [[nodiscard]] auto create() noexcept -> std::optional<window> {
+    [[nodiscard]] auto create() noexcept -> std::optional<window<User>> {
         auto* raw = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, nullptr);
         if (raw == nullptr) return std::nullopt;
 
         assert(raw != nullptr);
-        return window{*raw};
+        return window<User>{*raw};
     }
 
   private:
-    explicit window_creator() noexcept = default;
-
     std::int32_t width_{800};
     std::int32_t height_{600};
     std::string  title_{"no title"};
