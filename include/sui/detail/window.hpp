@@ -1,11 +1,12 @@
 #pragma once
 
 #include <expected>
-#include <kgm/kgm.hpp>
 #include <string_view>
 
-#include "kgm/enums.hpp"
-#include "kgm/window.hpp"
+#include <kgm/enums.hpp>
+#include <kgm/kgm.hpp>
+#include <kgm/window.hpp>
+
 #include "sui/error.hpp"
 
 namespace sui::detail {
@@ -14,7 +15,9 @@ class window final {
     [[nodiscard]] static auto make(
         const std::uint32_t width, const std::uint32_t height, const std::string_view title
     ) noexcept -> std::expected<window, error> {
-        auto raw = kgm::get_window_creator<window>()
+        if (not kgm::init()) return make_error(runtime_error, "Failed to init GLFW.");
+
+        auto raw = kgm::get_window_creator()
                        .hint(kgm::window_hint::client_api, kgm::window_value::no_api)
                        .extent(width, height)
                        .title(title)
@@ -25,11 +28,13 @@ class window final {
         return window{std::move(*raw)};
     }
 
-    [[nodiscard]] auto get() noexcept -> kgm::window<window>& { return raw_; }
+    [[nodiscard]] auto is_open() noexcept -> bool { return not raw_.should_close(); }
+
+    [[nodiscard]] auto get() noexcept -> kgm::window& { return raw_; }
 
   private:
-    explicit window(kgm::window<window>&& raw) noexcept : raw_{std::move(raw)} {}
+    explicit window(kgm::window&& raw) noexcept : raw_{std::move(raw)} {}
 
-    kgm::window<window> raw_;
+    kgm::window raw_;
 };
 }  // namespace sui::detail

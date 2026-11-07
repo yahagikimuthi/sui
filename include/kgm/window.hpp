@@ -2,8 +2,6 @@
 
 #include <cassert>
 #include <expected>
-#include <optional>
-#include <type_traits>
 #include <utility>
 
 #include <vulkan/vulkan.h>
@@ -19,26 +17,21 @@
 #include <GLFW/glfw3.h>
 
 namespace kgm {
-template <typename User>
-    requires std::is_class_v<User>
 class window;
 }  // namespace kgm
 
 namespace kgm::detail {
-template <typename User>
 struct callbacks final {
     explicit callbacks() noexcept = default;
 
-    void (*keys)(window<User>&, key, action){};
-    void (*cursor_poss)(window<User>&, float, float){};
-    void (*mouse_buttons)(window<User>&, mouse_button, action){};
-    void (*window_sizes)(window<User>&, std::uint32_t, std::uint32_t){};
+    void (*keys)(key, action){};
+    void (*cursor_poss)(float, float){};
+    void (*mouse_buttons)(mouse_button, action){};
+    void (*window_sizes)(std::uint32_t, std::uint32_t){};
 };
 }  // namespace kgm::detail
 
 namespace kgm {
-template <typename User>
-    requires std::is_class_v<User>
 class window final {
   public:
     explicit window(GLFWwindow& raw) noexcept : raw_{std::move(raw)} {
@@ -48,8 +41,7 @@ class window final {
     window(const window&) noexcept                          = delete;
     auto operator=(const window&) const noexcept -> window& = delete;
 
-    window(window&& other) noexcept
-        : raw_{std::move(other.raw_)}, callbacks_{other.callbacks_}, user_{other.user_} {
+    window(window&& other) noexcept : raw_{std::move(other.raw_)}, callbacks_{other.callbacks_} {
         glfwSetWindowUserPointer(&get(), this);
     }
 
@@ -58,7 +50,6 @@ class window final {
 
         raw_       = std::move(other.raw_);
         callbacks_ = other.callbacks_;
-        user_      = other.user_;
 
         glfwSetWindowUserPointer(&get(), this);
         return *this;
@@ -69,12 +60,6 @@ class window final {
     [[nodiscard]] auto should_close() noexcept -> bool {
         return glfwWindowShouldClose(&get()) != 0;
     }
-
-    void set_user(User& user) noexcept { user_ = user; }
-
-    void reset_user() noexcept { user_ = nullptr; }
-
-    [[nodiscard]] auto get_user() noexcept -> std::optional<User&> { return user_; }
 
     [[nodiscard]] auto create_surface(hgn::instance& instance
     ) -> std::expected<hgn::surface_khr, hgn::result> {
@@ -89,8 +74,7 @@ class window final {
     [[nodiscard]] auto get() noexcept -> raw::window& { return raw_; }
 
   private:
-    raii::window            raw_;
-    detail::callbacks<User> callbacks_;
-    std::optional<User&>    user_;
+    raii::window      raw_;
+    detail::callbacks callbacks_;
 };
 }  // namespace kgm
