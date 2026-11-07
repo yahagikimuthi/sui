@@ -5,6 +5,7 @@
 #include <functional>
 #include <utility>
 
+#include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 #include <hgn/enums.hpp>
 #include <hgn/instance.hpp>
@@ -14,12 +15,6 @@
 #include "kgm/enums.hpp"
 #include "kgm/raii/window.hpp"
 #include "kgm/raw/raw.hpp"
-
-#include <GLFW/glfw3.h>
-
-namespace kgm {
-class window;
-}  // namespace kgm
 
 namespace kgm::detail {
 struct callbacks final {
