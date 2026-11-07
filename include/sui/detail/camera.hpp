@@ -47,7 +47,7 @@ class camera final {
     }
 
   private:
-    vec2  position_;
-    float zoom_;
+    vec2  position_{};
+    float zoom_{1.f};
 };
 }  // namespace sui::detail
