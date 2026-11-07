@@ -36,7 +36,7 @@ class present_executor final {
     }
 
     [[nodiscard]] auto present() noexcept -> std::expected<void, result> {
-        auto* p_swapchain = static_cast<VkSwapchainKHR_T*>(nullptr);
+        auto* p_swapchain = static_cast<raw::swapchain_khr*>(nullptr);
         auto* p_semapho   = static_cast<raw::semaphore*>(nullptr);
 
         if (swapchain_) {
@@ -58,7 +58,7 @@ class present_executor final {
   private:
     VkPresentInfoKHR                   info_{};
     std::uint32_t                      image_index_{};
-    std::optional<VkSwapchainKHR_T&>   swapchain_;
+    std::optional<raw::swapchain_khr&> swapchain_;
     std::optional<raw::semaphore&>     semapho_;
     std::reference_wrapper<raw::queue> queue_;
 };
