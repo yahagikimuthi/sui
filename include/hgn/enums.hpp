@@ -8,7 +8,6 @@
 
 namespace hgn {
 enum class result : std::int32_t {
-    success               = VK_SUCCESS,
     error_out_of_date_khr = VK_ERROR_OUT_OF_DATE_KHR,
     suboptimal_khr        = VK_SUBOPTIMAL_KHR
 };
