@@ -7,10 +7,6 @@
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw/raw.hpp"
 
-namespace kgm {
-class window;
-}  // namespace kgm
-
 namespace hgn {
 class surface_khr final {
   public:
