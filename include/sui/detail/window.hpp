@@ -7,6 +7,7 @@
 #include <kgm/kgm.hpp>
 #include <kgm/window.hpp>
 
+#include "sui/detail/camera.hpp"
 #include "sui/error.hpp"
 
 namespace sui::detail {
@@ -36,5 +37,6 @@ class window final {
     explicit window(kgm::window&& raw) noexcept : raw_{std::move(raw)} {}
 
     kgm::window raw_;
+    camera      camera_;
 };
 }  // namespace sui::detail
