@@ -52,7 +52,7 @@ class hardware final {
         if (suitable_physicals.empty())
             return make_error(runtime_error, "Failed to find suitable physical device.");
 
-        auto physical = std::move(suitable_physicals.front());
+        auto physical = suitable_physicals.front();
         auto families = *find_queue_families(physical, *surface);
 
         auto device = physical.create_device(families.graphics_family);
@@ -71,7 +71,7 @@ class hardware final {
         return hardware{
             std::move(*instance),
             std::move(*surface),
-            std::move(physical),
+            physical,
             std::move(*device),
             families.graphics_family,
             families.present_family,
@@ -115,7 +115,7 @@ class hardware final {
     ) noexcept
         : instance_{std::move(instance)},
           surface_{std::move(surface)},
-          physical_{std::move(physical)},
+          physical_{physical},
           device_{std::move(device)},
           graphics_family_{graphics_family},
           present_family_{present_family},
