@@ -62,5 +62,9 @@ struct vec2 final {
     }
 
     [[nodiscard]] explicit constexpr operator glm::vec2() const noexcept { return glm::vec2{x, y}; }
+
+    [[nodiscard]] explicit constexpr operator glm::vec3() const noexcept {
+        return glm::vec3{x, y, 0.f};
+    }
 };
 }  // namespace sui
