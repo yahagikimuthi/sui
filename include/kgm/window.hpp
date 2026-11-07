@@ -3,6 +3,7 @@
 #include <cassert>
 #include <expected>
 #include <optional>
+#include <type_traits>
 #include <utility>
 
 #include <vulkan/vulkan.h>
@@ -18,48 +19,46 @@
 #include <GLFW/glfw3.h>
 
 namespace kgm {
-class window_user;
+template <typename User>
+    requires std::is_class_v<User>
+class window;
 }  // namespace kgm
 
 namespace kgm::detail {
-class callback final {
-  public:
-    explicit callback() noexcept = default;
-
-    void set(void (&fn)(window_user&, key, action)) noexcept { fn_ = &fn; }
-    void reset() noexcept { fn_ = nullptr; }
-
-    void call() noexcept;
-
-  private:
-    void (*fn_)(window_user&, key, action){};
-};
-
-class window_creator;
+template <typename User>
 struct callbacks final {
-    void (*keys)(window_user&, key, action){};
-    void (*cursor_poss)(window_user&, float, float){};
-    void (*mouse_buttons)(window_user&, mouse_button, action){};
-    void (*window_sizes)(window_user&, std::uint32_t, std::uint32_t){};
+    explicit callbacks() noexcept = default;
+
+    void (*keys)(window<User>&, key, action){};
+    void (*cursor_poss)(window<User>&, float, float){};
+    void (*mouse_buttons)(window<User>&, mouse_button, action){};
+    void (*window_sizes)(window<User>&, std::uint32_t, std::uint32_t){};
 };
 }  // namespace kgm::detail
 
 namespace kgm {
+template <typename User>
+    requires std::is_class_v<User>
 class window final {
-    friend class window_creator;
-
   public:
-    window(const window&) noexcept                    = delete;
-    auto operator=(const window&) noexcept -> window& = delete;
+    explicit window(GLFWwindow& raw) noexcept : raw_{std::move(raw)} {
+        glfwSetWindowUserPointer(&get(), this);
+    }
 
-    window(window&& other) noexcept : raw_{std::move(other.raw_)} {
+    window(const window&) noexcept                          = delete;
+    auto operator=(const window&) const noexcept -> window& = delete;
+
+    window(window&& other) noexcept
+        : raw_{std::move(other.raw_)}, callbacks_{other.callbacks_}, user_{other.user_} {
         glfwSetWindowUserPointer(&get(), this);
     }
 
     auto operator=(window&& other) noexcept -> window& {
         if (this == &other) return *this;
 
-        raw_ = std::move(other.raw_);
+        raw_       = std::move(other.raw_);
+        callbacks_ = other.callbacks_;
+        user_      = other.user_;
 
         glfwSetWindowUserPointer(&get(), this);
         return *this;
@@ -71,11 +70,11 @@ class window final {
         return glfwWindowShouldClose(&get()) != 0;
     }
 
-    void set_user(window_user& user) noexcept { user_ = user; }
+    void set_user(User& user) noexcept { user_ = user; }
 
-    void reset_user() noexcept { user_.reset(); }
+    void reset_user() noexcept { user_ = nullptr; }
 
-    [[nodiscard]] auto get_user() noexcept -> std::optional<window_user&> { return user_; }
+    [[nodiscard]] auto get_user() noexcept -> std::optional<User&> { return user_; }
 
     [[nodiscard]] auto create_surface(hgn::instance& instance
     ) -> std::expected<hgn::surface_khr, hgn::result> {
@@ -87,64 +86,11 @@ class window final {
         return hgn::surface_khr{*raw, instance.get()};
     }
 
-    void set_key_callback(void (&fn)(window_user&, key, action)) noexcept {
-        callbacks_.keys = &fn;
-        glfwSetKeyCallback(
-            &get(),
-            [](raw::window*         ptr,
-               int                  button,
-               [[maybe_unused]] int scancode,
-               int                  act,
-               [[maybe_unused]] int mods) noexcept -> void {
-                auto& self = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
-                if (self.callbacks_.keys == nullptr) return;
-                if (not self.user_) return;
-                self.callbacks_.keys(
-                    *self.user_, static_cast<key>(button), static_cast<action>(act)
-                );
-            }
-        );
-    }
-
-    void set_cursor_pos_callback(void (&fn)(window_user&, float, float)) noexcept {
-        callbacks_.cursor_poss = fn;
-        glfwSetCursorPosCallback(
-            &get(),
-            [](raw::window* ptr, double xpos, double ypos) noexcept -> void {
-                auto& self = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
-                if (self.callbacks_.cursor_poss == nullptr) return;
-                if (not self.user_) return;
-                self.callbacks_.cursor_poss(
-                    *self.user_, static_cast<float>(xpos), static_cast<float>(ypos)
-                );
-            }
-        );
-    }
-
-    void set_mouse_button_callback(void (&fn)(window_user&, mouse_button, action)) noexcept {
-        callbacks_.mouse_buttons = &fn;
-        glfwSetMouseButtonCallback(
-            &get(),
-            [](raw::window* ptr, int button, int act, [[maybe_unused]] int mods) noexcept -> void {
-                auto& self = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
-                if (self.callbacks_.mouse_buttons == nullptr) return;
-                if (not self.user_) return;
-                self.callbacks_.mouse_buttons(
-                    *self.user_, static_cast<mouse_button>(button), static_cast<action>(act)
-                );
-            }
-        );
-    }
-
     [[nodiscard]] auto get() noexcept -> raw::window& { return raw_; }
 
   private:
-    explicit window(GLFWwindow& raw) noexcept : raw_{std::move(raw)} {
-        glfwSetWindowUserPointer(&get(), nullptr);
-    }
-
-    raii::window                raw_;
-    detail::callbacks           callbacks_;
-    std::optional<window_user&> user_;
+    raii::window            raw_;
+    detail::callbacks<User> callbacks_;
+    std::optional<User&>    user_;
 };
 }  // namespace kgm
