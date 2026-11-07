@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <expected>
+#include <functional>
 #include <utility>
 
 #include <vulkan/vulkan.h>
@@ -24,10 +25,10 @@ namespace kgm::detail {
 struct callbacks final {
     explicit callbacks() noexcept = default;
 
-    void (*keys)(key, action){};
-    void (*cursor_poss)(float, float){};
-    void (*mouse_buttons)(mouse_button, action){};
-    void (*window_sizes)(std::uint32_t, std::uint32_t){};
+    std::function<void(key, action)>                  keys;
+    std::function<void(float, float)>                 cursor_poss;
+    std::function<void(mouse_button, action)>         mouse_buttons;
+    std::function<void(std::uint32_t, std::uint32_t)> window_sizes;
 };
 }  // namespace kgm::detail
 
@@ -41,7 +42,8 @@ class window final {
     window(const window&) noexcept                          = delete;
     auto operator=(const window&) const noexcept -> window& = delete;
 
-    window(window&& other) noexcept : raw_{std::move(other.raw_)}, callbacks_{other.callbacks_} {
+    window(window&& other) noexcept
+        : raw_{std::move(other.raw_)}, callbacks_{std::move(other.callbacks_)} {
         glfwSetWindowUserPointer(&get(), this);
     }
 
@@ -49,7 +51,7 @@ class window final {
         if (this == &other) return *this;
 
         raw_       = std::move(other.raw_);
-        callbacks_ = other.callbacks_;
+        callbacks_ = std::move(other.callbacks_);
 
         glfwSetWindowUserPointer(&get(), this);
         return *this;
