@@ -10,8 +10,9 @@ namespace kgm {
     return glfwInit() != GLFW_FALSE;
 }
 
-[[nodiscard]] inline auto get_window_creator() noexcept -> window_creator {
-    return window_creator{};
+template <typename User>
+[[nodiscard]] inline auto get_window_creator() noexcept -> window_creator<User> {
+    return window_creator<User>{};
 }
 
 inline void poll_events() noexcept {
