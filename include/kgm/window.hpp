@@ -70,6 +70,22 @@ class window final {
         return hgn::surface_khr{*raw, instance.get()};
     }
 
+    void set_key_callback(std::function_ref<void(key, action)> fn) noexcept {
+        callbacks_.keys = fn;
+        glfwSetKeyCallback(
+            &get(),
+            [](raw::window*         raw,
+               int                  button,
+               [[maybe_unused]] int scancode,
+               int                  act,
+               [[maybe_unused]] int mods) noexcept -> void {
+                auto& self = *static_cast<window*>(glfwGetWindowUserPointer(raw));
+                if (self.callbacks_.keys)
+                    self.callbacks_.keys(static_cast<key>(button), static_cast<action>(act));
+            }
+        );
+    }
+
     [[nodiscard]] auto get() noexcept -> raw::window& { return raw_; }
 
   private:
