@@ -7,7 +7,9 @@
 #include <kgm/kgm.hpp>
 #include <kgm/window.hpp>
 
+#include "kgm/enums.hpp"
 #include "sui/detail/context.hpp"
+#include "sui/detail/ubo.hpp"
 #include "sui/detail/window.hpp"
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
@@ -28,9 +30,26 @@ class window final {
 
     [[nodiscard]] auto is_open() noexcept -> bool { return win_.is_open(); }
 
-    void poll_events() noexcept { kgm::poll_events(); }  // NOLINT
+    void poll_events() noexcept {
+        kgm::poll_events();
+        win_.update_input();
+    }
 
-    [[nodiscard]] auto begin_rendering() noexcept -> bool { return ctx_.begin_rendering(); }
+    [[nodiscard]] auto is_key_down(const kgm::key key) noexcept -> bool {
+        return win_.get_key_action(key) == detail::action::down;
+    }
+
+    [[nodiscard]] auto is_key_pressed(const kgm::key key) noexcept -> bool {
+        return win_.get_key_action(key) == detail::action::pressed;
+    }
+
+    [[nodiscard]] auto is_key_released(const kgm::key key) noexcept -> bool {
+        return win_.get_key_action(key) == detail::action::released;
+    }
+
+    [[nodiscard]] auto begin_rendering(const uniform_buffer_object& ubo) noexcept -> bool {
+        return ctx_.begin_rendering(ubo);
+    }
 
     void render(const std::span<const vertex> vertices) noexcept { ctx_.render(vertices); }
 
