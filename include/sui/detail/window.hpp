@@ -67,7 +67,7 @@ class window final {
 
     void reset() noexcept {
         raw_.set_key_callback([this](kgm::key key, kgm::action act) noexcept -> void {
-            input_.key.callback(key, act == kgm::action::press);
+            input_.key.set(key, act == kgm::action::press);
         });
     }
 

@@ -29,7 +29,7 @@ class button_input final {
         return action::none;
     }
 
-    void callback(const T idx, const bool is_press) noexcept {
+    void set(const T idx, const bool is_press) noexcept {
         next_[static_cast<std::size_t>(idx)] = is_press;
     }
 
