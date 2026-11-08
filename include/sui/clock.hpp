@@ -6,8 +6,6 @@
 
 namespace sui {
 class clock final {
-    using std_clock = std::chrono::steady_clock;
-
   public:
     explicit clock() noexcept
         : init_epoch_{std::chrono::duration_cast<std::chrono::duration<float>>(
