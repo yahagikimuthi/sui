@@ -21,6 +21,10 @@ inline void terminate() noexcept {
     glfwTerminate();
 }
 
+[[nodiscard]] inline auto get_time() noexcept -> double {
+    return glfwGetTime();
+}
+
 static_assert(sizeof(float) == 4);
 static_assert(sizeof(double) == 8);
 }  // namespace kgm
