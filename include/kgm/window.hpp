@@ -70,8 +70,8 @@ class window final {
         return hgn::surface_khr{*raw, instance.get()};
     }
 
-    void set_key_callback(std::function_ref<void(key, action)> fn) noexcept {
-        callbacks_.keys = fn;
+    void set_key_callback(std::function<void(key, action)> fn) noexcept {
+        callbacks_.keys = std::move(fn);
         glfwSetKeyCallback(
             &get(),
             [](raw::window*         raw,
