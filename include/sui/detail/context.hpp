@@ -66,7 +66,7 @@ class context final {
 
     ~context() noexcept { destroy(); }
 
-    [[nodiscard]] auto begin_rendering() noexcept -> bool {
+    [[nodiscard]] auto begin_rendering(const uniform_buffer_object& ubo) noexcept -> bool {
         // GPUの待機処理
         if (not hard_.in_flight_fence().wait()) return fail("Failed to wait fence.\n");
         if (not hard_.in_flight_fence().reset()) return fail("Failed to reset fence.\n");
@@ -105,18 +105,15 @@ class context final {
         // ビューポートとシーザーの設定
         cmd_.buffer().set_viewport(800, 600);
         cmd_.buffer().set_scissor(800, 600);
+
+        render_.ubo().cpy(ubo);
+
         return true;
     }
 
     void render(const std::span<const vertex> vertices) noexcept {
         // 頂点データをバッファに書き込み
         render_.vbo().cpy(vertices);
-
-        auto ubo  = uniform_buffer_object{};
-        ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.5f));
-        ubo.proj  = glm::perspectiveZO(glm::radians(45.f), 800.f / 600.f, 0.1f, 10.f);
-
-        render_.ubo().cpy(ubo);
 
         // コマンドバッファにポリゴンの描画命令を記録
         cmd_.buffer().draw(static_cast<std::uint32_t>(vertices.size()), 1);
