@@ -9,7 +9,7 @@ class clock final {
     using std_clock = std::chrono::steady_clock;
 
   public:
-    explicit clock() noexcept = default;
+    explicit clock() noexcept { tick(); }
 
     auto tick() noexcept -> float {
         const auto now        = std::chrono::steady_clock::now();
