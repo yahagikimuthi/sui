@@ -54,11 +54,9 @@ class window final {
 
     [[nodiscard]] auto is_open() noexcept -> bool { return not raw_.should_close(); }
 
-    [[nodiscard]] auto get_key_action(const kgm::key key) noexcept -> action {
-        return input_.key.get_action(key);
-    }
+    [[nodiscard]] auto input() noexcept -> input& { return input_; }
 
-    void update_input() noexcept { input_.update(); }
+    [[nodiscard]] auto camera() noexcept -> camera& { return camera_; }
 
     [[nodiscard]] auto get() noexcept -> kgm::window& { return raw_; }
 
@@ -71,8 +69,8 @@ class window final {
         });
     }
 
-    kgm::window raw_;
-    camera      camera_;
-    input       input_;
+    kgm::window  raw_;
+    class camera camera_;
+    struct input input_;
 };
 }  // namespace sui::detail
