@@ -16,14 +16,10 @@ class camera final {
     [[nodiscard]] auto position() const noexcept -> vec2 { return position_; }
     [[nodiscard]] auto zoom() const noexcept -> float { return zoom_; }
 
-    [[nodiscard]] auto calc_proj(const extent virtual_window_size) const noexcept -> glm::mat4 {
-        const auto virtual_w = virtual_window_size.width;
-        const auto virtual_h = virtual_window_size.height;
-
-        const auto view_w = virtual_w / zoom_;
-        const auto view_h = virtual_h / zoom_;
-
-        return glm::ortho(0.f, view_w, 0.f, view_h, -1.f, 1.f);
+    [[nodiscard]] auto calc_proj() const noexcept -> glm::mat4 {
+        return glm::ortho(
+            -800.f / 600.f * zoom_, 800.f / 600.f * zoom_, -zoom_, zoom_, -1.0f, 1.0f
+        );
     }
 
     [[nodiscard]] auto calc_view() const noexcept -> glm::mat4 {
