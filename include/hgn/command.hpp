@@ -70,8 +70,9 @@ class command_buffer final {
 
     void set_viewport(const float width, const float height) noexcept {
         auto vp     = VkViewport{};
+        vp.y        = height;
         vp.width    = width;
-        vp.height   = height;
+        vp.height   = -height;
         vp.minDepth = 0;
         vp.maxDepth = 1;
 
