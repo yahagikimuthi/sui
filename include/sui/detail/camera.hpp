@@ -5,7 +5,6 @@
 #include <glm/glm.hpp>
 #include <limits>
 
-#include "sui/extent.hpp"
 #include "sui/vec2.hpp"
 
 namespace sui::detail {
