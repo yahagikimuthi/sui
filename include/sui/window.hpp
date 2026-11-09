@@ -4,10 +4,10 @@
 #include <span>
 #include <utility>
 
+#include <kgm/enums.hpp>
 #include <kgm/kgm.hpp>
 #include <kgm/window.hpp>
 
-#include "kgm/enums.hpp"
 #include "sui/detail/context.hpp"
 #include "sui/detail/ubo.hpp"
 #include "sui/detail/window.hpp"
@@ -32,22 +32,30 @@ class window final {
 
     void poll_events() noexcept {
         kgm::poll_events();
-        win_.update_input();
+        win_.input().update();
     }
 
     [[nodiscard]] auto is_key_down(const kgm::key key) noexcept -> bool {
-        return win_.get_key_action(key) == detail::action::down;
+        return win_.input().key.get_action(key) == detail::action::down;
     }
 
     [[nodiscard]] auto is_key_pressed(const kgm::key key) noexcept -> bool {
-        return win_.get_key_action(key) == detail::action::pressed;
+        return win_.input().key.get_action(key) == detail::action::pressed;
     }
 
     [[nodiscard]] auto is_key_released(const kgm::key key) noexcept -> bool {
-        return win_.get_key_action(key) == detail::action::released;
+        return win_.input().key.get_action(key) == detail::action::released;
     }
 
     [[nodiscard]] auto begin_rendering(const uniform_buffer_object& ubo) noexcept -> bool {
+        return ctx_.begin_rendering(ubo);
+    }
+
+    [[nodiscard]] auto begin_rendering() noexcept -> bool {
+        const auto view = win_.camera().calc_view();
+        const auto proj = win_.camera().calc_proj();
+        const auto ubo = uniform_buffer_object{.model = glm::mat4(1.f), .view = view, .proj = proj};
+
         return ctx_.begin_rendering(ubo);
     }
 
