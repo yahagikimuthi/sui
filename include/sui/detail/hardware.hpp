@@ -12,6 +12,7 @@
 #include <hgn/queue.hpp>
 #include <hgn/surface.hpp>
 #include <hgn/sync.hpp>
+#include <kgm/kgm.hpp>
 #include <kgm/window.hpp>
 
 #include "sui/error.hpp"
@@ -30,6 +31,7 @@ class hardware final {
                             .app_version(0, 0, 1)
                             .engine_name("no engine")
                             .engine_version(0, 0, 1)
+                            .extensions(kgm::get_required_instance_extensions())
 #ifndef NDEBUG
                             .debug(true)
 #endif
