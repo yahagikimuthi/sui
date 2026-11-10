@@ -7,15 +7,12 @@
 #include <utility>
 #include <vector>
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 
 #include "hgn/enums.hpp"
 #include "hgn/physical.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw/raw.hpp"
-#include "hgn/surface.hpp"
 
 namespace hgn {
 class instance final {
@@ -40,14 +37,6 @@ class instance final {
                    return physical_device{*ptr};
                }) |
                std::ranges::to<std::vector>();
-    }
-
-    [[nodiscard]] auto create_window_surface(GLFWwindow& win
-    ) noexcept -> std::expected<surface_khr, result> {
-        auto*      raw = static_cast<raw::surface_khr*>(nullptr);
-        const auto res = glfwCreateWindowSurface(&get(), &win, nullptr, &raw);
-        if (res != VK_SUCCESS) return make_unexpected(res);
-        return surface_khr{*raw, get()};
     }
 
     [[nodiscard]] auto get() noexcept -> raw::instance& { return raw_; }
