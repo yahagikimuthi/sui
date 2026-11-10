@@ -5,7 +5,6 @@
 #include <ranges>
 #include <utility>
 
-#include <GLFW/glfw3.h>
 #include <hgn/device.hpp>
 #include <hgn/hgn.hpp>
 #include <hgn/instance.hpp>
@@ -13,6 +12,7 @@
 #include <hgn/queue.hpp>
 #include <hgn/surface.hpp>
 #include <hgn/sync.hpp>
+#include <kgm/window.hpp>
 
 #include "sui/error.hpp"
 
@@ -24,7 +24,7 @@ class hardware final {
     };
 
   public:
-    [[nodiscard]] static auto make(GLFWwindow& win) noexcept -> std::expected<hardware, error> {
+    [[nodiscard]] static auto make(kgm::window& win) noexcept -> std::expected<hardware, error> {
         auto instance = hgn::get_instance_creator()
                             .app_name("sui")
                             .app_version(0, 0, 1)
@@ -37,7 +37,7 @@ class hardware final {
 
         if (not instance) return make_error(runtime_error, "Failed to make instance.");
 
-        auto surface = instance->create_window_surface(win);
+        auto surface = win.create_surface(*instance);
         if (not surface) return make_error(runtime_error, "Failed to make surface.");
 
         auto physicals = instance->get_physicals();

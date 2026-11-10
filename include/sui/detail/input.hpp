@@ -4,9 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include <GLFW/glfw3.h>
-
-#include "sui/input.hpp"
+#include <kgm/enums.hpp>
 
 namespace sui::detail {
 enum class action : std::uint8_t { none, down, pressed, released };
@@ -32,11 +30,11 @@ class button_input final {
         return action::none;
     }
 
-    void set(const T e_idx, const int action) noexcept {
+    void set(const T e_idx, const kgm::action action) noexcept {
         const auto idx = static_cast<std::size_t>(e_idx);
-        if (action == GLFW_PRESS)
+        if (action == kgm::action::press)
             next_[idx] = true;
-        else if (action == GLFW_RELEASE)
+        else if (action == kgm::action::release)
             next_[idx] = false;
     }
 
@@ -52,7 +50,7 @@ struct input final {
         mouse_buttons.update();
     }
 
-    button_input<key::last>          keys;
-    button_input<mouse_button::last> mouse_buttons;
+    button_input<kgm::key::last>          keys;
+    button_input<kgm::mouse_button::last> mouse_buttons;
 };
 }  // namespace sui::detail
