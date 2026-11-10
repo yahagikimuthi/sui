@@ -3,7 +3,7 @@
 #include <cassert>
 #include <expected>
 
-#include <hgn/detail/vk_mem_alloc.h>
+#include <hgn/third_parties/vk_mem_alloc.h>
 
 #include "hgn/allocator.hpp"
 #include "hgn/detail/hgn.hpp"

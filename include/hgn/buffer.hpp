@@ -7,7 +7,7 @@
 #include <span>
 #include <utility>
 
-#include <hgn/detail/vk_mem_alloc.h>
+#include <hgn/third_parties/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "hgn/raii/buffer.hpp"
