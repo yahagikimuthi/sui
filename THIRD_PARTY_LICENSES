@@ -2,8 +2,10 @@ This software incorporates content from third-party open-source projects.
 Below are the license and copyright notices for those dependencies:
 
 -------------------------------------------------------------------------------
-1. GLFW 3.3 (https://www.glfw.org/license)
+
+1. GLFW 3.3 <https://www.glfw.org/license>
 License zlib/libpng
+
 -------------------------------------------------------------------------------
 
 Copyright (c) 2002-2006 Marcus Geelnard
@@ -29,8 +31,10 @@ freely, subject to the following restrictions:
    distribution.
 
 -------------------------------------------------------------------------------
-2. Vulkan (https://www.apache.org/licenses/LICENSE-2.0)
+
+2. Vulkan <https://www.apache.org/licenses/LICENSE-2.0>
 License Apache License 2.0
+
 -------------------------------------------------------------------------------
 
 Apache License
@@ -88,8 +92,10 @@ You may add Your own copyright statement to Your modifications and may provide a
 END OF TERMS AND CONDITIONS
 
 -------------------------------------------------------------------------------
-3. Vulkan Memory Allocator (https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/blob/master/LICENSE.txt)
+
+3. Vulkan Memory Allocator <https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/blob/master/LICENSE.txt>
 MIT License
+
 -------------------------------------------------------------------------------
 
 Copyright (c) 2017-2026 Advanced Micro Devices, Inc. All rights reserved.
