@@ -3,7 +3,7 @@ Below are the license and copyright notices for those dependencies:
 
 ------------------------------------------------------------------------------
 GLFW <https://www.glfw.org/license>
-License zlib/libpng
+zlib/libpng
 ------------------------------------------------------------------------------
 
 Copyright (c) 2002-2006 Marcus Geelnard
@@ -114,7 +114,7 @@ THE SOFTWARE.
 
 ------------------------------------------------------------------------------
 stb_image v2.30 <https://github.com/nothings/stb/blob/master/LICENSE>
-Public Domain <www.unlicense.org>
+Public Domain
 ------------------------------------------------------------------------------
 
 This is free and unencumbered software released into the public domain.
