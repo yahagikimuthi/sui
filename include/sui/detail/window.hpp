@@ -57,6 +57,7 @@ class window final {
     [[nodiscard]] auto input() noexcept -> input& { return input_; }
 
     [[nodiscard]] auto camera() noexcept -> camera& { return camera_; }
+    [[nodiscard]] auto camera() const noexcept -> const class camera& { return camera_; }
 
     [[nodiscard]] auto get() noexcept -> kgm::window& { return raw_; }
 
