@@ -6,3 +6,4 @@ core.*
 ./git/
 /src/main.cpp
 /.vscode/
+/assets/
