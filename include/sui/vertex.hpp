@@ -1,8 +1,10 @@
 #pragma once
 
+#include <array>
+
 namespace sui {
 struct vertex final {
-    float position[2];
-    float color[3];
+    std::array<float, 2> position;
+    std::array<float, 3> color;
 };
 }  // namespace sui
