@@ -4,14 +4,13 @@
 #include <span>
 #include <utility>
 
-#include <kgm/enums.hpp>
-#include <kgm/kgm.hpp>
-#include <kgm/window.hpp>
+#include <GLFW/glfw3.h>
 
 #include "sui/detail/context.hpp"
 #include "sui/detail/ubo.hpp"
 #include "sui/detail/window.hpp"
 #include "sui/error.hpp"
+#include "sui/input.hpp"
 #include "sui/vec2.hpp"
 #include "sui/vertex.hpp"
 
@@ -31,16 +30,16 @@ class window final {
 
     [[nodiscard]] auto is_open() noexcept -> bool { return win_.is_open(); }
 
-    [[nodiscard]] auto is_key_down(const kgm::key key) noexcept -> bool {
-        return win_.input().key.get_action(key) == detail::action::down;
+    [[nodiscard]] auto is_key_down(const key key) noexcept -> bool {
+        return win_.input().keys.get_action(key) == detail::action::down;
     }
 
-    [[nodiscard]] auto is_key_pressed(const kgm::key key) noexcept -> bool {
-        return win_.input().key.get_action(key) == detail::action::pressed;
+    [[nodiscard]] auto is_key_pressed(const key key) noexcept -> bool {
+        return win_.input().keys.get_action(key) == detail::action::pressed;
     }
 
-    [[nodiscard]] auto is_key_released(const kgm::key key) noexcept -> bool {
-        return win_.input().key.get_action(key) == detail::action::released;
+    [[nodiscard]] auto is_key_released(const key key) noexcept -> bool {
+        return win_.input().keys.get_action(key) == detail::action::released;
     }
 
     [[nodiscard]] auto camera_position() const noexcept -> vec2 { return win_.camera().position(); }
@@ -51,7 +50,7 @@ class window final {
     }
 
     void poll_events() noexcept {
-        kgm::poll_events();
+        glfwPollEvents();
         win_.input().update();
     }
 
@@ -76,6 +75,8 @@ class window final {
     }
 
     [[nodiscard]] auto end_rendering() noexcept -> bool { return ctx_.end_rendering(); }
+
+    [[nodiscard]] auto get() noexcept -> GLFWwindow* { return &win_.get(); }
 
   private:
     explicit window(detail::window&& win, detail::context&& ctx) noexcept
