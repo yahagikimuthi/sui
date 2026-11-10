@@ -4,8 +4,8 @@
 #include <span>
 #include <utility>
 
-#include <GLFW/glfw3.h>
 #include <kgm/enums.hpp>
+#include <kgm/kgm.hpp>
 
 #include "sui/detail/context.hpp"
 #include "sui/detail/ubo.hpp"
@@ -50,7 +50,7 @@ class window final {
     }
 
     void poll_events() noexcept {
-        glfwPollEvents();
+        kgm::poll_events();
         win_.input().update();
     }
 
