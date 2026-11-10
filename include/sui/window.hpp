@@ -12,6 +12,7 @@
 #include "sui/detail/ubo.hpp"
 #include "sui/detail/window.hpp"
 #include "sui/error.hpp"
+#include "sui/vec2.hpp"
 #include "sui/vertex.hpp"
 
 namespace sui {
@@ -30,11 +31,6 @@ class window final {
 
     [[nodiscard]] auto is_open() noexcept -> bool { return win_.is_open(); }
 
-    void poll_events() noexcept {
-        kgm::poll_events();
-        win_.input().update();
-    }
-
     [[nodiscard]] auto is_key_down(const kgm::key key) noexcept -> bool {
         return win_.input().key.get_action(key) == detail::action::down;
     }
@@ -45,6 +41,18 @@ class window final {
 
     [[nodiscard]] auto is_key_released(const kgm::key key) noexcept -> bool {
         return win_.input().key.get_action(key) == detail::action::released;
+    }
+
+    [[nodiscard]] auto camera_position() const noexcept -> vec2 { return win_.camera().position(); }
+
+    auto camera_position(const float x, const float y) noexcept -> window& {
+        win_.camera().position({.x = x, .y = y});
+        return *this;
+    }
+
+    void poll_events() noexcept {
+        kgm::poll_events();
+        win_.input().update();
     }
 
     [[nodiscard]] auto begin_rendering(const uniform_buffer_object& ubo) noexcept -> bool {
