@@ -2,13 +2,16 @@
 
 #include <array>
 #include <cstddef>
-#include "kgm/enums.hpp"
+#include <cstdint>
+
+#include <GLFW/glfw3.h>
+
+#include "sui/input.hpp"
 
 namespace sui::detail {
 enum class action : std::uint8_t { none, down, pressed, released };
 
 template <auto N>
-    requires std::is_scoped_enum_v<decltype(N)>
 class button_input final {
     using T                    = decltype(N);
     static constexpr auto size = static_cast<std::size_t>(N);
@@ -41,11 +44,11 @@ class button_input final {
 
 struct input final {
     void update() noexcept {
-        key.update();
-        mouse_button.update();
+        keys.update();
+        mouse_buttons.update();
     }
 
-    button_input<kgm::key::last>          key;
-    button_input<kgm::mouse_button::last> mouse_button;
+    button_input<key::last>          keys;
+    button_input<mouse_button::last> mouse_buttons;
 };
 }  // namespace sui::detail
