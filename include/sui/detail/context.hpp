@@ -6,10 +6,9 @@
 #include <span>
 #include <utility>
 
+#include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
-#include <hgn/enums.hpp>
-#include <kgm/window.hpp>
 
 #include "sui/detail/command.hpp"
 #include "sui/detail/debug.hpp"
@@ -23,7 +22,7 @@
 namespace sui::detail {
 class context final {
   public:
-    [[nodiscard]] static auto make(kgm::window& win) noexcept -> std::expected<context, error> {
+    [[nodiscard]] static auto make(GLFWwindow& win) noexcept -> std::expected<context, error> {
         auto hard = hardware::make(win);
         if (not hard) return make_error(runtime_error, "Failed to make hardware.", hard.error());
 
