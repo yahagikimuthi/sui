@@ -2,12 +2,12 @@
 
 #include <cstdint>
 #include <expected>
+#include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
 #include <vector>
 
-#include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 
 #include "hgn/enums.hpp"
@@ -48,6 +48,16 @@ class instance_creator final {
         return *this;
     }
 
+    auto extensions(const std::span<const std::string_view> extensions
+    ) noexcept -> instance_creator& {
+        extensions_.assign_range(
+            extensions | std::views::transform([](std::string_view view) noexcept -> const char* {
+                return view.data();
+            })
+        );
+        return *this;
+    }
+
     auto debug(const bool is_debug) noexcept -> instance_creator& {
         debug_ = is_debug;
         return *this;
@@ -67,14 +77,10 @@ class instance_creator final {
         }
 
         // 拡張機能のセット
-        auto   count        = std::uint32_t{};
-        auto** p_extensions = glfwGetRequiredInstanceExtensions(&count);
-        auto   extensions   = std::vector<const char*>{};
-        extensions.assign_range(std::span{p_extensions, count});
-        if (debug_) extensions.emplace_back("VK_EXT_debug_utils");
+        if (debug_) extensions_.emplace_back("VK_EXT_debug_utils");
 
-        info_.enabledExtensionCount   = static_cast<std::uint32_t>(extensions.size());
-        info_.ppEnabledExtensionNames = extensions.data();
+        info_.enabledExtensionCount   = static_cast<std::uint32_t>(extensions_.size());
+        info_.ppEnabledExtensionNames = extensions_.data();
 
         auto* raw = static_cast<raw::instance*>(nullptr);
         return make_expected(vkCreateInstance(&info_, nullptr, &raw))
@@ -82,10 +88,11 @@ class instance_creator final {
     }
 
   private:
-    VkApplicationInfo    app_{};
-    VkInstanceCreateInfo info_{};
-    std::string          app_name_;
-    std::string          engine_name_;
-    bool                 debug_{false};
+    VkApplicationInfo        app_{};
+    VkInstanceCreateInfo     info_{};
+    std::string              app_name_;
+    std::string              engine_name_;
+    std::vector<const char*> extensions_;
+    bool                     debug_{false};
 };
 }  // namespace hgn
