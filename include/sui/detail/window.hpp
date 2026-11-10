@@ -1,16 +1,16 @@
 #pragma once
 
 #include <expected>
+#include <optional>
 #include <string_view>
 #include <utility>
 
-#include <kgm/enums.hpp>
-#include <kgm/kgm.hpp>
-#include <kgm/window.hpp>
+#include <GLFW/glfw3.h>
 
 #include "sui/detail/camera.hpp"
 #include "sui/detail/input.hpp"
 #include "sui/error.hpp"
+#include "sui/input.hpp"
 
 namespace sui::detail {
 class window final {
@@ -18,31 +18,36 @@ class window final {
     [[nodiscard]] static auto make(
         const std::uint32_t width, const std::uint32_t height, const std::string_view title
     ) noexcept -> std::expected<window, error> {
-        if (not kgm::init()) return make_error(runtime_error, "Failed to init GLFW.");
+        if (glfwInit() == 0) return make_error(runtime_error, "Failed to init GLFW.");
 
-        auto raw = kgm::get_window_creator()
-                       .hint(kgm::window_hint::client_api, kgm::window_value::no_api)
-                       .extent(width, height)
-                       .title(title)
-                       .create();
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        auto* raw = glfwCreateWindow(
+            static_cast<int>(width),
+            static_cast<int>(height),
+            std::string{title}.c_str(),
+            nullptr,
+            nullptr
+        );
 
-        if (not raw) return make_error(runtime_error, "Failed to make window.");
+        if (raw == nullptr) return make_error(runtime_error, "Failed to make window.");
 
-        return window{std::move(*raw)};
+        return window{*raw};
     }
 
     window(const window&) noexcept                    = delete;
     auto operator=(const window&) noexcept -> window& = delete;
 
     window(window&& other) noexcept
-        : raw_{std::move(other.raw_)}, camera_{other.camera_}, input_{other.input_} {
+        : raw_{std::exchange(other.raw_, std::nullopt)},
+          camera_{other.camera_},
+          input_{other.input_} {
         reset();
     }
 
     auto operator=(window&& other) noexcept -> window& {
         if (this == &other) return *this;
 
-        raw_    = std::move(other.raw_);
+        raw_    = std::exchange(other.raw_, std::nullopt);
         camera_ = other.camera_;
         input_  = other.input_;
 
@@ -50,28 +55,43 @@ class window final {
         return *this;
     }
 
-    ~window() noexcept = default;
+    ~window() noexcept {
+        if (raw_) {
+            glfwDestroyWindow(&get());
+            glfwTerminate();
+        }
+    }
 
-    [[nodiscard]] auto is_open() noexcept -> bool { return not raw_.should_close(); }
+    [[nodiscard]] auto is_open() noexcept -> bool { return glfwWindowShouldClose(&get()) != 0; }
 
     [[nodiscard]] auto input() noexcept -> input& { return input_; }
 
     [[nodiscard]] auto camera() noexcept -> camera& { return camera_; }
     [[nodiscard]] auto camera() const noexcept -> const class camera& { return camera_; }
 
-    [[nodiscard]] auto get() noexcept -> kgm::window& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> GLFWwindow& { return *raw_; }
 
   private:
-    explicit window(kgm::window&& raw) noexcept : raw_{std::move(raw)} { reset(); }
+    explicit window(GLFWwindow& raw) noexcept : raw_{raw} { reset(); }
 
     void reset() noexcept {
-        raw_.set_key_callback([this](kgm::key key, kgm::action act) noexcept -> void {
-            input_.key.set(key, act == kgm::action::press);
-        });
+        glfwSetWindowUserPointer(&get(), this);
+
+        glfwSetKeyCallback(
+            &get(),
+            [](GLFWwindow*          ptr,
+               int                  button,
+               [[maybe_unused]] int scancode,
+               int                  act,
+               [[maybe_unused]] int mods) noexcept -> void {
+                auto& self = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
+                self.input_.keys.set(static_cast<key>(button), act == GLFW_PRESS);
+            }
+        );
     }
 
-    kgm::window  raw_;
-    class camera camera_;
-    struct input input_;
+    std::optional<GLFWwindow&> raw_;
+    class camera               camera_;
+    struct input               input_;
 };
 }  // namespace sui::detail
