@@ -31,22 +31,28 @@ class window final {
     auto operator=(const window&) noexcept -> window& = delete;
 
     window(window&& other) noexcept
-        : raw_{std::move(other.raw_)}, camera_{other.camera_}, input_{other.input_} {
+        : raw_{std::move(other.raw_)},
+          camera_{other.camera_},
+          input_{other.input_},
+          is_valid_{std::exchange(other.is_valid_, false)} {
         reset();
     }
 
     auto operator=(window&& other) noexcept -> window& {
         if (this == &other) return *this;
 
-        raw_    = std::move(other.raw_);
-        camera_ = other.camera_;
-        input_  = other.input_;
+        raw_      = std::move(other.raw_);
+        camera_   = other.camera_;
+        input_    = other.input_;
+        is_valid_ = std::exchange(other.is_valid_, false);
 
         reset();
         return *this;
     }
 
-    ~window() noexcept = default;
+    ~window() noexcept {
+        if (is_valid_) kgm::terminate();
+    }
 
     [[nodiscard]] auto is_open() noexcept -> bool { return not raw_.should_close(); }
 
@@ -69,5 +75,6 @@ class window final {
     kgm::window  raw_;
     class camera camera_;
     struct input input_;
+    bool         is_valid_{true};
 };
 }  // namespace sui::detail
