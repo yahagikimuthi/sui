@@ -6,6 +6,7 @@
 #include <span>
 #include <utility>
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <kgm/window.hpp>

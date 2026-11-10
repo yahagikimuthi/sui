@@ -4,13 +4,12 @@
 #include <functional>
 #include <utility>
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#undef GLFW_INCLUDE_VULKAN
 #include <hgn/enums.hpp>
 #include <hgn/instance.hpp>
 #include <hgn/raw/raw.hpp>
 #include <hgn/surface.hpp>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 #include "kgm/detail/detail.hpp"
 #include "kgm/enums.hpp"
