@@ -2,8 +2,11 @@
 
 #include <cstdint>
 #include <optional>
+#include <ranges>
+#include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <GLFW/glfw3.h>
 
@@ -49,5 +52,16 @@ inline void poll_events() noexcept {
 
 inline void terminate() noexcept {
     glfwTerminate();
+}
+
+[[nodiscard]] inline auto get_required_instance_extensions() noexcept
+    -> std::vector<std::string_view> {
+    auto   count = std::uint32_t{};
+    auto** ptrs  = glfwGetRequiredInstanceExtensions(&count);
+    auto   span  = std::span{ptrs, count};
+    return span | std::views::transform([](const char* ptr) noexcept -> std::string_view {
+               return std::string_view{ptr};
+           }) |
+           std::ranges::to<std::vector>();
 }
 }  // namespace kgm
