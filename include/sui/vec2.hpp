@@ -5,8 +5,8 @@
 
 namespace sui {
 struct vec2 final {
-    float x;
-    float y;
+    float x{};
+    float y{};
 
     [[nodiscard]] constexpr auto abs() const noexcept -> float { return std::hypot(x, y); }
 
@@ -67,4 +67,6 @@ struct vec2 final {
         return glm::vec3{x, y, 0.f};
     }
 };
+
+static_assert(sizeof(vec2) == 8);
 }  // namespace sui
