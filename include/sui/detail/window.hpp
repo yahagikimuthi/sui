@@ -62,7 +62,7 @@ class window final {
         }
     }
 
-    [[nodiscard]] auto is_open() noexcept -> bool { return glfwWindowShouldClose(&get()) != 0; }
+    [[nodiscard]] auto is_open() noexcept -> bool { return glfwWindowShouldClose(&get()) == 0; }
 
     [[nodiscard]] auto input() noexcept -> input& { return input_; }
 
@@ -85,7 +85,7 @@ class window final {
                int                  act,
                [[maybe_unused]] int mods) noexcept -> void {
                 auto& self = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
-                self.input_.keys.set(static_cast<key>(button), act == GLFW_PRESS);
+                self.input_.keys.set(static_cast<key>(button), act);
             }
         );
     }

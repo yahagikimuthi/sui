@@ -32,8 +32,12 @@ class button_input final {
         return action::none;
     }
 
-    void set(const T idx, const bool is_press) noexcept {
-        next_[static_cast<std::size_t>(idx)] = is_press;
+    void set(const T e_idx, const int action) noexcept {
+        const auto idx = static_cast<std::size_t>(e_idx);
+        if (action == GLFW_PRESS)
+            next_[idx] = true;
+        else if (action == GLFW_RELEASE)
+            next_[idx] = false;
     }
 
   private:
