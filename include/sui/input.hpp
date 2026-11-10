@@ -1,25 +1,10 @@
 #pragma once
 
-#include <concepts>
 #include <cstdint>
-#include <type_traits>
 
 #include <GLFW/glfw3.h>
 
-namespace kgm::detail {
-template <typename F, typename... Signatures>
-concept callbackable =
-    std::convertible_to<F, void (*)(Signatures...)> and std::is_default_constructible_v<F> and
-    (std::copyable<F> or std::movable<F>) and std::is_nothrow_invocable_r_v<void, F, Signatures...>;
-}  // namespace kgm::detail
-
-namespace kgm {
-enum class window_hint : std::int32_t { client_api = GLFW_CLIENT_API };
-
-enum class window_value : std::int8_t { no_api = GLFW_NO_API };
-
-enum class action : std::uint8_t { press = GLFW_PRESS, release = GLFW_RELEASE };
-
+namespace sui {
 enum class mouse_button : std::uint8_t {
     num1   = GLFW_MOUSE_BUTTON_1,
     num2   = GLFW_MOUSE_BUTTON_2,
@@ -158,4 +143,4 @@ enum class key : std::int16_t {
     menu          = GLFW_KEY_MENU,
     last          = GLFW_KEY_LAST
 };
-}  // namespace kgm
+}  // namespace sui
