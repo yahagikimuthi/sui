@@ -34,7 +34,10 @@ enum class queue_flag_bits : std::int32_t { none = 0, graphics = VK_QUEUE_GRAPHI
 
 enum class surface_transform_flag_bits_khr : std::int32_t {};
 
-enum class format : std::int32_t { b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB };  // NOLINT
+enum class format : std::int32_t {  // NOLINT
+    b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB,
+    r8g8b8a8_srgb = VK_FORMAT_R8G8B8A8_SRGB
+};
 
 enum class color_space_khr : std::int32_t {  // NOLINT
     srgb_nonlinear = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
@@ -51,9 +54,11 @@ enum class sharing_mode : std::int32_t {  // NOLINT
 };
 
 enum class image_layout : std::int32_t {
-    undefined                = VK_IMAGE_LAYOUT_UNDEFINED,
     color_attachment_optimal = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-    present_src_khr          = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+    present_src_khr          = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    shader_read_only_optimal = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    transfer_dst_optimal     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    undefined                = VK_IMAGE_LAYOUT_UNDEFINED,
 };
 
 enum class buffer_usage_flag_bits : std::int32_t {  // NOLINT
