@@ -15,6 +15,7 @@
 #include <hgn/physical.hpp>
 #include <hgn/rendering.hpp>
 
+#include "hgn/image.hpp"
 #include "sui/detail/hardware.hpp"
 #include "sui/detail/others.hpp"
 #include "sui/error.hpp"
@@ -167,12 +168,16 @@ class renderer final {
 
         if (not pipe) return make_error(runtime_error, "Failed to make graphics pipeline.");
 
+        auto sampler = dev.create_sampler();
+        if (not sampler) return make_error(runtime_error, "Failed to make sampler.");
+
         return renderer{
             std::move(*buffer),
             std::move(*shader),
             std::move(*layout),
             std::move(*pipe),
-            std::move(*descriptor)
+            std::move(*descriptor),
+            std::move(*sampler)
         };
     }
 
@@ -191,18 +196,21 @@ class renderer final {
         shader&&                 shader,
         hgn::pipeline_layout&&   layout,
         hgn::graphics_pipeline&& pipe,
-        descriptor&&             descriptor
+        descriptor&&             descriptor,
+        hgn::sampler&&           sampler
     ) noexcept
         : buffer_{std::move(buffer)},
           shader_{std::move(shader)},
           descriptor_{std::move(descriptor)},
           layout_{std::move(layout)},
-          pipe_{std::move(pipe)} {}
+          pipe_{std::move(pipe)},
+          sampler_{std::move(sampler)} {}
 
     buffer                 buffer_;
     shader                 shader_;
     descriptor             descriptor_;
     hgn::pipeline_layout   layout_;
     hgn::graphics_pipeline pipe_;
+    hgn::sampler           sampler_;
 };
 }  // namespace sui::detail
