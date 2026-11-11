@@ -51,7 +51,7 @@ class swapchain_khr final {
 
 class borrowed_image final {
   public:
-    [[nodiscard]] explicit borrowed_image(raw::image&& raw) noexcept : raw_{raw} {}  // NOLINT
+    [[nodiscard]] explicit borrowed_image(raw::image& raw) noexcept : raw_{raw} {}
 
     [[nodiscard]] auto get() noexcept -> raw::image& { return raw_; }
 

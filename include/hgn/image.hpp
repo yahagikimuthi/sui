@@ -8,7 +8,7 @@
 namespace hgn {
 class borrowed_image final {
   public:
-    explicit borrowed_image(raw::image& raw) noexcept : raw_{std::move(raw)} {}
+    explicit borrowed_image(raw::image& raw) noexcept : raw_{raw} {}
 
     [[nodiscard]] auto get() noexcept -> raw::image& { return raw_; }
 
