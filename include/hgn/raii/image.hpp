@@ -4,6 +4,7 @@
 #include <optional>
 #include <utility>
 
+#include <hgn/third_parties/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "hgn/raw/raw.hpp"
@@ -47,6 +48,48 @@ class swapchain_khr final {
 
     std::optional<VkSwapchainKHR_T&>    raw_;
     std::reference_wrapper<raw::device> dev_;
+};
+
+class image final {
+  public:
+    explicit image(
+        raw::image&& raw, raw::allocator& allocator, raw::allocation& alloc  // NOLINT
+    ) noexcept
+        : raw_{raw}, allocator_{std::ref(allocator)}, alloc_{std::ref(alloc)} {}
+
+    image(const image&) noexcept                    = delete;
+    auto operator=(const image&) noexcept -> image& = delete;
+
+    image(image&& other) noexcept
+        : raw_{std::exchange(other.raw_, std::nullopt)},
+          allocator_{other.allocator_},
+          alloc_{other.alloc_} {}
+
+    auto operator=(image&& other) noexcept -> image& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        raw_       = std::exchange(other.raw_, std::nullopt);
+        allocator_ = other.allocator_;
+        alloc_     = other.alloc_;
+        return *this;
+    }
+
+    ~image() noexcept { destroy(); }
+
+    [[nodiscard]] auto get() noexcept -> raw::image& { return *raw_; }
+
+    [[nodiscard]] operator raw::image&() noexcept { return get(); }
+
+  private:
+    void destroy() noexcept {
+        if (raw_) vmaDestroyImage(&allocator_.get(), &get(), &alloc_.get());
+    }
+
+    std::optional<raw::image&>              raw_;
+    std::reference_wrapper<raw::allocator>  allocator_;
+    std::reference_wrapper<raw::allocation> alloc_;
 };
 
 class borrowed_image final {
