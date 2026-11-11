@@ -176,7 +176,7 @@ class device final {
         info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 
-        info.anisotropyEnable = VK_TRUE;
+        info.anisotropyEnable = VK_FALSE;
         info.maxAnisotropy    = get_physical_property().limits.maxSamplerAnisotropy;
 
         info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
