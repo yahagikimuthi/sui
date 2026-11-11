@@ -42,4 +42,14 @@ class image_view final {
   private:
     raii::image_view raw_;
 };
+
+class sampler final {
+  public:
+    explicit sampler(raw::sampler& raw, raw::device& dev) noexcept : raw_{std::move(raw), dev} {}
+
+    [[nodiscard]] auto get() noexcept -> raw::sampler& { return raw_; }
+
+  private:
+    raii::sampler raw_;
+};
 }  // namespace hgn
