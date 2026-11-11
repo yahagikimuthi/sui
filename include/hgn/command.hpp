@@ -58,6 +58,24 @@ class command_buffer final {
         );
     }
 
+    void cpy_buffer_to_image(
+        hgn::buffer& buffer, hgn::image& image, std::uint32_t width, std::uint32_t height
+    ) noexcept {
+        auto region                        = VkBufferImageCopy{};
+        region.bufferOffset                = 0;
+        region.bufferRowLength             = 0;
+        region.bufferImageHeight           = 0;
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel   = 0;
+        region.imageSubresource.layerCount = 1;
+        region.imageOffset                 = {.x = 0, .y = 0, .z = 0};
+        region.imageExtent                 = {.width = width, .height = height, .depth = 1};
+
+        vkCmdCopyBufferToImage(
+            &get(), &buffer.get(), &image.get(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region
+        );
+    }
+
     void draw(const std::uint32_t vertex_count, const std::uint32_t instance_count) noexcept {
         vkCmdDraw(&get(), vertex_count, instance_count, 0, 1);
     }
