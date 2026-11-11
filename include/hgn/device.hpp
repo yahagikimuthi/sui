@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <expected>
+#include <functional>
 #include <span>
 #include <utility>
 
@@ -15,6 +16,7 @@
 #include "hgn/detail/device/swapchain.hpp"
 #include "hgn/detail/pipeline.hpp"
 #include "hgn/enums.hpp"
+#include "hgn/image.hpp"
 #include "hgn/queue.hpp"
 #include "hgn/raii/hardware.hpp"
 #include "hgn/raw/raw.hpp"
@@ -24,7 +26,8 @@
 namespace hgn {
 class device final {
   public:
-    explicit device(raw::device& raw) noexcept : raw_{std::move(raw)} {}
+    explicit device(raw::device& raw, raw::physical_device& physical) noexcept
+        : raw_{std::move(raw)}, physical_{std::ref(physical)} {}
 
     [[nodiscard]] auto get_queue(const queue_family& family) noexcept -> queue {
         // 指定されたキューファミリーの0番キューを取得する
@@ -162,6 +165,37 @@ class device final {
             .transform([&]() noexcept -> descriptor_pool { return descriptor_pool{*raw, get()}; });
     }
 
+    [[nodiscard]] auto create_sampler() noexcept -> std::expected<sampler, result> {
+        auto info  = VkSamplerCreateInfo{};
+        info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+
+        info.magFilter = VK_FILTER_LINEAR;
+        info.minFilter = VK_FILTER_LINEAR;
+
+        info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+        info.anisotropyEnable = VK_TRUE;
+        info.maxAnisotropy    = get_physical_property().limits.maxSamplerAnisotropy;
+
+        info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+        info.unnormalizedCoordinates = VK_FALSE;
+
+        info.compareEnable = VK_FALSE;
+        info.compareOp     = VK_COMPARE_OP_ALWAYS;
+
+        info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        info.mipLodBias = 0.f;
+        info.minLod     = 0.f;
+        info.maxLod     = 0.f;
+
+        auto* raw = static_cast<raw::sampler*>(nullptr);
+        return make_expected(vkCreateSampler(&get(), &info, nullptr, &raw))
+            .transform([&]() noexcept -> sampler { return sampler{*raw, get()}; });
+    }
+
     [[nodiscard]] auto wait_idle() noexcept -> std::expected<void, result> {
         return make_expected(vkDeviceWaitIdle(&get()));
     }
@@ -169,6 +203,13 @@ class device final {
     [[nodiscard]] auto get() noexcept -> raw::device& { return raw_; }
 
   private:
-    raii::device raw_;
+    [[nodiscard]] auto get_physical_property() noexcept -> VkPhysicalDeviceProperties {
+        auto property = VkPhysicalDeviceProperties{};
+        vkGetPhysicalDeviceProperties(&physical_.get(), &property);
+        return property;
+    }
+
+    raii::device                                 raw_;
+    std::reference_wrapper<raw::physical_device> physical_;
 };
 }  // namespace hgn
