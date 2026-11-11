@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <utility>
 
 #include <vulkan/vulkan.h>
@@ -21,12 +22,14 @@ class image final {
 
 class borrowed_image final {
   public:
-    explicit borrowed_image(raw::image& raw) noexcept : raw_{raw} {}
+    explicit borrowed_image(raw::image& raw) noexcept : raw_{std::ref(raw)} {}
+
+    borrowed_image(image& img) noexcept : raw_{std::ref(img.get())} {}
 
     [[nodiscard]] auto get() noexcept -> raw::image& { return raw_; }
 
   private:
-    raii::borrowed_image raw_;
+    std::reference_wrapper<raw::image> raw_;
 };
 
 class image_view final {
