@@ -132,7 +132,7 @@ class physical_device final {
 
             auto* raw = static_cast<raw::device*>(nullptr);
             return make_expected(vkCreateDevice(&get(), &info, nullptr, &raw))
-                .transform([&]() noexcept -> device { return device{*raw}; });
+                .transform([&]() noexcept -> device { return device{*raw, get()}; });
         }
     }
 
