@@ -6,14 +6,14 @@
 #include "hgn/raw/raw.hpp"
 
 namespace hgn {
-class image final {
+class borrowed_image final {
   public:
-    explicit image(raw::image& raw) noexcept : raw_{std::move(raw)} {}
+    explicit borrowed_image(raw::image& raw) noexcept : raw_{std::move(raw)} {}
 
     [[nodiscard]] auto get() noexcept -> raw::image& { return raw_; }
 
   private:
-    raii::image raw_;
+    raii::borrowed_image raw_;
 };
 
 class image_view final {

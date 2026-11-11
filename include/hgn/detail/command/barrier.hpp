@@ -37,7 +37,7 @@ class image_memory_barrier_executor final {
         return *this;
     }
 
-    auto image(image& img) noexcept -> image_memory_barrier_executor& {
+    auto image(borrowed_image& img) noexcept -> image_memory_barrier_executor& {
         raw_.image = &img.get();
         return *this;
     }

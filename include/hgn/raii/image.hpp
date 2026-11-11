@@ -49,9 +49,9 @@ class swapchain_khr final {
     std::reference_wrapper<raw::device> dev_;
 };
 
-class image final {
+class borrowed_image final {
   public:
-    [[nodiscard]] explicit image(raw::image&& raw) noexcept : raw_{raw} {}  // NOLINT
+    [[nodiscard]] explicit borrowed_image(raw::image&& raw) noexcept : raw_{raw} {}  // NOLINT
 
     [[nodiscard]] auto get() noexcept -> raw::image& { return raw_; }
 

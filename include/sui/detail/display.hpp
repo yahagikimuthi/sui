@@ -128,7 +128,9 @@ class display final {
         return display{std::move(*swapchain), std::move(*images), std::move(views)};
     }
 
-    [[nodiscard]] auto get_image(const std::size_t i) noexcept -> hgn::image& { return images_[i]; }
+    [[nodiscard]] auto get_image(const std::size_t i) noexcept -> hgn::borrowed_image& {
+        return images_[i];
+    }
     [[nodiscard]] auto get_view(const std::size_t i) noexcept -> hgn::image_view& {
         return views_[i];
     }
@@ -137,14 +139,14 @@ class display final {
 
   private:
     explicit display(
-        hgn::swapchain_khr&&           swapchain,
-        std::vector<hgn::image>&&      images,
-        std::vector<hgn::image_view>&& views
+        hgn::swapchain_khr&&               swapchain,
+        std::vector<hgn::borrowed_image>&& images,
+        std::vector<hgn::image_view>&&     views
     ) noexcept
         : swapchain_{std::move(swapchain)}, images_{std::move(images)}, views_{std::move(views)} {}
 
-    hgn::swapchain_khr           swapchain_;
-    std::vector<hgn::image>      images_;
-    std::vector<hgn::image_view> views_;
+    hgn::swapchain_khr               swapchain_;
+    std::vector<hgn::borrowed_image> images_;
+    std::vector<hgn::image_view>     views_;
 };
 }  // namespace sui::detail

@@ -22,7 +22,7 @@ class swapchain_khr final {
     explicit swapchain_khr(VkSwapchainKHR_T& raw, raw::device& dev, const format fmt) noexcept
         : raw_{std::move(raw), dev}, image_format_{fmt} {}
 
-    [[nodiscard]] auto get_images() noexcept -> std::expected<std::vector<image>, result> {
+    [[nodiscard]] auto get_images() noexcept -> std::expected<std::vector<borrowed_image>, result> {
         auto count = std::uint32_t{};
         if (const auto res = vkGetSwapchainImagesKHR(&raw_.init_device(), &get(), &count, nullptr);
             res != VK_SUCCESS) {
@@ -35,9 +35,9 @@ class swapchain_khr final {
             return make_unexpected(res);
         }
 
-        return raws | std::views::transform([](raw::image* raw) noexcept -> image {
+        return raws | std::views::transform([](raw::image* raw) noexcept -> borrowed_image {
                    assert(raw != nullptr);
-                   return image{*raw};
+                   return borrowed_image{*raw};
                }) |
                std::ranges::to<std::vector>();
     }
