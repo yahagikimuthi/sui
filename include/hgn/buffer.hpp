@@ -34,6 +34,8 @@ class buffer final {
         std::memcpy(data_, &data, sizeof(T));
     }
 
+    void cpy(std::byte* data, std::size_t size) noexcept { std::memcpy(data_, data, size); }
+
     [[nodiscard]] auto get() noexcept -> raw::buffer& { return raw_; }
 
   private:
