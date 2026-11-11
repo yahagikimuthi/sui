@@ -126,4 +126,40 @@ class image_view final {
     std::optional<raw::image_view&>     raw_;
     std::reference_wrapper<raw::device> dev_;
 };
+
+class sampler final {
+  public:
+    explicit sampler(raw::sampler&& raw, raw::device& dev) noexcept  // NOLINT
+        : raw_{raw}, dev_{std::ref(dev)} {}
+
+    sampler(const sampler&) noexcept                    = delete;
+    auto operator=(const sampler&) noexcept -> sampler& = delete;
+
+    sampler(sampler&& other) noexcept
+        : raw_{std::exchange(other.raw_, std::nullopt)}, dev_{other.dev_} {}
+
+    auto operator=(sampler&& other) noexcept -> sampler& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        raw_ = std::exchange(other.raw_, std::nullopt);
+        dev_ = other.dev_;
+        return *this;
+    }
+
+    ~sampler() noexcept { destroy(); }
+
+    [[nodiscard]] auto get() noexcept -> raw::sampler& { return *raw_; }
+
+    [[nodiscard]] operator raw::sampler&() noexcept { return get(); }
+
+  private:
+    void destroy() noexcept {
+        if (raw_) vkDestroySampler(&dev_.get(), &get(), nullptr);
+    }
+
+    std::optional<raw::sampler&>        raw_;
+    std::reference_wrapper<raw::device> dev_;
+};
 }  // namespace hgn::raii
