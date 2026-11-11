@@ -15,6 +15,7 @@ using fence           = VkFence_T;
 using swapchain_khr = VkSwapchainKHR_T;
 using image         = VkImage_T;
 using image_view    = VkImageView_T;
+using sampler       = VkSampler_T;
 
 using command_pool   = VkCommandPool_T;
 using command_buffer = VkCommandBuffer_T;
