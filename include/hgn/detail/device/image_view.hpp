@@ -52,7 +52,7 @@ class image_view_creator final {
     }
 
     // 元となる画像
-    auto image(borrowed_image& image) noexcept -> image_view_creator& {
+    auto image(borrowed_image image) noexcept -> image_view_creator& {
         info_.image = &image.get();
         return *this;
     }
