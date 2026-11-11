@@ -92,18 +92,6 @@ class image final {
     std::reference_wrapper<raw::allocation> alloc_;
 };
 
-class borrowed_image final {
-  public:
-    [[nodiscard]] explicit borrowed_image(raw::image& raw) noexcept : raw_{raw} {}
-
-    [[nodiscard]] auto get() noexcept -> raw::image& { return raw_; }
-
-    [[nodiscard]] operator raw::image&() noexcept { return get(); }
-
-  private:
-    std::reference_wrapper<raw::image> raw_;
-};
-
 class image_view final {
   public:
     [[nodiscard]] explicit image_view(raw::image_view&& raw, raw::device& dev) noexcept  // NOLINT
