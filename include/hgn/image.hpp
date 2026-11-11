@@ -1,11 +1,24 @@
 #pragma once
 
+#include <utility>
+
 #include <vulkan/vulkan.h>
 
 #include "hgn/raii/image.hpp"
 #include "hgn/raw/raw.hpp"
 
 namespace hgn {
+class image final {
+  public:
+    explicit image(raw::image& raw, raw::allocator& allocator, raw::allocation& alloc) noexcept
+        : raw_{std::move(raw), allocator, alloc} {}
+
+    [[nodiscard]] auto get() noexcept -> raw::image& { return raw_; }
+
+  private:
+    raii::image raw_;
+};
+
 class borrowed_image final {
   public:
     explicit borrowed_image(raw::image& raw) noexcept : raw_{raw} {}
