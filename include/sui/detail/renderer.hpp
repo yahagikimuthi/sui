@@ -52,18 +52,8 @@ class buffer final {
                            .create();
         if (not uniform) return make_error(runtime_error, "Failed to make uniform buffer.");
 
-        auto staging = allocator->get_buffer_creator()
-                           .size(max_buffer_size)
-                           .usage(hgn::buffer_usage_flag_bits::transfer_src)
-                           .create();
-        if (not staging) return make_error(runtime_error, "Failed to make staging buffer.");
-
         return buffer{
-            std::move(*allocator),
-            std::move(*vertex),
-            std::move(*index),
-            std::move(*uniform),
-            std::move(*staging)
+            std::move(*allocator), std::move(*vertex), std::move(*index), std::move(*uniform)
         };
     }
 
@@ -73,27 +63,19 @@ class buffer final {
 
     [[nodiscard]] auto uniform() noexcept -> hgn::buffer& { return uniform_; }
 
-    [[nodiscard]] auto staging() noexcept -> hgn::buffer& { return staging_; }
-
   private:
     explicit buffer(
-        hgn::allocator&& allocator,
-        hgn::buffer&&    vertex,
-        hgn::buffer&&    index,
-        hgn::buffer&&    uniform,
-        hgn::buffer&&    staging
+        hgn::allocator&& allocator, hgn::buffer&& vertex, hgn::buffer&& index, hgn::buffer&& uniform
     ) noexcept
         : allocator_{std::move(allocator)},
           vertex_{std::move(vertex)},
           index_{std::move(index)},
-          uniform_{std::move(uniform)},
-          staging_{std::move(staging)} {}
+          uniform_{std::move(uniform)} {}
 
     hgn::allocator allocator_;
     hgn::buffer    vertex_;
     hgn::buffer    index_;
     hgn::buffer    uniform_;
-    hgn::buffer    staging_;
 };
 
 class shader final {
