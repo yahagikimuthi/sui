@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <functional>
 
 #include <vulkan/vulkan.h>
@@ -37,7 +38,7 @@ class image_memory_barrier_executor final {
         return *this;
     }
 
-    auto image(borrowed_image& img) noexcept -> image_memory_barrier_executor& {
+    auto image(borrowed_image img) noexcept -> image_memory_barrier_executor& {
         raw_.image = &img.get();
         return *this;
     }
@@ -62,7 +63,21 @@ class image_memory_barrier_executor final {
             source = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;  // ピクセルが出力された瞬間
             destination = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;  // 全コマンドが終了するまで
             // TODO BOTTOM OF PIPE BITは非推奨化されているらしいので要修正
+        } else if (raw_.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED and
+                   raw_.newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+            raw_.srcAccessMask = 0;
+            raw_.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            source             = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destination        = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        } else if (raw_.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL and
+                   raw_.newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            raw_.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            raw_.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            source             = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            destination        = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         }
+
+        assert(false and "unsupported layout transition.");
 
         // sourceはバリアより前に完了していなければならないパイプラインステージ
         // destinationはバリアが完了するまで待機させられるパイプラインステージ
