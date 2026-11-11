@@ -7,9 +7,9 @@
 #include <kgm/enums.hpp>
 #include <kgm/kgm.hpp>
 
-#include "sui/detail/context.hpp"
-#include "sui/detail/ubo.hpp"
-#include "sui/detail/window.hpp"
+#include "sui/detail/context/context.hpp"
+#include "sui/detail/others.hpp"
+#include "sui/detail/window/window.hpp"
 #include "sui/error.hpp"
 #include "sui/vec2.hpp"
 #include "sui/vertex.hpp"
@@ -54,14 +54,11 @@ class window final {
         win_.input().update();
     }
 
-    [[nodiscard]] auto begin_rendering(const uniform_buffer_object& ubo) noexcept -> bool {
-        return ctx_.begin_rendering(ubo);
-    }
-
     [[nodiscard]] auto begin_rendering() noexcept -> bool {
         const auto view = win_.camera().calc_view();
         const auto proj = win_.camera().calc_proj();
-        const auto ubo = uniform_buffer_object{.model = glm::mat4(1.f), .view = view, .proj = proj};
+        const auto ubo =
+            detail::uniform_buffer_object{.model = glm::mat4(1.f), .view = view, .proj = proj};
 
         return ctx_.begin_rendering(ubo);
     }

@@ -4,7 +4,7 @@
 #include <string_view>
 #include <utility>
 
-#include "sui/detail/debug.hpp"
+#include "sui/detail/others.hpp"
 
 namespace sui {
 inline void set_debug_fn(std::function<void(std::string_view)> fn) noexcept {

@@ -9,8 +9,8 @@
 #include <kgm/kgm.hpp>
 #include <kgm/window.hpp>
 
-#include "sui/detail/camera.hpp"
-#include "sui/detail/input.hpp"
+#include "sui/detail/window/camera.hpp"
+#include "sui/detail/window/input.hpp"
 #include "sui/error.hpp"
 
 namespace sui::detail {

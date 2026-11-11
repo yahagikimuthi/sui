@@ -5,7 +5,7 @@
 
 #include <hgn/command.hpp>
 
-#include "sui/detail/hardware.hpp"
+#include "sui/detail/context/hardware.hpp"
 #include "sui/error.hpp"
 
 namespace sui::detail {

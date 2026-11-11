@@ -10,12 +10,11 @@
 #include <glm/glm.hpp>
 #include <kgm/window.hpp>
 
-#include "sui/detail/command.hpp"
-#include "sui/detail/debug.hpp"
-#include "sui/detail/display.hpp"
-#include "sui/detail/hardware.hpp"
-#include "sui/detail/renderer.hpp"
-#include "sui/detail/ubo.hpp"
+#include "sui/detail/context/command.hpp"
+#include "sui/detail/context/display.hpp"
+#include "sui/detail/context/hardware.hpp"
+#include "sui/detail/context/renderer.hpp"
+#include "sui/detail/others.hpp"
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
 

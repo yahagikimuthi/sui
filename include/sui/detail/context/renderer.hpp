@@ -16,7 +16,7 @@
 #include <hgn/rendering.hpp>
 
 #include "hgn/image.hpp"
-#include "sui/detail/hardware.hpp"
+#include "sui/detail/context/hardware.hpp"
 #include "sui/detail/others.hpp"
 #include "sui/error.hpp"
 #include "sui/vertex.hpp"
@@ -82,12 +82,12 @@ class buffer final {
 class shader final {
   public:
     [[nodiscard]] static auto make(hgn::device& dev) noexcept -> std::expected<shader, error> {
-        auto vert_source = read_file("../include/sui/detail/vert.spv");
+        auto vert_source = read_file("../include/sui/detail/shader/vert.spv");
         if (not vert_source) return make_error(logic_error, "Failed to read vertex source file.");
         auto vert = dev.create_shader(*vert_source);
         if (not vert) return make_error(runtime_error, "Failed to make vertex shader module.");
 
-        auto frag_source = read_file("../include/sui/detail/frag.spv");
+        auto frag_source = read_file("../include/sui/detail/shader/frag.spv");
         if (not frag_source) return make_error(logic_error, "Failed to read fragment source file.");
         auto frag = dev.create_shader(*frag_source);
         if (not frag) return make_error(runtime_error, "Failed to make fragment shader module.");
