@@ -75,9 +75,9 @@ class image_memory_barrier_executor final {
             raw_.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
             source             = VK_PIPELINE_STAGE_TRANSFER_BIT;
             destination        = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        } else {
+            assert(false and "unsupported layout transition.");
         }
-
-        assert(false and "unsupported layout transition.");
 
         // sourceはバリアより前に完了していなければならないパイプラインステージ
         // destinationはバリアが完了するまで待機させられるパイプラインステージ
