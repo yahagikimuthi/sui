@@ -30,7 +30,7 @@ class buffer final {
     }
 
     template <typename T>
-    void cpy(T& data) noexcept {
+    void cpy(const T& data) noexcept {
         std::memcpy(data_, &data, sizeof(T));
     }
 
