@@ -32,7 +32,7 @@ class context final {
         auto cmd = command::make(*hard);
         if (not cmd) return make_error(runtime_error, "Failed to make command.", cmd.error());
 
-        auto render = renderer::make(*hard, display->swapchain().image_format());
+        auto render = renderer::make(*hard, display->swapchain().image_format(), cmd->buffer());
         if (not render)
             return make_error(runtime_error, "Failed to make renderer.", render.error());
 
@@ -105,6 +105,114 @@ class context final {
         cmd_.buffer().set_scissor(800, 600);
 
         render_.ubo().cpy(ubo);
+
+        return true;
+    }
+
+    [[nodiscard]] auto draw_texture() noexcept -> bool {
+        // GPUの待機処理
+        if (not hard_.in_flight_fence().wait()) return fail("Failed to wait fence.\n");
+        if (not hard_.in_flight_fence().reset()) return fail("Failed to reset fence.\n");
+
+        // 今回の描画で使用する画面を選択
+        const auto image_index =
+            display_.swapchain().acquire_next_image(hard_.image_available_semaphore());
+        if (not image_index) return fail("Failed to acquire next image.\n");
+        image_index_ = *image_index;
+
+        // コマンドバッファの記録を開始
+        if (not cmd_.buffer().begin()) return fail("Failed to begin command buffer.\n");
+
+        // 画面の状態遷移をする
+        // 最初の画像は中身が不定な状態なので、これから色を書き込む状態として設定をする
+        cmd_.buffer()
+            .get_image_memory_barrier_executor()
+            .layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
+            .image(display_.get_image(image_index_))
+            .barrier();
+
+        // ダイナミックレンダリングの開始
+        cmd_.buffer()
+            .get_begin_rendering_executor()
+            .image_view(display_.get_view(image_index_))
+            .clear_color(0.1f, 0.2f, 0.4f, 1.f)
+            .extent(800, 600)
+            .begin();
+
+        // 使用するバッファとパイプラインのバインド
+        cmd_.buffer().bind_pipeline(render_.texture().pipeline());
+        cmd_.buffer().bind_vertex_buffer(render_.vbo());
+        cmd_.buffer().bind_index_buffer(render_.ibo());
+        cmd_.buffer().bind_descriptor_set(
+            render_.texture().pipeline_layout(), render_.texture().descriptor_set()
+        );
+
+        // ビューポートとシーザーの設定
+        cmd_.buffer().set_viewport(800, 600);
+        cmd_.buffer().set_scissor(800, 600);
+        render_.ubo().cpy(uniform_buffer_object{});
+
+        const std::vector<uv_vertex> vertices = {
+            // 頂点0: 左下
+            {{-0.5f, -0.5f}, {255, 255, 255, 255}, {0.0f, 0.0f}},
+            // 頂点1: 右下
+            {{0.5f, -0.5f}, {255, 255, 255, 255}, {1.0f, 0.0f}},
+            // 頂点2: 右上
+            {{0.5f, 0.5f}, {255, 255, 255, 255}, {1.0f, 1.0f}},
+            // 頂点3: 左上
+            {{-0.5f, 0.5f}, {255, 255, 255, 255}, {0.0f, 1.0f}}
+        };
+
+        // 2枚の三角形で四角形を構成するインデックス配列
+        const std::vector<uint32_t> indices = {
+            0,
+            1,
+            2,  // 1枚目の三角形
+            2,
+            3,
+            0  // 2枚目の三角形
+        };
+
+        render_.ibo().cpy(indices);
+        render_.vbo().cpy(vertices);
+        cmd_.buffer().draw_indexed(static_cast<std::uint32_t>(indices.size()), 1);
+
+        cmd_.buffer().end_rendering();
+
+        // 画面の状態を映し出す形式へと設定変更
+        cmd_.buffer()
+            .get_image_memory_barrier_executor()
+            .layout(hgn::image_layout::color_attachment_optimal, hgn::image_layout::present_src_khr)
+            .image(display_.get_image(image_index_))
+            .barrier();
+
+        // コマンドバッファの記録終了
+        if (not cmd_.buffer().end()) return fail("Failed to end command buffer.\n");
+
+        // 記録したコマンドバッファをGPUのキューに提出
+        // このとき、画像が準備できるのを待つセマフォと書き終わったらシグナルを送るセマフォの連動を行う
+        if (not hard_.graphics_queue()
+                    .get_submitter()
+                    .command_buffer(cmd_.buffer())
+                    .wait_semaphore(hard_.image_available_semaphore())
+                    .signal_semaphore(hard_.render_finished_semaphore())
+                    .submit(hard_.in_flight_fence()))
+            return fail("Failed to submit.\n");
+
+        // 画面への表示
+        const auto res = hard_.present_queue()
+                             .get_present_executor()
+                             .image_index(image_index_)
+                             .semaphore(hard_.render_finished_semaphore())
+                             .swapchain(display_.swapchain())
+                             .present();
+        if (res) return true;
+
+        const auto code = res.error();
+        if (code == hgn::result::error_out_of_date_khr or code == hgn::result::suboptimal_khr) {
+            // Resize
+        }
+        return fail("Resize is occurring.\n");
 
         return true;
     }
