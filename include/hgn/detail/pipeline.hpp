@@ -12,6 +12,43 @@
 #include "hgn/rendering.hpp"
 
 namespace hgn {
+class graphics_pipeline_creator;
+class vertex_attribute_pusher final {
+  public:
+    explicit vertex_attribute_pusher(
+        graphics_pipeline_creator& creator, std::vector<VkVertexInputAttributeDescription>& vec
+    ) noexcept
+        : creator_{std::ref(creator)}, vec_{std::ref(vec)} {
+        description_.binding = 0;
+    }
+
+    [[nodiscard]] auto location(const std::uint32_t i) noexcept -> vertex_attribute_pusher& {
+        description_.location = i;
+        return *this;
+    }
+
+    [[nodiscard]] auto format(const format fmt) noexcept -> vertex_attribute_pusher& {
+        description_.format = static_cast<VkFormat>(fmt);
+        return *this;
+    }
+
+    [[nodiscard]] auto offset(const std::uint32_t n) noexcept -> vertex_attribute_pusher& {
+        description_.offset = n;
+        return *this;
+    }
+
+    [[nodiscard]] auto push() noexcept -> graphics_pipeline_creator& {
+        auto& vec = vec_.get();
+        vec.emplace_back(description_);
+        return creator_;
+    }
+
+  private:
+    VkVertexInputAttributeDescription                                      description_{};
+    std::reference_wrapper<graphics_pipeline_creator>                      creator_;
+    std::reference_wrapper<std::vector<VkVertexInputAttributeDescription>> vec_;
+};
+
 class graphics_pipeline_creator final {
   public:
     explicit graphics_pipeline_creator(raw::device& dev) noexcept : dev_{std::ref(dev)} {
@@ -23,14 +60,6 @@ class graphics_pipeline_creator final {
 
         vertex_binding_.binding   = 0;
         vertex_binding_.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-        vertex_attributes_[0].binding  = 0;
-        vertex_attributes_[0].location = 0;
-        vertex_attributes_[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
-
-        vertex_attributes_[1].binding  = 0;
-        vertex_attributes_[1].location = 1;
-        vertex_attributes_[1].format   = VK_FORMAT_R8G8B8A8_UNORM;
 
         assembly_.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         assembly_.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -78,11 +107,8 @@ class graphics_pipeline_creator final {
         return *this;
     }
 
-    auto vertex_offsets(const std::uint32_t pos0, const std::uint32_t pos1) noexcept
-        -> graphics_pipeline_creator& {
-        vertex_attributes_[0].offset = pos0;
-        vertex_attributes_[1].offset = pos1;
-        return *this;
+    auto get_vertex_attribute_pusher() noexcept -> vertex_attribute_pusher {
+        return vertex_attribute_pusher{*this, vertex_attributes_};
     }
 
     auto color_attachment(const format fmt) noexcept -> graphics_pipeline_creator& {
@@ -156,7 +182,7 @@ class graphics_pipeline_creator final {
     // 頂点データが何Bずつならんでいるか
     VkVertexInputBindingDescription vertex_binding_{};
     // 頂点データの属性
-    std::array<VkVertexInputAttributeDescription, 2> vertex_attributes_{};
+    std::vector<VkVertexInputAttributeDescription> vertex_attributes_;
     // 頂点をどう結んで図形にするかの指定(三角形か線かなど)
     VkPipelineInputAssemblyStateCreateInfo assembly_{};
     // 動的レンダリング用の管理構造体
