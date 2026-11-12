@@ -13,8 +13,8 @@
 #include "hgn/descriptor.hpp"
 #include "hgn/descriptor_pool.hpp"
 #include "hgn/detail/device/image_view.hpp"
+#include "hgn/detail/device/pipeline.hpp"
 #include "hgn/detail/device/swapchain.hpp"
-#include "hgn/detail/pipeline.hpp"
 #include "hgn/enums.hpp"
 #include "hgn/image.hpp"
 #include "hgn/queue.hpp"
@@ -128,6 +128,8 @@ class device final {
     [[nodiscard]] auto get_graphics_pipeline_creator() noexcept -> graphics_pipeline_creator {
         return graphics_pipeline_creator{get()};
     }
+
+    [[nodiscard]] auto get_descriptor_set_layout_creator() noexcept;
 
     [[nodiscard]] auto create_descriptor_set_layout() noexcept
         -> std::expected<descriptor_set_layout, result> {
