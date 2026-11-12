@@ -55,7 +55,7 @@ class descriptor_set_write_pusher final {
         return *this;
     }
 
-    auto write() noexcept -> descriptor_set_writer& {
+    auto push() noexcept -> descriptor_set_writer& {
         if (buffer_info_.get().buffer != nullptr) write_.pBufferInfo = &buffer_info_.get();
         if (image_info_.get().imageView != nullptr) write_.pImageInfo = &image_info_.get();
 
