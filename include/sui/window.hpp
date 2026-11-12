@@ -63,6 +63,8 @@ class window final {
         return ctx_.begin_rendering(ubo);
     }
 
+    [[nodiscard]] auto draw_texture() noexcept -> bool { return ctx_.draw_texture(); }
+
     void render(const std::span<const vertex> vertices) noexcept { ctx_.render(vertices); }
 
     void render(
