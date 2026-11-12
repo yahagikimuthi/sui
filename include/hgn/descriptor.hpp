@@ -3,7 +3,6 @@
 #include <functional>
 #include <utility>
 
-#include "hgn/buffer.hpp"
 #include "hgn/detail/descriptor.hpp"
 #include "hgn/raii/rendering.hpp"
 #include "hgn/raw/raw.hpp"
