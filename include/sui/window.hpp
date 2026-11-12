@@ -20,7 +20,7 @@ class window final {
     [[nodiscard]] static auto make() noexcept -> std::expected<window, error> {
         auto win = detail::window::make(800, 600, "No Title");
 
-        if (not win) return make_error(runtime_error, "Failed to make window.");
+        if (not win) return make_error(runtime_error, "Failed to make window.", win.error());
 
         auto ctx = detail::context::make(win->get());
         if (not ctx) return make_error(runtime_error, "Failed to make context.", ctx.error());
