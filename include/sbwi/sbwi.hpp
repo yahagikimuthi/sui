@@ -13,7 +13,10 @@ namespace sbwi {
 class image final {
   public:
     explicit image(
-        std::byte* pixels, std::uint32_t width, std::uint32_t height, int channels
+        std::byte*          pixels,
+        const std::uint32_t width,
+        const std::uint32_t height,
+        const std::uint32_t channels
     ) noexcept
         : raw_{pixels}, width_{width}, height_{height}, channels_{channels} {}
 
@@ -23,11 +26,13 @@ class image final {
 
     [[nodiscard]] auto height() const noexcept -> std::uint32_t { return height_; }
 
+    [[nodiscard]] auto channels() const noexcept -> std::uint32_t { return channels_; }
+
   private:
-    raii::image          raw_;
-    std::uint32_t        width_;
-    std::uint32_t        height_;
-    [[maybe_unused]] int channels_;
+    raii::image   raw_;
+    std::uint32_t width_;
+    std::uint32_t height_;
+    std::uint32_t channels_;
 };
 
 [[nodiscard]] inline auto create_image(const std::filesystem::path& path
@@ -43,7 +48,7 @@ class image final {
         reinterpret_cast<std::byte*>(pixels),
         static_cast<std::uint32_t>(width),
         static_cast<std::uint32_t>(height),
-        channels
+        static_cast<std::uint32_t>(channels)
     };
 }
 }  // namespace sbwi
