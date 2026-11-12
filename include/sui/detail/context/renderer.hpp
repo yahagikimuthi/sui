@@ -161,7 +161,7 @@ class renderer final {
         auto pipe = dev.get_graphics_pipeline_creator()
                         .vertex_binding(sizeof(vertex))
                         .get_vertex_attribute_pusher()
-                        .location(2)
+                        .location(0)
                         .offset(offsetof(vertex, position))
                         .format(hgn::format::r32g32b32_sfloat)
                         .push()
