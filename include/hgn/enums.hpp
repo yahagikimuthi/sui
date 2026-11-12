@@ -69,4 +69,14 @@ enum class buffer_usage_flag_bits : std::int32_t {  // NOLINT
     uniform      = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
     transfer_src = VK_BUFFER_USAGE_TRANSFER_SRC_BIT
 };
+
+enum class shader_stage_flag_bits : std::int32_t {  // NOLINT
+    vertex   = VK_SHADER_STAGE_VERTEX_BIT,
+    fragment = VK_SHADER_STAGE_FRAGMENT_BIT
+};
+
+enum class descriptor_type : std::uint32_t {  // NOLINT
+    uniform_buffer         = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+    combined_image_sampler = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+};
 }  // namespace hgn
