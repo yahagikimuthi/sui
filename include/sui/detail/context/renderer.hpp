@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <expected>
+#include <filesystem>
 #include <optional>
 #include <span>
 #include <utility>
@@ -81,13 +82,17 @@ class buffer final {
 
 class shader final {
   public:
-    [[nodiscard]] static auto make(hgn::device& dev) noexcept -> std::expected<shader, error> {
-        auto vert_source = read_file("../include/sui/detail/shader/vert.spv");
+    [[nodiscard]] static auto make(
+        hgn::device&                 dev,
+        const std::filesystem::path& vert_path,
+        const std::filesystem::path& frag_path
+    ) noexcept -> std::expected<shader, error> {
+        auto vert_source = read_file(vert_path);
         if (not vert_source) return make_error(logic_error, "Failed to read vertex source file.");
         auto vert = dev.create_shader(*vert_source);
         if (not vert) return make_error(runtime_error, "Failed to make vertex shader module.");
 
-        auto frag_source = read_file("../include/sui/detail/shader/frag.spv");
+        auto frag_source = read_file(frag_path);
         if (not frag_source) return make_error(logic_error, "Failed to read fragment source file.");
         auto frag = dev.create_shader(*frag_source);
         if (not frag) return make_error(runtime_error, "Failed to make fragment shader module.");
@@ -108,12 +113,13 @@ class shader final {
 
 class descriptor final {
   public:
-    [[nodiscard]] static auto make(hgn::device& dev, hgn::buffer& uniform) noexcept
-        -> std::expected<descriptor, error> {
+    [[nodiscard]] static auto make_standard_descriptor(
+        hgn::device& dev, hgn::buffer& uniform
+    ) noexcept -> std::expected<descriptor, error> {
         auto layout = dev.create_descriptor_set_layout();
         if (not layout) return make_error(runtime_error, "Failed to make descriptor set layout.");
 
-        auto pool = dev.create_descriptor_pool();
+        auto pool = dev.create_descriptor_pool({hgn::descriptor_type::uniform_buffer});
         if (not pool) return make_error(runtime_error, "Failed to make descriptor pool.");
 
         auto set = pool->get_descriptor_set(*layout);
@@ -123,6 +129,9 @@ class descriptor final {
 
         return descriptor{std::move(*layout), std::move(*pool), *set};
     }
+
+    [[nodiscard]] static auto make_texture_descriptor(hgn::device& dev
+    ) noexcept -> std::expected<descriptor, error>;
 
     [[nodiscard]] auto layout() noexcept -> hgn::descriptor_set_layout& { return layout_; }
 
@@ -139,6 +148,15 @@ class descriptor final {
     hgn::descriptor_set        set_;
 };
 
+class standard_pipeline final {
+  public:
+  private:
+    shader                 shader_;
+    descriptor             descriptor_;
+    hgn::pipeline_layout   layout_;
+    hgn::graphics_pipeline pipe_;
+};
+
 class renderer final {
   public:
     [[nodiscard]] static auto make(hardware& hard, const hgn::format fmt) noexcept
@@ -148,10 +166,12 @@ class renderer final {
 
         auto& dev = hard.device();
 
-        auto shader = shader::make(dev);
+        auto shader = shader::make(
+            dev, "../include/sui/detail/shader/vert.spv", "../include/sui/detail/shader/frag.spv"
+        );
         if (not shader) return make_error(runtime_error, "Failed to make shader", shader.error());
 
-        auto descriptor = descriptor::make(dev, buffer->uniform());
+        auto descriptor = descriptor::make_standard_descriptor(dev, buffer->uniform());
         if (not descriptor)
             return make_error(runtime_error, "Failed to make descriptor", descriptor.error());
 
