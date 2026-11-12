@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <expected>
 #include <functional>
+#include <ranges>
 #include <span>
 #include <utility>
 
@@ -12,6 +13,7 @@
 #include "hgn/command.hpp"
 #include "hgn/descriptor.hpp"
 #include "hgn/descriptor_pool.hpp"
+#include "hgn/detail/device/descriptor.hpp"
 #include "hgn/detail/device/image_view.hpp"
 #include "hgn/detail/device/pipeline.hpp"
 #include "hgn/detail/device/swapchain.hpp"
@@ -129,7 +131,10 @@ class device final {
         return graphics_pipeline_creator{get()};
     }
 
-    [[nodiscard]] auto get_descriptor_set_layout_creator() noexcept;
+    [[nodiscard]] auto get_descriptor_set_layout_creator() noexcept
+        -> descriptor_set_layout_creator {
+        return descriptor_set_layout_creator{get()};
+    }
 
     [[nodiscard]] auto create_descriptor_set_layout() noexcept
         -> std::expected<descriptor_set_layout, result> {
@@ -151,15 +156,19 @@ class device final {
             });
     }
 
-    [[nodiscard]] auto create_descriptor_pool() noexcept -> std::expected<descriptor_pool, result> {
-        auto size            = VkDescriptorPoolSize{};
-        size.type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        size.descriptorCount = 1;
+    [[nodiscard]] auto create_descriptor_pool(const std::span<const descriptor_type> types
+    ) noexcept -> std::expected<descriptor_pool, result> {
+        auto sizes = std::vector<VkDescriptorPoolSize>(types.size());
+
+        for (auto [size, type] : std::views::zip(sizes, types)) {
+            size.type            = static_cast<VkDescriptorType>(type);
+            size.descriptorCount = 1;
+        }
 
         auto info          = VkDescriptorPoolCreateInfo{};
         info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        info.poolSizeCount = 1;
-        info.pPoolSizes    = &size;
+        info.poolSizeCount = static_cast<std::uint32_t>(sizes.size());
+        info.pPoolSizes    = sizes.data();
         info.maxSets       = 1;
 
         auto* raw = static_cast<raw::descriptor_pool*>(nullptr);
