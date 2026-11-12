@@ -35,8 +35,10 @@ enum class queue_flag_bits : std::int32_t { none = 0, graphics = VK_QUEUE_GRAPHI
 enum class surface_transform_flag_bits_khr : std::int32_t {};
 
 enum class format : std::int32_t {  // NOLINT
-    b8g8r8a8_srgb = VK_FORMAT_B8G8R8A8_SRGB,
-    r8g8b8a8_srgb = VK_FORMAT_R8G8B8A8_SRGB
+    b8g8r8a8_srgb    = VK_FORMAT_B8G8R8A8_SRGB,
+    r8g8b8a8_srgb    = VK_FORMAT_R8G8B8A8_SRGB,
+    r32g32b32_sfloat = VK_FORMAT_R32G32B32_SFLOAT,
+    r8g8b8a8_unorm   = VK_FORMAT_R8G8B8A8_UNORM
 };
 
 enum class color_space_khr : std::int32_t {  // NOLINT
