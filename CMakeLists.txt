@@ -12,10 +12,10 @@ find_package(glfw3 REQUIRED)
 find_program(GLSLC_EXECUTABLE glslc)
 find_package(glm REQUIRED)
 
-add_library(sui_lib INTERFACE)
-add_library(sui::sui ALIAS sui_lib)
+add_library(sui INTERFACE)
+add_library(sui::sui ALIAS sui)
 
-target_include_directories(sui_lib INTERFACE
+target_include_directories(sui INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
@@ -28,7 +28,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(hgn)
 
-target_link_libraries(sui_lib INTERFACE
+target_link_libraries(sui INTERFACE
     Vulkan::Vulkan
     glfw
     glm::glm
@@ -71,11 +71,11 @@ if(PROJECT_IS_TOP_LEVEL)
 
     file(GLOB_RECURSE MAIN_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
-    add_executable(sui.exe)
-    target_sources(sui.exe PRIVATE ${MAIN_SOURCES})
-    target_link_libraries(sui.exe PRIVATE
-        sui_lib
+    add_executable(main.exe)
+    target_sources(main.exe PRIVATE ${MAIN_SOURCES})
+    target_link_libraries(main.exe PRIVATE
+        main
         project_warnings
     )
-    target_include_directories(sui.exe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(main.exe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
