@@ -29,13 +29,17 @@ class descriptor_set_write_pusher final {
           writer_{std::ref(writer)} {
         write_.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         write_.dstSet          = &set;
-        write_.dstBinding      = 0;
         write_.dstArrayElement = 0;
         write_.descriptorCount = 1;
 
         buffer_info_.get().offset = 0;
 
         image_info_.get().imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    }
+
+    auto binding(const std::uint32_t i) noexcept -> descriptor_set_write_pusher& {
+        write_.dstBinding = i;
+        return *this;
     }
 
     auto buffer(buffer& buffer) noexcept -> descriptor_set_write_pusher& {
