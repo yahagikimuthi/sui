@@ -144,10 +144,12 @@ class descriptor final {
     ) noexcept -> std::expected<descriptor, error> {
         auto layout = dev.get_descriptor_set_layout_creator()
                           .get_binding_pusher()
+                          .binding(0)
                           .shader_stage(hgn::shader_stage_flag_bits::vertex)
                           .type(hgn::descriptor_type::uniform_buffer)
                           .push()
                           .get_binding_pusher()
+                          .binding(1)
                           .shader_stage(hgn::shader_stage_flag_bits::fragment)
                           .type(hgn::descriptor_type::combined_image_sampler)
                           .push()
