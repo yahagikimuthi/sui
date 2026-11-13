@@ -213,8 +213,6 @@ class context final {
             // Resize
         }
         return fail("Resize is occurring.\n");
-
-        return true;
     }
 
     void render(const std::span<const vertex> vertices) noexcept {
