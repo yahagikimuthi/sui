@@ -13,9 +13,6 @@
 #include "kgm/window.hpp"
 
 namespace kgm {
-[[nodiscard]] inline auto init() noexcept -> bool {
-    return glfwInit() != 0;
-}
 
 class window_creator final {
   public:
@@ -47,14 +44,6 @@ class window_creator final {
     int         height_{};
     std::string title_;
 };
-
-inline void poll_events() noexcept {
-    glfwPollEvents();
-}
-
-inline void terminate() noexcept {
-    glfwTerminate();
-}
 
 [[nodiscard]] inline auto get_required_instance_extensions() noexcept
     -> std::vector<std::string_view> {
