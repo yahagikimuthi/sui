@@ -33,6 +33,8 @@ class window_creator final {
     }
 
     [[nodiscard]] auto create() noexcept -> std::optional<window> {
+        if (glfwInit() == 0) return std::nullopt;
+
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         auto* raw = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, nullptr);
         if (raw == nullptr) return std::nullopt;
