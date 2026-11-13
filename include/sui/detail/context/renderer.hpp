@@ -165,10 +165,12 @@ class descriptor final {
 
         set->get_writer()
             .get_pusher()
+            .binding(0)
             .buffer(uniform)
             .type(hgn::descriptor_type::uniform_buffer)
             .push()
             .get_pusher()
+            .binding(1)
             .image(view, sampler)
             .type(hgn::descriptor_type::combined_image_sampler)
             .push()
