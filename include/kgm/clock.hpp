@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-#include "sui/detail/window/fps.hpp"
+#include "kgm/detail/fps.hpp"
 
 namespace sui {
 class clock final {
