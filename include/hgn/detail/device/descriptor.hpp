@@ -19,8 +19,12 @@ class descriptor_set_layout_binding_pusher final {
         descriptor_set_layout_creator& creator, std::vector<VkDescriptorSetLayoutBinding>& vec
     )
         : creator_{std::ref(creator)}, vec_{std::ref(vec)} {
-        binding_.binding         = 0;
         binding_.descriptorCount = 1;
+    }
+
+    auto binding(const std::uint32_t i) noexcept -> descriptor_set_layout_binding_pusher& {
+        binding_.binding = i;
+        return *this;
     }
 
     auto type(const descriptor_type type) noexcept -> descriptor_set_layout_binding_pusher& {
