@@ -5,7 +5,7 @@
 #include <GLFW/glfw3.h>
 
 namespace kgm {
-enum class action : std::uint8_t { press = GLFW_PRESS, release = GLFW_RELEASE };
+enum class action : std::uint8_t { none, press, release, repeat };
 
 enum class mouse_button : std::uint8_t {
     num1   = GLFW_MOUSE_BUTTON_1,
