@@ -1,53 +1,28 @@
 #pragma once
 
+#include <cassert>
 #include <expected>
-#include <functional>
 #include <utility>
 
 #include <hgn/enums.hpp>
 #include <hgn/instance.hpp>
 #include <hgn/raw/raw.hpp>
 #include <hgn/surface.hpp>
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 
 #include "kgm/detail/detail.hpp"
+#include "kgm/detail/input.hpp"
 #include "kgm/enums.hpp"
 #include "kgm/raii/raii.hpp"
 #include "kgm/raw/raw.hpp"
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
 namespace kgm {
 class window final {
   public:
-    explicit window(raw::window& win) noexcept : raw_{std::move(win)} { reset(); }
-
-    window(const window&) noexcept                    = delete;
-    auto operator=(const window&) noexcept -> window& = delete;
-
-    window(window&& other) noexcept
-        : raw_{std::move(other.raw_)}, callbacks_{std::move(other.callbacks_)} {
-        reset();
-    }
-
-    auto operator=(window&& other) noexcept -> window& {
-        if (this == &other) return *this;
-
-        raw_       = std::move(other.raw_);
-        callbacks_ = std::move(other.callbacks_);
-
-        reset();
-        return *this;
-    }
-
-    ~window() noexcept = default;
-
-    [[nodiscard]] auto should_close() noexcept -> bool {
-        return glfwWindowShouldClose(&get()) != 0;
-    }
-
-    auto set_key_callback(std::function<void(key, action)> fn) noexcept -> window& {
-        callbacks_.keys_ = std::move(fn);
-
+    explicit window(raw::window& win) noexcept : raw_{std::move(win)} {
+        glfwSetWindowUserPointer(&get(), this);
         glfwSetKeyCallback(
             &get(),
             [](raw::window*         ptr,
@@ -56,11 +31,46 @@ class window final {
                int                  act,
                [[maybe_unused]] int mods) noexcept -> void {
                 auto& self = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
-                if (self.callbacks_.keys_)
-                    self.callbacks_.keys_(static_cast<key>(button), static_cast<action>(act));
+                self.input_.keys.set(static_cast<key>(button), act);
             }
         );
+        static constinit auto flag = true;
+        assert(flag);
+        flag = false;
+    }
+
+    window(const window&) noexcept                    = delete;
+    auto operator=(const window&) noexcept -> window& = delete;
+
+    window(window&& other) noexcept
+        : terminate_{std::move(other.terminate_)},
+          raw_{std::move(other.raw_)},
+          input_{other.input_} {
+        glfwSetWindowUserPointer(&get(), this);
+    }
+
+    auto operator=(window&& other) noexcept -> window& {
+        if (this == &other) return *this;
+
+        terminate_ = std::move(other.terminate_);
+        raw_       = std::move(other.raw_);
+        input_     = other.input_;
+
+        glfwSetWindowUserPointer(&get(), this);
         return *this;
+    }
+
+    ~window() noexcept = default;
+
+    [[nodiscard]] auto open() noexcept -> bool { return glfwWindowShouldClose(&get()) == 0; }
+
+    void poll_events() noexcept {
+        glfwPollEvents();
+        input_.update();
+    }
+
+    [[nodiscard]] auto key_action(const key button) noexcept -> action {
+        return input_.keys.get_action(button);
     }
 
     [[nodiscard]] auto create_surface(hgn::instance& instance
@@ -75,9 +85,8 @@ class window final {
     [[nodiscard]] auto get() noexcept -> raw::window& { return raw_; }
 
   private:
-    void reset() noexcept { glfwSetWindowUserPointer(&get(), this); }
-
-    raii::window      raw_;
-    detail::callbacks callbacks_;
+    detail::terminate_handler terminate_;
+    raii::window              raw_;
+    detail::input             input_;
 };
 }  // namespace kgm
