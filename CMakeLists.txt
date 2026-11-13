@@ -19,11 +19,22 @@ target_include_directories(sui_lib INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
+include(FetchContent)
+
+FetchContent_Declare(
+    hgn
+    GIT_REPOSITORY https://github.com/yahagikimuthi/hgn.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(hgn)
+
 target_link_libraries(sui_lib INTERFACE
     Vulkan::Vulkan
     glfw
     glm::glm
+    hgn::hgn
 )
+
 
 if(PROJECT_IS_TOP_LEVEL)
     add_library(project_warnings INTERFACE)
