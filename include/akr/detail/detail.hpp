@@ -71,7 +71,7 @@ class stack_error_impl final {
 
     [[nodiscard]] auto what() const noexcept -> std::string {
         auto out = std::string{};
-        for (const auto [i, code] : std::views::enumerate(codes_)) {
+        for (const auto& [i, code] : std::views::enumerate(codes_)) {
             if (i != 0) out += "->";
 
             if (code.category == logic_error)
@@ -126,7 +126,7 @@ class heap_error_impl final {
 
     [[nodiscard]] auto what() const noexcept -> std::string {
         auto out = std::string{};
-        for (const auto [i, code] : std::views::enumerate(codes_)) {
+        for (const auto& [i, code] : std::views::enumerate(codes_)) {
             if (i != 0) out += "->";
 
             if (code.category == logic_error)
