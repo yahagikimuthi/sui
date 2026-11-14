@@ -29,10 +29,11 @@ class debugger final {
     }
 
     static void notify(const std::string_view msg) noexcept {
-        if (fn_)
+        if (fn_) {
             fn_(msg);
-        else if (is_default_)
-            std::cerr << msg;
+        } else if (is_default_) {
+            std::cerr << msg << '\n';
+        }
     }
 
   private:
