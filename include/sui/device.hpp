@@ -82,6 +82,10 @@ class device_container final {
         };
     }
 
+    [[nodiscard]] auto physical() noexcept -> hgn::physical_device& { return physical_; }
+    [[nodiscard]] auto surface() noexcept -> hgn::surface_khr& { return surface_; }
+    [[nodiscard]] auto device() noexcept -> hgn::device& { return dev_; }
+
   private:
     device_container(
         hgn::instance        instance,
