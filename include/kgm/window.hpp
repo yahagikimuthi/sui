@@ -62,7 +62,11 @@ class window final {
 
     ~window() noexcept = default;
 
-    [[nodiscard]] auto open() noexcept -> bool { return glfwWindowShouldClose(&get()) == 0; }
+    [[nodiscard]] auto is_open() noexcept -> bool { return glfwWindowShouldClose(&get()) == 0; }
+
+    void open() noexcept { glfwSetWindowShouldClose(&get(), GLFW_FALSE); }
+
+    void close() noexcept { glfwSetWindowShouldClose(&get(), GLFW_TRUE); }
 
     void poll_events() noexcept {
         glfwPollEvents();
