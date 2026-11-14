@@ -31,7 +31,7 @@ class buffer final {
 
   public:
     [[nodiscard]] static auto make(hardware& hard) noexcept -> std::expected<buffer, error> {
-        auto allocator = hgn::get_allocator_creator()
+        auto allocator = hgn::allocator_creator{}
                              .instance(hard.instance())
                              .physical(hard.physical())
                              .device(hard.device())

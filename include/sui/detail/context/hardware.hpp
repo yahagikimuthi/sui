@@ -26,7 +26,7 @@ class hardware final {
 
   public:
     [[nodiscard]] static auto make(kgm::window& win) noexcept -> std::expected<hardware, error> {
-        auto instance = hgn::get_instance_creator()
+        auto instance = hgn::instance_creator{}
                             .app_name("sui")
                             .app_version(0, 0, 1)
                             .engine_name("no engine")
@@ -147,14 +147,13 @@ class hardware final {
             if (supporting and *supporting) {
                 present_family = queue_family;
             }
-
-            if (graphics_family and present_family) {
-                return queue_families{
-                    .graphics_family = *graphics_family, .present_family = *present_family
-                };
-            }
         }
 
+        if (graphics_family and present_family) {
+            return queue_families{
+                .graphics_family = *graphics_family, .present_family = *present_family
+            };
+        }
         // 存在しない場合はnull
         return std::nullopt;
     }
