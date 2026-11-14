@@ -30,7 +30,6 @@ class debugger final {
         is_default_ = false;
     }
 
-    template <typename E = char, typename T = int>
     static void notify(const std::string_view msg) noexcept {
         if (fn_)
             fn_(msg);
