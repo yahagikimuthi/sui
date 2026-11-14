@@ -18,7 +18,7 @@ inline void set_debug_fn(std::function<void(std::string_view)> fn) noexcept {
     detail::debugger::set(std::move(fn));
 }
 
-inline void set_default_debug_fn() noexcept {
+inline void use_default_debugger() noexcept {
     detail::debugger::set_default();
 }
 
