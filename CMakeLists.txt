@@ -74,7 +74,7 @@ if(PROJECT_IS_TOP_LEVEL)
     add_executable(main.exe)
     target_sources(main.exe PRIVATE ${MAIN_SOURCES})
     target_link_libraries(main.exe PRIVATE
-        main
+        sui
         project_warnings
     )
     target_include_directories(main.exe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
