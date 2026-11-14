@@ -25,7 +25,7 @@ class command final {
     [[nodiscard]] auto buffer() noexcept -> hgn::command_buffer& { return buffer_; }
 
   private:
-    explicit command(hgn::command_pool&& pool, hgn::command_buffer&& buffer) noexcept
+    command(hgn::command_pool&& pool, hgn::command_buffer&& buffer) noexcept
         : pool_{std::move(pool)}, buffer_{std::move(buffer)} {}
 
     hgn::command_pool   pool_;

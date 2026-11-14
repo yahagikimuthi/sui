@@ -102,7 +102,7 @@ class hardware final {
     [[nodiscard]] auto in_flight_fence() noexcept -> hgn::fence& { return in_flight_; }
 
   private:
-    explicit hardware(
+    hardware(
         hgn::instance&&      instance,
         hgn::surface_khr&&   surface,
         hgn::physical_device physical,

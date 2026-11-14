@@ -12,7 +12,7 @@
 namespace sbwi {
 class image final {
   public:
-    explicit image(
+    image(
         std::byte*          pixels,
         const std::uint32_t width,
         const std::uint32_t height,
@@ -20,7 +20,7 @@ class image final {
     ) noexcept
         : raw_{pixels}, width_{width}, height_{height}, channels_{channels} {}
 
-    [[nodiscard]] auto pixels() noexcept -> std::byte* { return raw_; }
+    [[nodiscard]] auto pixels() noexcept -> std::byte* { return raw_.get(); }
 
     [[nodiscard]] auto width() const noexcept -> std::uint32_t { return width_; }
 

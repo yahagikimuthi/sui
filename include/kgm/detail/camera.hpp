@@ -11,7 +11,7 @@
 namespace sui::detail {
 class camera final {
   public:
-    explicit camera() noexcept = default;
+    camera() noexcept = default;
 
     [[nodiscard]] auto position() const noexcept -> vec2 { return position_; }
     [[nodiscard]] auto zoom() const noexcept -> float { return zoom_; }

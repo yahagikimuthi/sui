@@ -30,8 +30,6 @@ class image final {
         return reinterpret_cast<std::byte*>(pixels_);
     }
 
-    [[nodiscard]] operator std::byte*() noexcept { return get(); }
-
   private:
     void destroy() noexcept {
         if (pixels_ != nullptr) stbi_image_free(pixels_);

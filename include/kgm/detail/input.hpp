@@ -13,7 +13,7 @@ class button_input final {
     static constexpr auto size = static_cast<std::size_t>(N);
 
   public:
-    explicit button_input() noexcept = default;
+    button_input() noexcept = default;
 
     void update() noexcept {
         previous_ = current_;

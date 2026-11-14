@@ -5,7 +5,7 @@
 namespace kgm::detail {
 class terminate_handler final {
   public:
-    explicit terminate_handler() noexcept { ++instance_cnt_; }
+    terminate_handler() noexcept { ++instance_cnt_; }
 
     terminate_handler([[maybe_unused]] const terminate_handler& other) noexcept { ++instance_cnt_; }
 

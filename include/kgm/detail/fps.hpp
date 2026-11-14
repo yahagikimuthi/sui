@@ -5,7 +5,7 @@
 namespace sui::detail {
 class fps final {
   public:
-    explicit fps() noexcept = default;
+    fps() noexcept = default;
 
     void update(const std::chrono::steady_clock::time_point& now) noexcept {
         ++frame_count_;

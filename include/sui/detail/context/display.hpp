@@ -138,7 +138,7 @@ class display final {
     [[nodiscard]] auto swapchain() noexcept -> hgn::swapchain_khr& { return swapchain_; }
 
   private:
-    explicit display(
+    display(
         hgn::swapchain_khr&&               swapchain,
         std::vector<hgn::borrowed_image>&& images,
         std::vector<hgn::image_view>&&     views

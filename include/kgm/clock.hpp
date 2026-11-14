@@ -7,7 +7,7 @@
 namespace sui {
 class clock final {
   public:
-    explicit clock() noexcept
+    clock() noexcept
         : init_epoch_{std::chrono::duration_cast<std::chrono::duration<double>>(
                           std::chrono::steady_clock::now().time_since_epoch()
           )

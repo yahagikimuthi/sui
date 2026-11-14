@@ -275,7 +275,7 @@ class context final {
     }
 
   private:
-    explicit context(hardware&& hard, display&& display, command&& cmd, renderer&& render) noexcept
+    context(hardware&& hard, display&& display, command&& cmd, renderer&& render) noexcept
         : hard_{std::move(hard)},
           display_{std::move(display)},
           cmd_{std::move(cmd)},

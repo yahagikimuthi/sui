@@ -70,7 +70,7 @@ class buffer final {
     [[nodiscard]] auto uniform() noexcept -> hgn::buffer& { return uniform_; }
 
   private:
-    explicit buffer(
+    buffer(
         hgn::allocator&& allocator, hgn::buffer&& vertex, hgn::buffer&& index, hgn::buffer&& uniform
     ) noexcept
         : allocator_{std::move(allocator)},
@@ -108,7 +108,7 @@ class shader final {
     [[nodiscard]] auto fragment() noexcept -> hgn::shader_module& { return frag_; }
 
   private:
-    explicit shader(hgn::shader_module&& vert, hgn::shader_module&& frag) noexcept
+    shader(hgn::shader_module&& vert, hgn::shader_module&& frag) noexcept
         : vert_{std::move(vert)}, frag_{std::move(frag)} {}
 
     hgn::shader_module vert_;
@@ -184,7 +184,7 @@ class descriptor final {
     [[nodiscard]] auto set() noexcept -> hgn::descriptor_set& { return set_; }
 
   private:
-    explicit descriptor(
+    descriptor(
         hgn::descriptor_set_layout&& layout, hgn::descriptor_pool&& pool, hgn::descriptor_set set
     ) noexcept
         : layout_{std::move(layout)}, pool_{std::move(pool)}, set_{set} {}
@@ -296,7 +296,7 @@ class texture_renderer final {
     }
 
   private:
-    explicit texture_renderer(
+    texture_renderer(
         sbwi::image            pixel,
         hgn::image             image,
         hgn::image_view        view,
@@ -392,7 +392,7 @@ class renderer final {
     [[nodiscard]] auto texture() noexcept -> texture_renderer& { return tex_; }
 
   private:
-    explicit renderer(
+    renderer(
         buffer&&                 buffer,
         shader&&                 shader,
         hgn::pipeline_layout&&   layout,

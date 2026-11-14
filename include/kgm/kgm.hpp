@@ -15,7 +15,7 @@
 namespace kgm {
 class window_creator final {
   public:
-    explicit window_creator() noexcept = default;
+    window_creator() noexcept = default;
 
     auto extent(const std::uint32_t width, const std::uint32_t height) noexcept -> window_creator& {
         width_  = static_cast<int>(width);
