@@ -11,14 +11,12 @@ class terminate_handler final {
 
     auto operator=(const terminate_handler&) noexcept -> terminate_handler& = default;
 
-    terminate_handler(terminate_handler&&) noexcept = default;
+    terminate_handler([[maybe_unused]] terminate_handler&& other) noexcept { ++instance_cnt_; }
 
-    auto operator=([[maybe_unused]] terminate_handler&& other) noexcept -> terminate_handler& {
-        --instance_cnt_;
-        return *this;
-    }
+    auto operator=(terminate_handler&&) noexcept -> terminate_handler& = default;
 
     ~terminate_handler() noexcept {
+        --instance_cnt_;
         if (instance_cnt_ == 0) glfwTerminate();
     }
 
