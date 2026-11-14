@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <optional>
+#include <expected>
 #include <ranges>
 #include <span>
 #include <string>
@@ -10,6 +10,7 @@
 
 #include <GLFW/glfw3.h>
 
+#include "akr/akr.hpp"
 #include "kgm/window.hpp"
 
 namespace kgm {
@@ -28,12 +29,12 @@ class window_creator final {
         return *this;
     }
 
-    [[nodiscard]] auto create() noexcept -> std::optional<window> {
-        if (glfwInit() == 0) return std::nullopt;
+    [[nodiscard]] auto create() noexcept -> std::expected<window, akr::error> {
+        if (glfwInit() == 0) return akr::make_error(akr::runtime_error, "Failed to init GLFW.");
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         auto* raw = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, nullptr);
-        if (raw == nullptr) return std::nullopt;
+        if (raw == nullptr) return akr::make_error(akr::runtime_error, "Failed to create Window.");
 
         return window{*raw};
     }
