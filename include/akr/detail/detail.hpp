@@ -11,9 +11,9 @@
 #include <utility>
 #include <vector>
 
-#include "akr/enum.hpp"
-
 namespace akr::detail {
+enum class error_category : std::uint8_t { runtime, logic, unknown };
+
 class debugger final {
   public:
     template <typename... Args>
@@ -72,11 +72,11 @@ class stack_error_impl final {
         for (const auto& [i, code] : std::views::enumerate(codes_)) {
             if (i != 0) out += "->";
 
-            if (code.category == logic_error)
+            if (code.category == error_category::logic)
                 out += "[Logic Error]: ";
-            else if (code.category == runtime_error)
+            else if (code.category == error_category::runtime)
                 out += "[Runtime Error]: ";
-            else if (code.category == unknown_error)
+            else if (code.category == error_category::unknown)
                 out += "[Unknown Error]: ";
 
             out += code.msg;
@@ -127,11 +127,11 @@ class heap_error_impl final {
         for (const auto& [i, code] : std::views::enumerate(codes_)) {
             if (i != 0) out += "->";
 
-            if (code.category == logic_error)
+            if (code.category == error_category::logic)
                 out += "[Logic Error]: ";
-            else if (code.category == runtime_error)
+            else if (code.category == error_category::runtime)
                 out += "[Runtime Error]: ";
-            else if (code.category == unknown_error)
+            else if (code.category == error_category::unknown)
                 out += "[Unknown Error]: ";
 
             out += code.msg + '\n';

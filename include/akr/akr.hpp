@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "akr/detail/detail.hpp"
-#include "akr/enum.hpp"
 
 namespace akr {
 inline void set_debug_fn(std::function<void(std::string_view)> fn) noexcept {
@@ -30,6 +29,11 @@ inline void notify(const std::string_view msg) noexcept {
     notify(msg);
     return false;
 }
+
+using detail::error_category;
+inline constexpr auto logic_error   = error_category::logic;
+inline constexpr auto runtime_error = error_category::runtime;
+inline constexpr auto unknown_error = error_category::unknown;
 
 class error;
 
@@ -141,5 +145,4 @@ template <std::size_t N, std::size_t M = N>
 ) noexcept -> std::unexpected<stack_error<M>> {
     return std::unexpected<stack_error<M>>{std::in_place, category, msg, parent};
 }
-
 }  // namespace akr
