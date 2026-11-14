@@ -53,8 +53,6 @@ struct heap_error_code final {
     std::string    msg;
 };
 
-class heap_error_impl;
-
 template <std::size_t N>
 class stack_error_impl final {
     friend class heap_error_impl;
