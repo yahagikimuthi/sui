@@ -13,7 +13,6 @@
 #include "kgm/window.hpp"
 
 namespace kgm {
-
 class window_creator final {
   public:
     explicit window_creator() noexcept = default;
