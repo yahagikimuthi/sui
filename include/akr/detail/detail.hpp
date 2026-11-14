@@ -2,11 +2,9 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <exception>
 #include <functional>
 #include <inplace_vector>
 #include <iostream>
-#include <ostream>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -140,20 +138,6 @@ class heap_error_impl final {
         }
 
         return out;
-    }
-
-    template <typename E, typename T>
-    friend auto operator<<(std::basic_ostream<E, T>& os, const heap_error_impl& self) noexcept
-        -> std::basic_ostream<E, T>& {
-        os << self.what();
-        return os;
-    }
-
-    void cerr() const noexcept { std::cerr << *this; }
-
-    [[noreturn]] void panic() const noexcept {
-        cerr();
-        std::terminate();
     }
 
     [[nodiscard]] auto trace_count() const noexcept -> std::uint32_t {
