@@ -64,8 +64,8 @@ class stack_error_impl final {
     stack_error_impl(
         const error_category category, const std::string_view msg, const stack_error_impl<M>& parent
     ) noexcept {
-        codes_.try_append_range(parent.codes_);
         codes_.try_emplace_back(category, std::string_view{msg});
+        codes_.try_append_range(parent.codes_);
     }
 
     [[nodiscard]] auto what() const noexcept -> std::string {
@@ -105,8 +105,8 @@ class heap_error_impl final {
         const error_category category, const std::string_view msg, const heap_error_impl& parent
     ) noexcept {
         codes_.reserve(1 + parent.codes_.size());
-        codes_.append_range(parent.codes_);
         codes_.emplace_back(category, std::string{msg});
+        codes_.append_range(parent.codes_);
     }
 
     template <std::size_t N>
@@ -114,13 +114,13 @@ class heap_error_impl final {
         const error_category category, const std::string_view msg, const stack_error_impl<N>& parent
     ) noexcept {
         codes_.reserve(1 + parent.trace_count());
+        codes_.emplace_back(category, std::string{msg});
         codes_.append_range(
             parent.codes_ |
             std::views::transform([](const stack_error_code& code) noexcept -> heap_error_code {
                 return {.category = code.category, .msg = std::string{code.msg}};
             })
         );
-        codes_.emplace_back(category, std::string{msg});
     }
 
     [[nodiscard]] auto what() const noexcept -> std::string {
