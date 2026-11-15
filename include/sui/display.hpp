@@ -50,6 +50,16 @@ class display final {
         return display{std::move(*swapchain), *images, std::move(views)};
     }
 
+    [[nodiscard]] auto swapchain() noexcept -> hgn::swapchain_khr& { return swapchain_; }
+
+    [[nodiscard]] auto get_image(const std::uint32_t i) noexcept -> hgn::borrowed_image& {
+        return images_[i];
+    }
+
+    [[nodiscard]] auto get_view(const std::uint32_t i) noexcept -> hgn::image_view& {
+        return views_[i];
+    }
+
   private:
     display(
         hgn::swapchain_khr               swapchain,
