@@ -9,10 +9,10 @@
 #include "sui/hardware.hpp"
 
 namespace sui {
-class command_buffer final {
+class command final {
   public:
     [[nodiscard]] static auto create(hardware& hard
-    ) noexcept -> std::expected<command_buffer, akr::error> {
+    ) noexcept -> std::expected<command, akr::error> {
         auto& dev  = hard.device();
         auto  pool = dev.create_command_pool(hard.graphics_queue().family());
         if (not pool) return akr::make_error(akr::runtime_error, "Failed to create command pool.");
@@ -21,13 +21,13 @@ class command_buffer final {
         if (not buffer)
             return akr::make_error(akr::runtime_error, "Failed to create command buffer.");
 
-        return command_buffer{std::move(*pool), std::move(*buffer)};
+        return command{std::move(*pool), std::move(*buffer)};
     }
 
-    [[nodiscard]] auto get() noexcept -> hgn::command_buffer& { return buffer_; }
+    [[nodiscard]] auto buffer() noexcept -> hgn::command_buffer& { return buffer_; }
 
   private:
-    command_buffer(hgn::command_pool pool, hgn::command_buffer buffer) noexcept
+    command(hgn::command_pool pool, hgn::command_buffer buffer) noexcept
         : pool_{std::move(pool)}, buffer_{std::move(buffer)} {}
 
     hgn::command_pool   pool_;
