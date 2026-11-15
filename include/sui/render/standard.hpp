@@ -12,10 +12,10 @@
 #include "sui/vertex.hpp"
 
 namespace sui {
-class standard_pipeline final {
+class pipeline final {
   public:
     [[nodiscard]] static auto create(hgn::device& dev, const hgn::format surface_format) noexcept
-        -> std::expected<standard_pipeline, akr::error> {
+        -> std::expected<pipeline, akr::error> {
         auto shader_obj = shader::create_standard(dev);
         if (not shader_obj)
             return akr::make_error(akr::runtime_error, "Failed to create shader class.");
@@ -47,13 +47,13 @@ class standard_pipeline final {
         if (not pipe)
             return akr::make_error(akr::runtime_error, "Failed to create graphics pipeline.");
 
-        return standard_pipeline{
+        return pipeline{
             std::move(*shader_obj), std::move(*pool), std::move(*layout), std::move(*pipe)
         };
     }
 
   private:
-    standard_pipeline(
+    pipeline(
         shader                 shader,
         hgn::descriptor_pool   pool,
         hgn::pipeline_layout   layout,
