@@ -162,7 +162,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ------------------------------------------------------------------------------
-akari <https://github.com/yahagikimuthi/akr/blob/main/LICENSE.txt>
+akari <https://github.com/yahagikimuthi/akari/blob/main/LICENSE.txt>
 MIT License
 ------------------------------------------------------------------------------
 
