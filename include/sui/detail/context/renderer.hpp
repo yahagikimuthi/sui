@@ -31,11 +31,8 @@ class buffer final {
 
   public:
     [[nodiscard]] static auto make(hardware& hard) noexcept -> std::expected<buffer, error> {
-        auto allocator = hgn::allocator_creator{}
-                             .instance(hard.instance())
-                             .physical(hard.physical())
-                             .device(hard.device())
-                             .create();
+        auto allocator =
+            hgn::allocator_creator{}.instance(hard.instance()).device(hard.device()).create();
         if (not allocator) return make_error(runtime_error, "Failed to make allocator");
 
         auto vertex = allocator->get_buffer_creator()
