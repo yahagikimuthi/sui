@@ -117,7 +117,13 @@ class descriptor final {
     [[nodiscard]] static auto make_standard_descriptor(
         hgn::device& dev, hgn::buffer& uniform
     ) noexcept -> std::expected<descriptor, error> {
-        auto layout = dev.create_descriptor_set_layout();
+        auto layout = dev.get_descriptor_set_layout_creator()
+                          .get_binding_pusher()
+                          .binding(0)
+                          .shader_stage(hgn::shader_stage_flag_bits::vertex)
+                          .type(hgn::descriptor_type::uniform_buffer)
+                          .push()
+                          .create();
         if (not layout) return make_error(runtime_error, "Failed to make descriptor set layout.");
 
         auto pool = dev.create_descriptor_pool({hgn::descriptor_type::uniform_buffer});
