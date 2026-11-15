@@ -92,9 +92,12 @@ class hardware final {
         };
     }
 
-    [[nodiscard]] auto physical() noexcept -> hgn::physical_device& { return physical_; }
+    [[nodiscard]] auto instance() noexcept -> hgn::instance& { return instance_; }
     [[nodiscard]] auto surface() noexcept -> hgn::surface_khr& { return surface_; }
+    [[nodiscard]] auto physical() noexcept -> hgn::physical_device& { return physical_; }
     [[nodiscard]] auto device() noexcept -> hgn::device& { return dev_; }
+    [[nodiscard]] auto graphics_queue() noexcept -> queue_container& { return graphics_; }
+    [[nodiscard]] auto present_queue() noexcept -> queue_container& { return present_; }
 
   private:
     hardware(
