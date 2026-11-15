@@ -76,6 +76,35 @@ class shader final {
         return shader{std::move(*shaders), std::move(*layout)};
     }
 
+    [[nodiscard]] static auto create_texture(hgn::device& dev
+    ) noexcept -> std::expected<shader, akr::error> {
+        auto shaders = shader_modules::create(
+            dev,
+            "../include/sui/detail/shader/tex_vert.spv",
+            "../include/sui/detail/shader/tex_frag.spv"
+        );
+        if (not shaders)
+            return akr::make_error(
+                akr::runtime_error, "Failed to create shader modules.", shaders.error()
+            );
+
+        auto layout = dev.get_descriptor_set_layout_creator()
+                          .get_binding_pusher()
+                          .binding(0)
+                          .shader_stage(hgn::shader_stage_flag_bits::vertex)
+                          .type(hgn::descriptor_type::uniform_buffer)
+                          .push()
+                          .get_binding_pusher()
+                          .binding(1)
+                          .shader_stage(hgn::shader_stage_flag_bits::fragment)
+                          .type(hgn::descriptor_type::combined_image_sampler)
+                          .push()
+                          .create();
+        if (not layout) return akr::make_error(akr::runtime_error, "Failed to create layout.");
+
+        return shader{std::move(*shaders), std::move(*layout)};
+    }
+
     [[nodiscard]] auto vertex_shader() noexcept -> hgn::shader_module& { return shaders_.vertex(); }
     [[nodiscard]] auto fragment_shader() noexcept -> hgn::shader_module& {
         return shaders_.fragment();
