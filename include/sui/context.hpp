@@ -4,6 +4,8 @@
 #include <utility>
 
 #include <akr/akr.hpp>
+#include <hgn/allocator.hpp>
+#include <hgn/hgn.hpp>
 #include <kgm/window.hpp>
 
 #include "sui/display.hpp"
@@ -33,15 +35,26 @@ class context final {
                 akr::runtime_error, "Failed to create protocol class.", protocol.error()
             );
 
-        return context{std::move(*hard), std::move(*display), std::move(*protocol)};
+        auto allocator =
+            hgn::allocator_creator{}.instance(hard->instance()).device(hard->device()).create();
+        if (not allocator)
+            return akr::make_error(akr::runtime_error, "Failed to create allocator.");
+
+        return context{
+            std::move(*hard), std::move(*display), std::move(*protocol), std::move(*allocator)
+        };
     }
 
   private:
-    context(hardware hard, display display, protocol protocol) noexcept
-        : hard_{std::move(hard)}, display_{std::move(display)}, protocol_{std::move(protocol)} {}
+    context(hardware hard, display display, protocol protocol, hgn::allocator allocator) noexcept
+        : hard_{std::move(hard)},
+          display_{std::move(display)},
+          protocol_{std::move(protocol)},
+          allocator_{std::move(allocator)} {}
 
-    hardware hard_;
-    display  display_;
-    protocol protocol_;
+    hardware       hard_;
+    display        display_;
+    protocol       protocol_;
+    hgn::allocator allocator_;
 };
 }  // namespace sui
