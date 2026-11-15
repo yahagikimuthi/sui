@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <expected>
 #include <utility>
 
@@ -8,9 +9,10 @@
 #include <hgn/hgn.hpp>
 #include <kgm/window.hpp>
 
+#include "sui/command.hpp"
 #include "sui/display.hpp"
 #include "sui/hardware.hpp"
-#include "sui/protocol.hpp"
+#include "sui/sync.hpp"
 
 namespace sui {
 class context final {
@@ -20,20 +22,22 @@ class context final {
         auto hard = hardware::create(win);
         if (not hard)
             return akr::make_error(
-                akr::runtime_error, "Failed to create hardware class.", hard.error()
+                akr::runtime_error, "Failed to create hardware object.", hard.error()
             );
 
         auto display = display::create(*hard);
         if (not display)
             return akr::make_error(
-                akr::runtime_error, "Failed to create display class.", display.error()
+                akr::runtime_error, "Failed to create display object.", display.error()
             );
 
-        auto protocol = protocol::create(*hard);
-        if (not protocol)
-            return akr::make_error(
-                akr::runtime_error, "Failed to create protocol class.", protocol.error()
-            );
+        auto sync = sync::create(hard->device());
+        if (not sync) return akr::make_error(akr::runtime_error, "Failed to create sync objects.");
+
+        auto cmd = command_buffer::create(*hard);
+
+        if (not cmd)
+            return akr::make_error(akr::runtime_error, "Failed to create command objects.");
 
         auto allocator =
             hgn::allocator_creator{}.instance(hard->instance()).device(hard->device()).create();
@@ -41,22 +45,29 @@ class context final {
             return akr::make_error(akr::runtime_error, "Failed to create allocator.");
 
         return context{
-            std::move(*hard), std::move(*display), std::move(*protocol), std::move(*allocator)
+            std::move(*hard),
+            std::move(*display),
+            std::move(*sync),
+            std::move(*cmd),
+            std::move(*allocator)
         };
     }
 
-    [[nodiscard]] auto begin() noexcept -> bool;
-
   private:
-    context(hardware hard, display display, protocol protocol, hgn::allocator allocator) noexcept
+    context(
+        hardware hard, display display, sync sync, command_buffer cmd, hgn::allocator allocator
+    ) noexcept
         : hard_{std::move(hard)},
           display_{std::move(display)},
-          protocol_{std::move(protocol)},
+          sync_{std::move(sync)},
+          cmd_{std::move(cmd)},
           allocator_{std::move(allocator)} {}
 
     hardware       hard_;
     display        display_;
-    protocol       protocol_;
+    sync           sync_;
+    command_buffer cmd_;
     hgn::allocator allocator_;
+    std::uint32_t  image_index_{};
 };
 }  // namespace sui
