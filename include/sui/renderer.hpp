@@ -15,32 +15,21 @@ class renderer final {
   public:
     [[nodiscard]] static auto create(hgn::device& dev, const hgn::format swapchain_format) noexcept
         -> std::expected<renderer, akr::error> {
-        auto standard = pipeline::create_standards(dev, swapchain_format);
-        if (not standard)
-            return akr::make_error(
-                akr::runtime_error, "Failed to create standard pipeline.", standard.error()
-            );
-
-        auto texture = pipeline::create_standards(dev, swapchain_format);
-        if (not texture)
-            return akr::make_error(
-                akr::runtime_error, "Failed to create texture pipeline.", texture.error()
-            );
+        auto pipelines = pipeline_container::create(dev, swapchain_format);
+        if (not pipelines)
+            return akr::make_error(akr::runtime_error, "Failed to create pipelines.");
 
         auto sampler = dev.create_sampler();
         if (not sampler) return akr::make_error(akr::runtime_error, "Failed to create sampler.");
 
-        return renderer{std::move(*standard), std::move(*texture), std::move(*sampler)};
+        return renderer{std::move(*pipelines), std::move(*sampler)};
     }
 
   private:
-    renderer(pipeline standard, pipeline texture, hgn::sampler sampler) noexcept
-        : standard_{std::move(standard)},
-          texture_{std::move(texture)},
-          sampler_{std::move(sampler)} {}
+    renderer(pipeline_container pipelines, hgn::sampler sampler) noexcept
+        : pipelines_{std::move(pipelines)}, sampler_{std::move(sampler)} {}
 
-    pipeline     standard_;
-    pipeline     texture_;
-    hgn::sampler sampler_;
+    pipeline_container pipelines_;
+    hgn::sampler       sampler_;
 };
 }  // namespace sui

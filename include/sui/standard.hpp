@@ -117,4 +117,27 @@ class pipeline final {
     hgn::pipeline_layout   layout_;
     hgn::graphics_pipeline pipe_;
 };
+
+class pipeline_container final {
+  public:
+    [[nodiscard]] static auto create(hgn::device& dev, const hgn::format swapchain_format) noexcept
+        -> std::expected<pipeline_container, akr::error> {
+        auto standard = pipeline::create_standards(dev, swapchain_format);
+        if (not standard)
+            return akr::make_error(akr::runtime_error, "Failed to create standard pipeline");
+
+        auto texture = pipeline::create_textures(dev, swapchain_format);
+        if (not texture)
+            return akr::make_error(akr::runtime_error, "Failed to create texture pipeline.");
+
+        return pipeline_container{std::move(*standard), std::move(*texture)};
+    }
+
+  private:
+    pipeline_container(pipeline standard, pipeline texture) noexcept
+        : standard_{std::move(standard)}, texture_{std::move(texture)} {}
+
+    pipeline standard_;
+    pipeline texture_;
+};
 }  // namespace sui
