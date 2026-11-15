@@ -4,17 +4,20 @@
 #include <utility>
 
 #include <akr/akr.hpp>
+#include <hgn/allocator.hpp>
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/image.hpp>
 
+#include "sui/buffer.hpp"
 #include "sui/standard.hpp"
 
 namespace sui {
 class renderer final {
   public:
-    [[nodiscard]] static auto create(hgn::device& dev, const hgn::format swapchain_format) noexcept
-        -> std::expected<renderer, akr::error> {
+    [[nodiscard]] static auto create(
+        hgn::allocator& allocator, hgn::device& dev, const hgn::format swapchain_format
+    ) noexcept -> std::expected<renderer, akr::error> {
         auto pipelines = pipeline_container::create(dev, swapchain_format);
         if (not pipelines)
             return akr::make_error(akr::runtime_error, "Failed to create pipelines.");
@@ -22,14 +25,20 @@ class renderer final {
         auto sampler = dev.create_sampler();
         if (not sampler) return akr::make_error(akr::runtime_error, "Failed to create sampler.");
 
-        return renderer{std::move(*pipelines), std::move(*sampler)};
+        auto buffers = buffer_container::create(allocator);
+        if (not buffers) return akr::make_error(akr::runtime_error, "Failed to create buffers.");
+
+        return renderer{std::move(*pipelines), std::move(*buffers), std::move(*sampler)};
     }
 
   private:
-    renderer(pipeline_container pipelines, hgn::sampler sampler) noexcept
-        : pipelines_{std::move(pipelines)}, sampler_{std::move(sampler)} {}
+    renderer(pipeline_container pipelines, buffer_container buffers, hgn::sampler sampler) noexcept
+        : pipelines_{std::move(pipelines)},
+          buffers_{std::move(buffers)},
+          sampler_{std::move(sampler)} {}
 
     pipeline_container pipelines_;
+    buffer_container   buffers_;
     hgn::sampler       sampler_;
 };
 }  // namespace sui
