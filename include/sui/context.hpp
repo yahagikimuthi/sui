@@ -45,6 +45,8 @@ class context final {
         };
     }
 
+    [[nodiscard]] auto begin() noexcept -> bool;
+
   private:
     context(hardware hard, display display, protocol protocol, hgn::allocator allocator) noexcept
         : hard_{std::move(hard)},
