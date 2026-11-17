@@ -10,10 +10,6 @@
 
 namespace sbwi {
 class image final {
-    static void delete_image(std::byte* ptr) noexcept {
-        stbi_image_free(reinterpret_cast<unsigned char*>(ptr));
-    }
-
   public:
     image(
         std::byte*          data,
@@ -32,6 +28,10 @@ class image final {
     [[nodiscard]] auto channels() const noexcept -> std::uint32_t { return channels_; }
 
   private:
+    static void delete_image(std::byte* ptr) noexcept {
+        stbi_image_free(reinterpret_cast<unsigned char*>(ptr));
+    }
+
     std::unique_ptr<std::byte, void (*)(std::byte*)> data_;
     std::uint32_t                                    width_;
     std::uint32_t                                    height_;
