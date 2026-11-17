@@ -7,6 +7,7 @@
 
 #include <akr/akr.hpp>
 #include <hgn/allocator.hpp>
+#include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/hgn.hpp>
 #include <kgm/window.hpp>
@@ -154,6 +155,14 @@ class rendering_system final {
         }
 
         return false;
+    }
+
+    [[nodiscard]] auto device() noexcept -> hgn::device& { return hard_.device(); }
+
+    [[nodiscard]] auto allocator() noexcept -> hgn::allocator& { return allocator_; }
+
+    [[nodiscard]] auto swapchain_format() noexcept -> hgn::format {
+        return display_.swapchain().image_format();
     }
 
   private:
