@@ -10,7 +10,7 @@
 #include <hgn/image.hpp>
 
 #include "sui/buffer.hpp"
-#include "sui/standard.hpp"
+#include "sui/pipeline.hpp"
 
 namespace sui {
 class renderer final {
