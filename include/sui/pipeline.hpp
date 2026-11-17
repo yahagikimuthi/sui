@@ -116,10 +116,12 @@ class pipeline_container final {
     [[nodiscard]] static auto create(hgn::device& dev, const hgn::format swapchain_format) noexcept
         -> std::expected<pipeline_container, akr::error> {
         auto standard = pipeline::create_standards(dev, swapchain_format);
-        if (not standard) return akr::throw_runtime("Failed to create standard pipeline");
+        if (not standard)
+            return standard.error().rethrow_runtime("Failed to create standard pipeline");
 
         auto texture = pipeline::create_textures(dev, swapchain_format);
-        if (not texture) return akr::throw_runtime("Failed to create texture pipeline.");
+        if (not texture)
+            return texture.error().rethrow_runtime("Failed to create texture pipeline.");
 
         return pipeline_container{std::move(*standard), std::move(*texture)};
     }
