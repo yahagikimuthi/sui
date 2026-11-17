@@ -16,12 +16,12 @@ class image final {
 
   public:
     image(
-        std::byte*          pixels,
+        std::byte*          data,
         const std::uint32_t width,
         const std::uint32_t height,
         const std::uint32_t channels
     ) noexcept
-        : data_{pixels, delete_image}, width_{width}, height_{height}, channels_{channels} {}
+        : data_{data, delete_image}, width_{width}, height_{height}, channels_{channels} {}
 
     [[nodiscard]] auto data() noexcept -> std::byte* { return data_.get(); }
 
@@ -43,12 +43,12 @@ class image final {
     auto  width    = 0;
     auto  height   = 0;
     auto  channels = 0;
-    auto* pixels   = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+    auto* data     = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
-    if (pixels == nullptr) return std::nullopt;
+    if (data == nullptr) return std::nullopt;
 
     return image{
-        reinterpret_cast<std::byte*>(pixels),
+        reinterpret_cast<std::byte*>(data),
         static_cast<std::uint32_t>(width),
         static_cast<std::uint32_t>(height),
         static_cast<std::uint32_t>(channels)
