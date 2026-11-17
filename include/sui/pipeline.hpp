@@ -98,12 +98,12 @@ class pipeline final {
         shader                 shader,
         hgn::descriptor_pool   pool,
         hgn::pipeline_layout   layout,
-        hgn::graphics_pipeline pipeline
+        hgn::graphics_pipeline pipe
     ) noexcept
         : shader_{std::move(shader)},
           pool_{std::move(pool)},
           layout_{std::move(layout)},
-          pipe_{std::move(pipeline)} {}
+          pipe_{std::move(pipe)} {}
 
     shader                 shader_;
     hgn::descriptor_pool   pool_;
