@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <expected>
+#include <memory>
 #include <utility>
 
 #include <hgn/enums.hpp>
@@ -12,7 +13,6 @@
 #include "kgm/detail/detail.hpp"
 #include "kgm/detail/input.hpp"
 #include "kgm/enums.hpp"
-#include "kgm/raii/raii.hpp"
 #include "kgm/raw/raw.hpp"
 
 #define GLFW_INCLUDE_VULKAN
@@ -21,7 +21,7 @@
 namespace kgm {
 class window final {
   public:
-    explicit window(raw::window& win) noexcept : raw_{std::move(win)} {
+    explicit window(raw::window& win) noexcept : raw_{&win, glfwDestroyWindow} {
         glfwSetWindowUserPointer(&get(), this);
         glfwSetKeyCallback(
             &get(),
@@ -86,11 +86,11 @@ class window final {
             });
     }
 
-    [[nodiscard]] auto get() noexcept -> raw::window& { return raw_; }
+    [[nodiscard]] auto get() noexcept -> raw::window& { return *raw_; }
 
   private:
-    detail::terminate_handler terminate_;
-    raii::window              raw_;
-    detail::input             input_;
+    detail::terminate_handler                            terminate_;
+    std::unique_ptr<raw::window, void (*)(raw::window*)> raw_;
+    detail::input                                        input_;
 };
 }  // namespace kgm
