@@ -21,9 +21,9 @@ class image final {
         const std::uint32_t height,
         const std::uint32_t channels
     ) noexcept
-        : raw_{pixels, delete_image}, width_{width}, height_{height}, channels_{channels} {}
+        : data_{pixels, delete_image}, width_{width}, height_{height}, channels_{channels} {}
 
-    [[nodiscard]] auto pixels() noexcept -> std::byte* { return raw_.get(); }
+    [[nodiscard]] auto data() noexcept -> std::byte* { return data_.get(); }
 
     [[nodiscard]] auto width() const noexcept -> std::uint32_t { return width_; }
 
@@ -32,7 +32,7 @@ class image final {
     [[nodiscard]] auto channels() const noexcept -> std::uint32_t { return channels_; }
 
   private:
-    std::unique_ptr<std::byte, void (*)(std::byte*)> raw_;
+    std::unique_ptr<std::byte, void (*)(std::byte*)> data_;
     std::uint32_t                                    width_;
     std::uint32_t                                    height_;
     std::uint32_t                                    channels_;
