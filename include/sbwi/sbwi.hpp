@@ -8,12 +8,11 @@
 #include <sbwi/stb_image.h>
 
 namespace sbwi {
-class image_deleter final {
-  public:
-    void operator()(std::byte* ptr) noexcept { stbi_image_free(ptr); }
-};
-
 class image final {
+    static void delete_image(std::byte* ptr) noexcept {
+        stbi_image_free(reinterpret_cast<unsigned char*>(ptr));
+    }
+
   public:
     image(
         std::byte*          pixels,
@@ -21,7 +20,7 @@ class image final {
         const std::uint32_t height,
         const std::uint32_t channels
     ) noexcept
-        : raw_{pixels}, width_{width}, height_{height}, channels_{channels} {}
+        : raw_{pixels, delete_image}, width_{width}, height_{height}, channels_{channels} {}
 
     [[nodiscard]] auto pixels() noexcept -> std::byte* { return raw_.get(); }
 
@@ -32,10 +31,10 @@ class image final {
     [[nodiscard]] auto channels() const noexcept -> std::uint32_t { return channels_; }
 
   private:
-    std::unique_ptr<std::byte, image_deleter> raw_;
-    std::uint32_t                             width_;
-    std::uint32_t                             height_;
-    std::uint32_t                             channels_;
+    std::unique_ptr<std::byte, void (*)(std::byte*)> raw_;
+    std::uint32_t                                    width_;
+    std::uint32_t                                    height_;
+    std::uint32_t                                    channels_;
 };
 
 [[nodiscard]] inline auto create_image(const std::filesystem::path& path
