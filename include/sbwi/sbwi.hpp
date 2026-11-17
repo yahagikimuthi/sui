@@ -7,8 +7,6 @@
 
 #include <sbwi/stb_image.h>
 
-#include "sbwi/raii/raii.hpp"
-
 namespace sbwi {
 class image_deleter final {
   public:
