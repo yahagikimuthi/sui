@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <exception>
 #include <expected>
 #include <utility>
 
@@ -45,6 +46,35 @@ class rendering_system final {
             std::move(*allocator)
         };
     }
+
+    rendering_system(const rendering_system&) noexcept                    = delete;
+    auto operator=(const rendering_system&) noexcept -> rendering_system& = delete;
+
+    rendering_system(rendering_system&& other) noexcept
+        : hard_{std::move(other.hard_)},
+          display_{std::move(other.display_)},
+          sync_{std::move(other.sync_)},
+          cmd_{std::move(other.cmd_)},
+          allocator_{std::move(other.allocator_)},
+          image_index_{other.image_index_},
+          is_valid_{std::exchange(other.is_valid_, false)} {}
+
+    auto operator=(rendering_system&& other) noexcept -> rendering_system& {
+        if (this == &other) return *this;
+
+        destroy();
+
+        hard_        = std::move(other.hard_);
+        display_     = std::move(other.display_);
+        sync_        = std::move(other.sync_);
+        cmd_         = std::move(other.cmd_);
+        allocator_   = std::move(other.allocator_);
+        image_index_ = other.image_index_;
+        is_valid_    = std::exchange(other.is_valid_, false);
+        return *this;
+    }
+
+    ~rendering_system() noexcept { destroy(); }
 
     [[nodiscard]] auto begin(
         const std::uint8_t r, const std::uint8_t g, const std::uint8_t b, const std::uint8_t a
@@ -140,11 +170,17 @@ class rendering_system final {
         return static_cast<float>(color) / 255.f;
     }
 
+    void destroy() noexcept {
+        if (not is_valid_) return;
+        if (not hard_.device().wait_idle()) std::terminate();
+    }
+
     hardware       hard_;
     display        display_;
     sync           sync_;
     command        cmd_;
     hgn::allocator allocator_;
     std::uint32_t  image_index_{};
+    bool           is_valid_{true};
 };
 }  // namespace sui
