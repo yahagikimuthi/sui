@@ -7,6 +7,7 @@
 
 #include <akr/akr.hpp>
 #include <hgn/allocator.hpp>
+#include <hgn/command.hpp>
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/hgn.hpp>
@@ -164,6 +165,8 @@ class rendering_system final {
     [[nodiscard]] auto swapchain_format() noexcept -> hgn::format {
         return display_.swapchain().image_format();
     }
+
+    [[nodiscard]] auto command_buffer() noexcept -> hgn::command_buffer& { return cmd_.buffer(); }
 
   private:
     rendering_system(
