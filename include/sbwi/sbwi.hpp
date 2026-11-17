@@ -10,6 +10,11 @@
 #include "sbwi/raii/raii.hpp"
 
 namespace sbwi {
+class image_deleter final {
+  public:
+    void operator()(std::byte* ptr) noexcept { stbi_image_free(ptr); }
+};
+
 class image final {
   public:
     image(
@@ -29,10 +34,10 @@ class image final {
     [[nodiscard]] auto channels() const noexcept -> std::uint32_t { return channels_; }
 
   private:
-    raii::image   raw_;
-    std::uint32_t width_;
-    std::uint32_t height_;
-    std::uint32_t channels_;
+    std::unique_ptr<std::byte, image_deleter> raw_;
+    std::uint32_t                             width_;
+    std::uint32_t                             height_;
+    std::uint32_t                             channels_;
 };
 
 [[nodiscard]] inline auto create_image(const std::filesystem::path& path
