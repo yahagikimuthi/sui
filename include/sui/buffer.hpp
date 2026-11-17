@@ -17,21 +17,19 @@ class buffer_container final {
                           .size(10000)
                           .usage(hgn::buffer_usage_flag_bits::vertex)
                           .create();
-        if (not vertex)
-            return akr::make_error(akr::runtime_error, "Failed to create vertex buffer.");
+        if (not vertex) return akr::throw_runtime("Failed to create vertex buffer.");
 
         auto index = allocator.get_buffer_creator()
                          .size(10000)
                          .usage(hgn::buffer_usage_flag_bits::index)
                          .create();
-        if (not index) return akr::make_error(akr::runtime_error, "Failed to create index buffer.");
+        if (not index) return akr::throw_runtime("Failed to create index buffer.");
 
         auto uniform = allocator.get_buffer_creator()
                            .size(10000)
                            .usage(hgn::buffer_usage_flag_bits::uniform)
                            .create();
-        if (not uniform)
-            return akr::make_error(akr::runtime_error, "Failed to create uniform buffer.");
+        if (not uniform) return akr::throw_runtime("Failed to create uniform buffer.");
 
         return buffer_container{std::move(*vertex), std::move(*index), std::move(*uniform)};
     }

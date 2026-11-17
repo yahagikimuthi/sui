@@ -14,9 +14,8 @@ class sync final {
         auto sem2  = dev.create_semaphore();
         auto fence = dev.create_fence();
 
-        if (not sem1 or not sem2)
-            return akr::make_error(akr::runtime_error, "Failed to create semaphore.");
-        if (not fence) return akr::make_error(akr::runtime_error, "Failed to create fence.");
+        if (not sem1 or not sem2) return akr::throw_runtime("Failed to create semaphore.");
+        if (not fence) return akr::throw_runtime("Failed to create fence.");
 
         return sync{std::move(*sem1), std::move(*sem2), std::move(*fence)};
     }

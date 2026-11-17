@@ -56,14 +56,13 @@ class hardware final {
                             .debug(true)
 #endif
                             .create();
-        if (not instance) return akr::make_error(akr::runtime_error, "Failed to create instance.");
+        if (not instance) return akr::throw_runtime("Failed to create instance.");
 
         auto surface = win.create_surface(*instance);
-        if (not surface) return akr::make_error(akr::runtime_error, "Failed to create surface.");
+        if (not surface) return akr::throw_runtime("Failed to create surface.");
 
         auto physicals = instance->get_physicals();
-        if (not physicals)
-            return akr::make_error(akr::runtime_error, "Failed to get physical devices.");
+        if (not physicals) return akr::throw_runtime("Failed to get physical devices.");
 
         auto suitable_physicals =
             *physicals | std::views::filter([&](hgn::physical_device& physical) noexcept -> bool {
@@ -71,13 +70,13 @@ class hardware final {
             });
 
         if (suitable_physicals.empty())
-            return akr::make_error(akr::runtime_error, "Failed to find suitable physical device.");
+            return akr::throw_runtime("Failed to find suitable physical device.");
 
         auto physical = suitable_physicals.front();
         auto families = *find_queue_families(physical, *surface);
 
         auto device = physical.create_device(families.graphics);
-        if (not device) return akr::make_error(akr::runtime_error, "Failed to create device.");
+        if (not device) return akr::throw_runtime("Failed to create device.");
 
         auto graphics = queue_container{*device, families.graphics};
         auto present  = queue_container{*device, families.present};

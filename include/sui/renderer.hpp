@@ -20,13 +20,13 @@ class renderer final {
     ) noexcept -> std::expected<renderer, akr::error> {
         auto pipelines = pipeline_container::create(dev, swapchain_format);
         if (not pipelines)
-            return akr::make_error(akr::runtime_error, "Failed to create pipelines.");
+            return pipelines.error().rethrow_runtime("Failed to create pipeline object.");
 
         auto sampler = dev.create_sampler();
-        if (not sampler) return akr::make_error(akr::runtime_error, "Failed to create sampler.");
+        if (not sampler) return akr::throw_runtime("Failed to create sampler.");
 
         auto buffers = buffer_container::create(allocator);
-        if (not buffers) return akr::make_error(akr::runtime_error, "Failed to create buffers.");
+        if (not buffers) return buffers.error().rethrow_runtime("Failed to create buffers.");
 
         return renderer{std::move(*pipelines), std::move(*buffers), std::move(*sampler)};
     }

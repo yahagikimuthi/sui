@@ -30,11 +30,11 @@ class window_creator final {
     }
 
     [[nodiscard]] auto create() noexcept -> std::expected<window, akr::error> {
-        if (glfwInit() == 0) return akr::make_error(akr::runtime_error, "Failed to init GLFW.");
+        if (glfwInit() == 0) return akr::throw_runtime("Failed to init GLFW.");
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         auto* raw = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, nullptr);
-        if (raw == nullptr) return akr::make_error(akr::runtime_error, "Failed to create Window.");
+        if (raw == nullptr) return akr::throw_runtime("Failed to create Window.");
 
         return window{*raw};
     }

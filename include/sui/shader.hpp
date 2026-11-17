@@ -24,18 +24,14 @@ class shader_modules final {
         const std::filesystem::path& frag_source
     ) noexcept -> std::expected<shader_modules, akr::error> {
         auto vert_code = detail::read_file(vert_source);
-        if (not vert_code)
-            return akr::make_error(akr::logic_error, "Failed to read vertex shader code.");
+        if (not vert_code) return akr::throw_logic("Failed to read vertex shader code.");
         auto vertex = dev.create_shader(*vert_code);
-        if (not vertex)
-            return akr::make_error(akr::runtime_error, "Failed to create vertex shader module.");
+        if (not vertex) return akr::throw_runtime("Failed to create vertex shader module.");
 
         auto frag_code = detail::read_file(frag_source);
-        if (not frag_code)
-            return akr::make_error(akr::logic_error, "Failed to read fragment shader code.");
+        if (not frag_code) return akr::throw_logic("Failed to read fragment shader code.");
         auto frag = dev.create_shader(*frag_code);
-        if (not frag)
-            return akr::make_error(akr::runtime_error, "Failed to create fragment shader module.");
+        if (not frag) return akr::throw_runtime("Failed to create fragment shader module.");
 
         return shader_modules{std::move(*vertex), std::move(*frag)};
     }
@@ -58,10 +54,7 @@ class shader final {
         auto shaders = shader_modules::create(
             dev, "../include/sui/detail/shader/vert.spv", "../include/sui/detail/shader/frag.spv"
         );
-        if (not shaders)
-            return akr::make_error(
-                akr::runtime_error, "Failed to create shader modules.", shaders.error()
-            );
+        if (not shaders) return shaders.error().rethrow_runtime("Failed to create shader modules.");
 
         auto layout = dev.get_descriptor_set_layout_creator()
                           .get_binding_pusher()
@@ -70,8 +63,7 @@ class shader final {
                           .type(hgn::descriptor_type::uniform_buffer)
                           .push()
                           .create();
-        if (not layout)
-            return akr::make_error(akr::runtime_error, "Failed to create descriptor layout.");
+        if (not layout) return akr::throw_runtime("Failed to create descriptor layout.");
 
         return shader{std::move(*shaders), std::move(*layout)};
     }
@@ -83,10 +75,7 @@ class shader final {
             "../include/sui/detail/shader/tex_vert.spv",
             "../include/sui/detail/shader/tex_frag.spv"
         );
-        if (not shaders)
-            return akr::make_error(
-                akr::runtime_error, "Failed to create shader modules.", shaders.error()
-            );
+        if (not shaders) return shaders.error().rethrow_runtime("Failed to create shader modules.");
 
         auto layout = dev.get_descriptor_set_layout_creator()
                           .get_binding_pusher()
@@ -100,7 +89,7 @@ class shader final {
                           .type(hgn::descriptor_type::combined_image_sampler)
                           .push()
                           .create();
-        if (not layout) return akr::make_error(akr::runtime_error, "Failed to create layout.");
+        if (not layout) return akr::throw_runtime("Failed to create layout.");
 
         return shader{std::move(*shaders), std::move(*layout)};
     }

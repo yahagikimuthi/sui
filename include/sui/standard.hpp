@@ -19,15 +19,13 @@ class pipeline final {
     ) noexcept -> std::expected<pipeline, akr::error> {
         auto shader_obj = shader::create_standard(dev);
         if (not shader_obj)
-            return akr::make_error(akr::runtime_error, "Failed to create shader class.");
+            return shader_obj.error().rethrow_runtime("Failed to create shader class.");
 
         auto pool = dev.create_descriptor_pool({hgn::descriptor_type::uniform_buffer});
-        if (not pool)
-            return akr::make_error(akr::runtime_error, "Failed to create descriptor pool.");
+        if (not pool) return akr::throw_runtime("Failed to create descriptor pool.");
 
         auto layout = dev.create_pipeline_layout(shader_obj->layout());
-        if (not layout)
-            return akr::make_error(akr::runtime_error, "Failed to create pipeline layout.");
+        if (not layout) return akr::throw_runtime("Failed to create pipeline layout.");
 
         auto pipe = dev.get_graphics_pipeline_creator()
                         .vertex_binding(sizeof(vertex))
@@ -45,8 +43,7 @@ class pipeline final {
                         .layout(*layout)
                         .shaders(shader_obj->vertex_shader(), shader_obj->fragment_shader())
                         .create();
-        if (not pipe)
-            return akr::make_error(akr::runtime_error, "Failed to create graphics pipeline.");
+        if (not pipe) return akr::throw_runtime("Failed to create graphics pipeline.");
 
         return pipeline{
             std::move(*shader_obj), std::move(*pool), std::move(*layout), std::move(*pipe)
@@ -58,19 +55,15 @@ class pipeline final {
     ) noexcept -> std::expected<pipeline, akr::error> {
         auto shader_obj = shader::create_texture(dev);
         if (not shader_obj)
-            return akr::make_error(
-                akr::runtime_error, "Failed to create shader class.", shader_obj.error()
-            );
+            return shader_obj.error().rethrow_runtime("Failed to create shader class.");
 
         auto pool = dev.create_descriptor_pool(
             {hgn::descriptor_type::uniform_buffer, hgn::descriptor_type::combined_image_sampler}
         );
-        if (not pool)
-            return akr::make_error(akr::runtime_error, "Failed to create descriptor pool.");
+        if (not pool) return akr::throw_runtime("Failed to create descriptor pool.");
 
         auto layout = dev.create_pipeline_layout(shader_obj->layout());
-        if (not layout)
-            return akr::make_error(akr::runtime_error, "Failed to create pipeline layout.");
+        if (not layout) return akr::throw_runtime("Failed to create pipeline layout.");
 
         auto pipe = dev.get_graphics_pipeline_creator()
                         .vertex_binding(sizeof(uv_vertex))
@@ -93,7 +86,7 @@ class pipeline final {
                         .layout(*layout)
                         .shaders(shader_obj->vertex_shader(), shader_obj->fragment_shader())
                         .create();
-        if (not pipe) return akr::make_error(akr::runtime_error, "Failed to create pipeline.");
+        if (not pipe) return akr::throw_runtime("Failed to create pipeline.");
 
         return pipeline{
             std::move(*shader_obj), std::move(*pool), std::move(*layout), std::move(*pipe)
@@ -123,12 +116,10 @@ class pipeline_container final {
     [[nodiscard]] static auto create(hgn::device& dev, const hgn::format swapchain_format) noexcept
         -> std::expected<pipeline_container, akr::error> {
         auto standard = pipeline::create_standards(dev, swapchain_format);
-        if (not standard)
-            return akr::make_error(akr::runtime_error, "Failed to create standard pipeline");
+        if (not standard) return akr::throw_runtime("Failed to create standard pipeline");
 
         auto texture = pipeline::create_textures(dev, swapchain_format);
-        if (not texture)
-            return akr::make_error(akr::runtime_error, "Failed to create texture pipeline.");
+        if (not texture) return akr::throw_runtime("Failed to create texture pipeline.");
 
         return pipeline_container{std::move(*standard), std::move(*texture)};
     }

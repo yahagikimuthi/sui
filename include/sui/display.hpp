@@ -28,12 +28,10 @@ class display final {
                 .surface_format(hgn::format::b8g8r8a8_srgb, hgn::color_space_khr::srgb_nonlinear)
                 .queue_families(hard.graphics_queue().family(), hard.present_queue().family())
                 .create();
-        if (not swapchain)
-            return akr::make_error(akr::runtime_error, "Failed to create swapchain.");
+        if (not swapchain) return akr::throw_runtime("Failed to create swapchain.");
 
         auto images = swapchain->get_images();
-        if (not images)
-            return akr::make_error(akr::runtime_error, "Failed to get images from swapchain.");
+        if (not images) return akr::throw_runtime("Failed to get images from swapchain.");
 
         auto views = std::vector<hgn::image_view>{};
         for (auto& image : *images) {
@@ -41,8 +39,7 @@ class display final {
                             .image(image)
                             .format(swapchain->image_format())
                             .create();
-            if (not view)
-                return akr::make_error(akr::runtime_error, "Failed to create image view.");
+            if (not view) return akr::throw_runtime("Failed to create image view.");
 
             views.emplace_back(std::move(*view));
         }

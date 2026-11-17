@@ -15,11 +15,10 @@ class command final {
     ) noexcept -> std::expected<command, akr::error> {
         auto& dev  = hard.device();
         auto  pool = dev.create_command_pool(hard.graphics_queue().family());
-        if (not pool) return akr::make_error(akr::runtime_error, "Failed to create command pool.");
+        if (not pool) return akr::throw_runtime("Failed to create command pool.");
 
         auto buffer = pool->create_buffer();
-        if (not buffer)
-            return akr::make_error(akr::runtime_error, "Failed to create command buffer.");
+        if (not buffer) return akr::throw_runtime("Failed to create command buffer.");
 
         return command{std::move(*pool), std::move(*buffer)};
     }

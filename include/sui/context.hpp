@@ -21,29 +21,21 @@ class rendering_system final {
     [[nodiscard]] static auto create(kgm::window& win
     ) noexcept -> std::expected<rendering_system, akr::error> {
         auto hard = hardware::create(win);
-        if (not hard)
-            return akr::make_error(
-                akr::runtime_error, "Failed to create hardware object.", hard.error()
-            );
+        if (not hard) return hard.error().rethrow_runtime("Failed to create hardware object.");
 
         auto display = display::create(*hard);
-        if (not display)
-            return akr::make_error(
-                akr::runtime_error, "Failed to create display object.", display.error()
-            );
+        if (not display) return display.error().rethrow_runtime("Failed to create display object.");
 
         auto sync = sync::create(hard->device());
-        if (not sync) return akr::make_error(akr::runtime_error, "Failed to create sync objects.");
+        if (not sync) return sync.error().rethrow_runtime("Failed to create sync object.");
 
         auto cmd = command::create(*hard);
 
-        if (not cmd)
-            return akr::make_error(akr::runtime_error, "Failed to create command objects.");
+        if (not cmd) return cmd.error().rethrow_runtime("Failed to create command object.");
 
         auto allocator =
             hgn::allocator_creator{}.instance(hard->instance()).device(hard->device()).create();
-        if (not allocator)
-            return akr::make_error(akr::runtime_error, "Failed to create allocator.");
+        if (not allocator) return akr::throw_runtime("Failed to create allocator.");
 
         return rendering_system{
             std::move(*hard),

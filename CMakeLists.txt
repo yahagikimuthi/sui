@@ -31,7 +31,7 @@ FetchContent_MakeAvailable(hgn)
 FetchContent_Declare(
     akr
     GIT_REPOSITORY https://github.com/yahagikimuthi/akr.git
-    GIT_TAG v1.0.0
+    GIT_TAG v2.0.0
 )
 FetchContent_MakeAvailable(akr)
 
