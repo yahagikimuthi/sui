@@ -80,7 +80,7 @@ class window final {
     [[nodiscard]] auto create_surface(hgn::instance& instance
     ) noexcept -> std::expected<hgn::surface_khr, hgn::result> {
         auto* raw = static_cast<hgn::raw::surface_khr*>(nullptr);
-        return hgn::make_expected(glfwCreateWindowSurface(&instance.get(), &get(), nullptr, &raw))
+        return hgn::to_expected(glfwCreateWindowSurface(&instance.get(), &get(), nullptr, &raw))
             .transform([&]() noexcept -> hgn::surface_khr {
                 return hgn::surface_khr{*raw, instance.get()};
             });
