@@ -153,6 +153,8 @@ class rendering_system final {
         return display_.swapchain().image_format();
     }
 
+    [[nodiscard]] auto depth_fmt() const noexcept -> hgn::format { return display_.depth_fmt(); }
+
     [[nodiscard]] auto command_buffer() noexcept -> hgn::command_buffer& { return cmd_.buffer(); }
 
   private:

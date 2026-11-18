@@ -88,6 +88,8 @@ class display final {
 
     [[nodiscard]] auto swapchain() noexcept -> hgn::swapchain_khr& { return swapchain_; }
 
+    [[nodiscard]] auto depth_fmt() const noexcept -> hgn::format { return depth_fmt_; }
+
     [[nodiscard]] auto depth_img() noexcept -> hgn::image& { return depth_img_; }
 
     [[nodiscard]] auto depth_img_view() noexcept -> hgn::image_view& { return depth_view_; }

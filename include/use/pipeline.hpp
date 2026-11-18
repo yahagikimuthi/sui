@@ -12,7 +12,7 @@
 #include "use/structs.hpp"
 
 [[nodiscard]] inline auto create_standard_pipeline(
-    hgn::device& dev, const hgn::format swapchain_fmt
+    hgn::device& dev, const hgn::format swapchain_fmt, const hgn::format depth_fmt
 ) -> pipeline {
     auto shader = create_standard_shader(dev);
     assert(shader and "Failed to create shader.");
@@ -36,6 +36,7 @@
                     .format(hgn::format::r8g8b8a8_unorm)
                     .push()
                     .color_attachment(swapchain_fmt)
+                    .depth_attachment(depth_fmt)
                     .layout(*layout)
                     .shaders(shader->vertex, shader->fragment)
                     .create();
@@ -49,8 +50,9 @@
     };
 }
 
-[[nodiscard]] inline auto create_texture_pipeline(hgn::device& dev, const hgn::format swapchain_fmt)
-    -> pipeline {
+[[nodiscard]] inline auto create_texture_pipeline(
+    hgn::device& dev, const hgn::format swapchain_fmt, const hgn::format depth_fmt
+) -> pipeline {
     auto shader = create_texture_shader(dev);
     assert(shader and "Failed to create standard shader.");
 
@@ -80,6 +82,7 @@
                     .format(hgn::format::r32g32_sfloat)
                     .push()
                     .color_attachment(swapchain_fmt)
+                    .depth_attachment(depth_fmt)
                     .layout(*layout)
                     .shaders(shader->vertex, shader->fragment)
                     .create();
