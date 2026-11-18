@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <akr/akr.hpp>
+#include <hgn/command.hpp>
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/image.hpp>
@@ -58,10 +59,12 @@ class display final {
         if (aligned_depth_formats.empty())
             return akr::throw_runtime("Failed to find aligned depth format.");
 
+        auto depth_fmt = aligned_depth_formats.front();
+
         auto depth_img = hard.allocator()
                              .get_image_creator()
                              .extent(800, 600)
-                             .format(aligned_depth_formats.front())
+                             .format(depth_fmt)
                              .usage(hgn::image_usage_flag_bits::depth_stencil_attachment)
                              .create();
         if (not depth_img) return akr::throw_runtime("Failed to create depth image.");
@@ -69,7 +72,7 @@ class display final {
         auto depth_view = dev.get_image_view_creator()
                               .image(*depth_img)
                               .aspect_mask(hgn::image_aspect_flag_bits::depth)
-                              .format(aligned_depth_formats.front())
+                              .format(depth_fmt)
                               .create();
         if (not depth_view) return akr::throw_runtime("Failed to create depth image view.");
 
@@ -78,11 +81,15 @@ class display final {
             std::move(*depth_img),
             std::move(*depth_view),
             *images,
-            std::move(views)
+            std::move(views),
+            depth_fmt == hgn::format::d32_sfloat_s8_uint or
+                depth_fmt == hgn::format::d24_unorm_s8_uint
         };
     }
 
     [[nodiscard]] auto swapchain() noexcept -> hgn::swapchain_khr& { return swapchain_; }
+
+    [[nodiscard]] auto depth_img() noexcept -> hgn::image& { return depth_img_; }
 
     [[nodiscard]] auto depth_img_view() noexcept -> hgn::image_view& { return depth_view_; }
 
@@ -94,24 +101,64 @@ class display final {
         return views_[i];
     }
 
+    void begin_barrier(hgn::command_buffer& cmd, const std::uint32_t image_index) noexcept {
+        cmd.get_image_memory_barrier_executor()
+            .aspect_mask(hgn::image_aspect_flag_bits::color)
+            .image(images_[image_index])
+            .layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
+            .barrier();
+
+        auto aspect = hgn::image_aspect_flag_bits::depth;
+        if (is_stencil_) aspect |= hgn::image_aspect_flag_bits::stencil;
+
+        cmd.get_image_memory_barrier_executor()
+            .aspect_mask(aspect)
+            .image(depth_img_)
+            .layout(hgn::image_layout::undefined, hgn::image_layout::depth_attachment_optimal)
+            .barrier();
+    }
+
+    void end_barrier(hgn::command_buffer& cmd, const std::uint32_t image_index) noexcept {
+        cmd.get_image_memory_barrier_executor()
+            .aspect_mask(hgn::image_aspect_flag_bits::color)
+            .image(images_[image_index])
+            .layout(hgn::image_layout::color_attachment_optimal, hgn::image_layout::present_src_khr)
+            .barrier();
+
+        auto aspect = hgn::image_aspect_flag_bits::depth;
+        if (is_stencil_) aspect |= hgn::image_aspect_flag_bits::stencil;
+
+        cmd.get_image_memory_barrier_executor()
+            .aspect_mask(aspect)
+            .image(depth_img_)
+            .layout(
+                hgn::image_layout::depth_attachment_optimal,
+                hgn::image_layout::shader_read_only_optimal
+            )
+            .barrier();
+    }
+
   private:
     display(
         hgn::swapchain_khr               swapchain,
         hgn::image                       depth_img,
         hgn::image_view                  depth_view,
         std::vector<hgn::borrowed_image> images,
-        std::vector<hgn::image_view>     views
+        std::vector<hgn::image_view>     views,
+        bool                             is_stencil
     ) noexcept
         : swapchain_{std::move(swapchain)},
           depth_img_{std::move(depth_img)},
           depth_view_{std::move(depth_view)},
           images_{std::move(images)},
-          views_{std::move(views)} {}
+          views_{std::move(views)},
+          is_stencil_{is_stencil} {}
 
     hgn::swapchain_khr               swapchain_;
     hgn::image                       depth_img_;
     hgn::image_view                  depth_view_;
     std::vector<hgn::borrowed_image> images_;
     std::vector<hgn::image_view>     views_;
+    bool                             is_stencil_;
 };
 }  // namespace sui

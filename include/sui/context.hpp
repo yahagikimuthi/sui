@@ -85,15 +85,12 @@ class rendering_system final {
 
         if (not cmd_.buffer().begin()) return akr::fail("Failed to begin command buffer.");
 
-        cmd_.buffer()
-            .get_image_memory_barrier_executor()
-            .layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
-            .image(display_.get_image(image_index_))
-            .barrier();
+        display_.begin_barrier(cmd_.buffer(), image_index_);
 
         cmd_.buffer()
             .get_begin_rendering_executor()
-            .image_view(display_.get_view(image_index_))
+            .color_image_view(display_.get_view(image_index_))
+            .depth_image_view(display_.depth_img_view())
             .clear_color(norm(r), norm(g), norm(b), norm(a))
             .extent(800, 600)
             .begin();
@@ -118,11 +115,7 @@ class rendering_system final {
     [[nodiscard]] auto end() noexcept -> bool {
         cmd_.buffer().end_rendering();
 
-        cmd_.buffer()
-            .get_image_memory_barrier_executor()
-            .layout(hgn::image_layout::color_attachment_optimal, hgn::image_layout::present_src_khr)
-            .image(display_.get_image(image_index_))
-            .barrier();
+        display_.end_barrier(cmd_.buffer(), image_index_);
 
         if (not cmd_.buffer().end()) return akr::fail("Failed to end command buffer.");
 
