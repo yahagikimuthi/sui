@@ -41,11 +41,7 @@ class rendering_system final {
         if (not allocator) return akr::throw_runtime("Failed to create allocator.");
 
         return rendering_system{
-            std::move(*hard),
-            std::move(*display),
-            std::move(*sync),
-            std::move(*cmd),
-            std::move(*allocator)
+            std::move(*hard), std::move(*display), std::move(*sync), std::move(*cmd)
         };
     }
 
@@ -57,7 +53,6 @@ class rendering_system final {
           display_{std::move(other.display_)},
           sync_{std::move(other.sync_)},
           cmd_{std::move(other.cmd_)},
-          allocator_{std::move(other.allocator_)},
           image_index_{other.image_index_},
           is_valid_{std::exchange(other.is_valid_, false)} {}
 
@@ -70,7 +65,6 @@ class rendering_system final {
         display_     = std::move(other.display_);
         sync_        = std::move(other.sync_);
         cmd_         = std::move(other.cmd_);
-        allocator_   = std::move(other.allocator_);
         image_index_ = other.image_index_;
         is_valid_    = std::exchange(other.is_valid_, false);
         return *this;
@@ -160,7 +154,7 @@ class rendering_system final {
 
     [[nodiscard]] auto device() noexcept -> hgn::device& { return hard_.device(); }
 
-    [[nodiscard]] auto allocator() noexcept -> hgn::allocator& { return allocator_; }
+    [[nodiscard]] auto allocator() noexcept -> hgn::allocator& { return hard_.allocator(); }
 
     [[nodiscard]] auto swapchain_format() noexcept -> hgn::format {
         return display_.swapchain().image_format();
@@ -169,14 +163,11 @@ class rendering_system final {
     [[nodiscard]] auto command_buffer() noexcept -> hgn::command_buffer& { return cmd_.buffer(); }
 
   private:
-    rendering_system(
-        hardware hard, display display, sync sync, command cmd, hgn::allocator allocator
-    ) noexcept
+    rendering_system(hardware hard, display display, sync sync, command cmd) noexcept
         : hard_{std::move(hard)},
           display_{std::move(display)},
           sync_{std::move(sync)},
-          cmd_{std::move(cmd)},
-          allocator_{std::move(allocator)} {}
+          cmd_{std::move(cmd)} {}
 
     [[nodiscard]] static auto norm(const std::uint8_t color) noexcept -> float {
         return static_cast<float>(color) / 255.f;
@@ -187,12 +178,11 @@ class rendering_system final {
         if (not hard_.device().wait_idle()) std::terminate();
     }
 
-    hardware       hard_;
-    display        display_;
-    sync           sync_;
-    command        cmd_;
-    hgn::allocator allocator_;
-    std::uint32_t  image_index_{};
-    bool           is_valid_{true};
+    hardware      hard_;
+    display       display_;
+    sync          sync_;
+    command       cmd_;
+    std::uint32_t image_index_{};
+    bool          is_valid_{true};
 };
 }  // namespace sui

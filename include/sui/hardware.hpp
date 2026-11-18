@@ -6,6 +6,7 @@
 #include <utility>
 
 #include <akr/akr.hpp>
+#include <hgn/allocator.hpp>
 #include <hgn/device.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/hgn.hpp>
@@ -81,13 +82,17 @@ class hardware final {
         auto graphics = queue_container{*device, families.graphics};
         auto present  = queue_container{*device, families.present};
 
+        auto allocator = hgn::allocator_creator{}.device(*device).instance(*instance).create();
+        if (not allocator) return akr::throw_runtime("Failed to create allocator.");
+
         return hardware{
             std::move(*instance),
             std::move(*surface),
             physical,
             std::move(*device),
             graphics,
-            present
+            present,
+            std::move(*allocator)
         };
     }
 
@@ -97,6 +102,7 @@ class hardware final {
     [[nodiscard]] auto device() noexcept -> hgn::device& { return dev_; }
     [[nodiscard]] auto graphics_queue() noexcept -> queue_container& { return graphics_; }
     [[nodiscard]] auto present_queue() noexcept -> queue_container& { return present_; }
+    [[nodiscard]] auto allocator() noexcept -> hgn::allocator& { return allocator_; }
 
   private:
     hardware(
@@ -105,14 +111,16 @@ class hardware final {
         hgn::physical_device physical,
         hgn::device          dev,
         queue_container      graphics,
-        queue_container      present
+        queue_container      present,
+        hgn::allocator       allocator
     ) noexcept
         : instance_{std::move(instance)},
           surface_{std::move(surface)},
           physical_{physical},
           dev_{std::move(dev)},
           graphics_{graphics},
-          present_{present} {}
+          present_{present},
+          allocator_{std::move(allocator)} {}
 
     hgn::instance        instance_;
     hgn::surface_khr     surface_;
@@ -120,5 +128,6 @@ class hardware final {
     hgn::device          dev_;
     queue_container      graphics_;
     queue_container      present_;
+    hgn::allocator       allocator_;
 };
 }  // namespace sui
