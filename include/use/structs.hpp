@@ -1,10 +1,17 @@
 #pragma once
 
+#include <cassert>
+#include <exception>
+#include <utility>
+
+#include <hgn/allocator.hpp>
 #include <hgn/buffer.hpp>
+#include <hgn/command.hpp>
 #include <hgn/descriptor.hpp>
+#include <hgn/descriptor_pool.hpp>
+#include <hgn/device.hpp>
 #include <hgn/rendering.hpp>
 
-#include "hgn/descriptor_pool.hpp"
 #include "sui/detail/others.hpp"
 #include "sui/vertex.hpp"
 
@@ -26,6 +33,18 @@ struct pipeline final {
     hgn::pipeline_layout   layout;
     hgn::graphics_pipeline pipe;
 };
+
+struct context final {
+    hgn::device&         dev;
+    hgn::command_buffer& cmd;
+    hgn::allocator&      allocator;
+};
+
+template <typename T>
+[[nodiscard]] inline auto unwrap(T&& t) noexcept -> auto {
+    if (not t) std::terminate();
+    return *std::forward<T>(t);
+}
 
 using sui::uv_vertex;                      // NOLINT
 using sui::vertex;                         // NOLINT
