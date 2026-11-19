@@ -11,6 +11,7 @@
 #include <hgn/descriptor_pool.hpp>
 #include <hgn/device.hpp>
 #include <hgn/rendering.hpp>
+#include <sbwi/sbwi.hpp>
 
 #include "sui/detail/others.hpp"
 #include "sui/vertex.hpp"
@@ -32,6 +33,13 @@ struct pipeline final {
     hgn::descriptor_pool   pool;
     hgn::pipeline_layout   layout;
     hgn::graphics_pipeline pipe;
+};
+
+struct texture final {
+    sbwi::image         pixel;
+    hgn::image          image;
+    hgn::image_view     view;
+    hgn::descriptor_set set;
 };
 
 struct context final {
