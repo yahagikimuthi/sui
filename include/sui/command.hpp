@@ -20,14 +20,16 @@ class command final {
         auto buffer = pool->create_buffer();
         if (not buffer) return akr::throw_runtime("Failed to create command buffer.");
 
-        return command{std::move(*pool), std::move(*buffer)};
+        return command{std::move(*pool), *buffer};
     }
+
+    [[nodiscard]] auto pool() noexcept -> hgn::command_pool& { return pool_; }
 
     [[nodiscard]] auto buffer() noexcept -> hgn::command_buffer& { return buffer_; }
 
   private:
     command(hgn::command_pool pool, hgn::command_buffer buffer) noexcept
-        : pool_{std::move(pool)}, buffer_{std::move(buffer)} {}
+        : pool_{std::move(pool)}, buffer_{buffer} {}
 
     hgn::command_pool   pool_;
     hgn::command_buffer buffer_;
