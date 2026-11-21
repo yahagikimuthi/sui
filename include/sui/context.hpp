@@ -19,6 +19,8 @@
 #include "sui/sync.hpp"
 
 namespace sui {
+using namespace std::string_literals;
+
 class rendering_system final {
   public:
     [[nodiscard]] static auto create(kgm::window& win
@@ -77,11 +79,33 @@ class rendering_system final {
         if (width == 0 or height == 0) return true;
 
         if (not sync_.in_flight_fence().wait()) return akr::fail("Failed to wait fence.");
-        if (not sync_.in_flight_fence().reset()) return akr::fail("Failed to reset fence.");
 
         const auto index =
             display_.swapchain().acquire_next_image(sync_.image_available_semaphore());
-        if (not index) return akr::fail("Failed to acquire next image index.");
+        if (not index) {
+            if (index.error() != hgn::result::error_out_of_date_khr and
+                index.error() != hgn::result::suboptimal_khr)
+                return akr::fail("Failed to acquire next image.");
+
+            if (not hard_.device().wait_idle()) return akr::fail("Failed to wait device.");
+
+            auto sync = sync::create(hard_.device());
+            if (not sync)
+                return akr::fail("Failed to recreate sync because"s + sync.error().what());
+
+            sync_ = std::move(*sync);
+
+            auto display = display_.recreate(hard_, width, height);
+            if (not display)
+                return akr::fail(
+                    "Failed to recreate display class because"s + display.error().what()
+                );
+
+            display_ = std::move(*display);
+
+            return begin(width, height);
+        }
+
         image_index_ = *index;
 
         if (not cmd_.buffer().begin()) return akr::fail("Failed to begin command buffer.");
@@ -93,11 +117,14 @@ class rendering_system final {
             .color_image_view(display_.get_view(image_index_))
             .depth_image_view(display_.depth_img_view())
             .clear_color(0, 0, 0, 1)
-            .extent(800, 600)
+            .extent(display_.swapchain().width(), display_.swapchain().height())
             .begin();
 
-        cmd_.buffer().set_viewport(static_cast<float>(width), static_cast<float>(height));
-        cmd_.buffer().set_scissor(width, height);
+        cmd_.buffer().set_viewport(
+            static_cast<float>(display_.swapchain().width()),
+            static_cast<float>(display_.swapchain().height())
+        );
+        cmd_.buffer().set_scissor(display_.swapchain().width(), display_.swapchain().height());
         return true;
     }
 
@@ -111,6 +138,8 @@ class rendering_system final {
         display_.end_barrier(cmd_.buffer(), image_index_);
 
         if (not cmd_.buffer().end()) return akr::fail("Failed to end command buffer.");
+
+        if (not sync_.in_flight_fence().reset()) return akr::fail("Failed to reset fence.");
 
         if (not hard_.graphics_queue()
                     .queue()
@@ -138,9 +167,7 @@ class rendering_system final {
 
         auto display = display_.recreate(hard_, width, height);
         if (not display)
-            return akr::fail(
-                std::string{"Failed to recreate display because"} + display.error().what()
-            );
+            return akr::fail("Failed to recreate display because"s + display.error().what());
 
         display_ = std::move(*display);
         return true;

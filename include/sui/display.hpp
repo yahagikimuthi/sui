@@ -132,7 +132,7 @@ class display final {
 
         auto depth_img = hard.allocator()
                              .get_image_creator()
-                             .extent(800, 600)
+                             .extent(swapchain->width(), swapchain->height())
                              .format(depth_fmt)
                              .usage(hgn::image_usage_flag_bits::depth_stencil_attachment)
                              .create();
