@@ -22,7 +22,10 @@
 namespace kgm {
 class window final {
   public:
-    explicit window(raw::window& win) noexcept : raw_{&win, glfwDestroyWindow} {
+    explicit window(
+        raw::window& win, const std::uint32_t width, const std::uint32_t height
+    ) noexcept
+        : raw_{&win, glfwDestroyWindow}, width_{width}, height_{height} {
         glfwSetWindowUserPointer(&get(), this);
         glfwSetKeyCallback(
             &get(),
@@ -35,14 +38,11 @@ class window final {
                 self.input_.keys.set(static_cast<key>(button), act);
             }
         );
-        glfwSetWindowSizeCallback(
-            &get(),
-            [](raw::window* ptr, int width, int height) noexcept -> void {
-                auto& self   = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
-                self.width_  = static_cast<std::uint32_t>(width);
-                self.height_ = static_cast<std::uint32_t>(height);
-            }
-        );
+        glfwSetWindowSizeCallback(&get(), [](raw::window* ptr, int w, int h) noexcept -> void {
+            auto& self   = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
+            self.width_  = static_cast<std::uint32_t>(w);
+            self.height_ = static_cast<std::uint32_t>(h);
+        });
 
         static constinit auto flag = true;
         assert(flag);
@@ -55,7 +55,9 @@ class window final {
     window(window&& other) noexcept
         : terminate_{std::move(other.terminate_)},
           raw_{std::move(other.raw_)},
-          input_{other.input_} {
+          input_{other.input_},
+          width_{other.width_},
+          height_{other.height_} {
         glfwSetWindowUserPointer(&get(), this);
     }
 
@@ -65,6 +67,8 @@ class window final {
         terminate_ = std::move(other.terminate_);
         raw_       = std::move(other.raw_);
         input_     = other.input_;
+        width_     = other.width_;
+        height_    = other.height_;
 
         glfwSetWindowUserPointer(&get(), this);
         return *this;
@@ -106,7 +110,7 @@ class window final {
     detail::terminate_handler                            terminate_;
     std::unique_ptr<raw::window, void (*)(raw::window*)> raw_;
     detail::input                                        input_;
-    std::uint32_t                                        width_{};
-    std::uint32_t                                        height_{};
+    std::uint32_t                                        width_;
+    std::uint32_t                                        height_;
 };
 }  // namespace kgm
