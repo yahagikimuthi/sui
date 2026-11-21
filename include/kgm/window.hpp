@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstdint>
 #include <expected>
 #include <memory>
 #include <utility>
@@ -34,6 +35,15 @@ class window final {
                 self.input_.keys.set(static_cast<key>(button), act);
             }
         );
+        glfwSetWindowSizeCallback(
+            &get(),
+            [](raw::window* ptr, int width, int height) noexcept -> void {
+                auto& self   = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
+                self.width_  = static_cast<std::uint32_t>(width);
+                self.height_ = static_cast<std::uint32_t>(height);
+            }
+        );
+
         static constinit auto flag = true;
         assert(flag);
         flag = false;
@@ -62,8 +72,6 @@ class window final {
 
     ~window() noexcept = default;
 
-    [[nodiscard]] auto is_open() noexcept -> bool { return glfwWindowShouldClose(&get()) == 0; }
-
     void open() noexcept { glfwSetWindowShouldClose(&get(), GLFW_FALSE); }
 
     void close() noexcept { glfwSetWindowShouldClose(&get(), GLFW_TRUE); }
@@ -86,11 +94,19 @@ class window final {
             });
     }
 
+    [[nodiscard]] auto is_open() noexcept -> bool { return glfwWindowShouldClose(&get()) == 0; }
+
+    [[nodiscard]] auto width() const noexcept -> std::uint32_t { return width_; }
+
+    [[nodiscard]] auto height() const noexcept -> std::uint32_t { return height_; }
+
     [[nodiscard]] auto get() noexcept -> raw::window& { return *raw_; }
 
   private:
     detail::terminate_handler                            terminate_;
     std::unique_ptr<raw::window, void (*)(raw::window*)> raw_;
     detail::input                                        input_;
+    std::uint32_t                                        width_{};
+    std::uint32_t                                        height_{};
 };
 }  // namespace kgm
