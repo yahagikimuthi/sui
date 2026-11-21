@@ -39,6 +39,7 @@ struct texture final {
     sbwi::image         pixel;
     hgn::image          image;
     hgn::image_view     view;
+    hgn::sampler        sampler;
     hgn::descriptor_set set;
 };
 
