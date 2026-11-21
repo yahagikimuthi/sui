@@ -3,7 +3,7 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
-#include "sui/vec2.hpp"
+#include "sui/vec.hpp"
 
 namespace sui::detail {
 class camera final {
