@@ -72,9 +72,10 @@ class rendering_system final {
 
     ~rendering_system() noexcept { destroy(); }
 
-    [[nodiscard]] auto begin(
-        const std::uint8_t r, const std::uint8_t g, const std::uint8_t b, const std::uint8_t a
-    ) noexcept -> bool {
+    [[nodiscard]] auto begin(const std::uint32_t width, const std::uint32_t height) noexcept
+        -> bool {
+        if (width == 0 or height == 0) return true;
+
         if (not sync_.in_flight_fence().wait()) return akr::fail("Failed to wait fence.");
         if (not sync_.in_flight_fence().reset()) return akr::fail("Failed to reset fence.");
 
@@ -91,28 +92,20 @@ class rendering_system final {
             .get_begin_rendering_executor()
             .color_image_view(display_.get_view(image_index_))
             .depth_image_view(display_.depth_img_view())
-            .clear_color(norm(r), norm(g), norm(b), norm(a))
+            .clear_color(0, 0, 0, 1)
             .extent(800, 600)
             .begin();
 
-        cmd_.buffer().set_viewport(800, 600);
-        cmd_.buffer().set_scissor(800, 600);
+        cmd_.buffer().set_viewport(static_cast<float>(width), static_cast<float>(height));
+        cmd_.buffer().set_scissor(width, height);
         return true;
-    }
-
-    [[nodiscard]] auto begin() noexcept -> bool { return begin(0, 0, 0, 255); }
-
-    [[nodiscard]] auto begin(
-        const std::uint8_t r, const std::uint8_t g, const std::uint8_t b
-    ) noexcept -> bool {
-        return begin(r, g, b, 255);
     }
 
     void render(const std::uint32_t index_count, const std::uint32_t instance_count) noexcept {
         cmd_.buffer().draw_indexed(index_count, instance_count);
     }
 
-    [[nodiscard]] auto end() noexcept -> bool {
+    [[nodiscard]] auto end(const std::uint32_t width, const std::uint32_t height) noexcept -> bool {
         cmd_.buffer().end_rendering();
 
         display_.end_barrier(cmd_.buffer(), image_index_);
@@ -138,11 +131,19 @@ class rendering_system final {
         if (res) return true;
 
         const auto code = res.error();
-        if (code == hgn::result::error_out_of_date_khr or code == hgn::result::suboptimal_khr) {
-            return akr::fail("Resize is occurring");
-        }
+        if (code != hgn::result::error_out_of_date_khr and code != hgn::result::suboptimal_khr)
+            return akr::fail("Failed to present.");
 
-        return false;
+        if (not hard_.device().wait_idle()) return akr::fail("Failed to wait device");
+
+        auto display = display_.recreate(hard_, width, height);
+        if (not display)
+            return akr::fail(
+                std::string{"Failed to recreate display because"} + display.error().what()
+            );
+
+        display_ = std::move(*display);
+        return true;
     }
 
     [[nodiscard]] auto device() noexcept -> hgn::device& { return hard_.device(); }
@@ -169,10 +170,6 @@ class rendering_system final {
           display_{std::move(display)},
           sync_{std::move(sync)},
           cmd_{std::move(cmd)} {}
-
-    [[nodiscard]] static auto norm(const std::uint8_t color) noexcept -> float {
-        return static_cast<float>(color) / 255.f;
-    }
 
     void destroy() noexcept {
         if (not is_valid_) return;
