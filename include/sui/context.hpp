@@ -157,6 +157,12 @@ class rendering_system final {
 
     [[nodiscard]] auto command_buffer() noexcept -> hgn::command_buffer& { return cmd_.buffer(); }
 
+    [[nodiscard]] auto command_pool() noexcept -> hgn::command_pool& { return cmd_.pool(); }
+
+    [[nodiscard]] auto graphics_queue() noexcept -> hgn::queue& {
+        return hard_.graphics_queue().queue();
+    }
+
   private:
     rendering_system(hardware hard, display display, sync sync, command cmd) noexcept
         : hard_{std::move(hard)},
