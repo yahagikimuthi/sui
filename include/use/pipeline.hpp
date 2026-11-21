@@ -69,7 +69,7 @@
                     .get_vertex_attribute_pusher()
                     .location(0)
                     .offset(offsetof(uv_vertex, position))
-                    .format(hgn::format::r32g32b32_sfloat)
+                    .format(hgn::format::r32g32_sfloat)
                     .push()
                     .get_vertex_attribute_pusher()
                     .location(1)
