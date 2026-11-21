@@ -1,6 +1,7 @@
 #pragma once
 
 #include <expected>
+#include <memory>
 #include <ranges>
 #include <utility>
 #include <vector>
@@ -82,6 +83,76 @@ class display final {
             std::move(*depth_view),
             depth_fmt,
             *images,
+            std::move(views)
+        };
+    }
+
+    [[nodiscard]] auto recreate(
+        hardware& hard, const std::uint32_t width, const std::uint32_t height
+    ) noexcept -> std::expected<display, akr::error> {
+        auto swapchain =
+            hard.device()
+                .get_swapchain_creator(hard.surface())
+                .extent(width, height)
+                .present_mode(hgn::present_mode_khr::mailbox)
+                .surface_format(hgn::format::b8g8r8a8_srgb, hgn::color_space_khr::srgb_nonlinear)
+                .queue_families(hard.graphics_queue().family(), hard.present_queue().family())
+                .old_swapchain(swapchain_)
+                .create();
+        if (not swapchain) return akr::throw_runtime("Failed to recreate swapchain.");
+
+        auto images = swapchain->get_images();
+        if (not images) return akr::throw_runtime("Failed to get images from swapchain.");
+
+        auto views = std::vector<hgn::image_view>{};
+        views.reserve(images->size());
+        for (auto& image : *images) {
+            auto view = hard.device()
+                            .get_image_view_creator()
+                            .image(image)
+                            .aspect_mask(hgn::image_aspect_flag_bits::color)
+                            .format(swapchain->image_format())
+                            .create();
+            if (not view) return akr::throw_runtime("Failed to recreate image view.");
+            views.emplace_back(std::move(*view));
+        }
+
+        auto aligned_depth_formats =
+            std::array{
+                hgn::format::d32_sfloat,
+                hgn::format::d24_unorm_s8_uint,
+                hgn::format::d32_sfloat_s8_uint
+            } |
+            std::views::filter([&](hgn::format fmt) noexcept -> bool {
+                return hard.physical().is_supporting_depth_format(fmt);
+            });
+        if (aligned_depth_formats.empty())
+            return akr::throw_runtime("Failed to find aligned depth format.");
+
+        auto depth_fmt = aligned_depth_formats.front();
+
+        auto depth_img = hard.allocator()
+                             .get_image_creator()
+                             .extent(800, 600)
+                             .format(depth_fmt)
+                             .usage(hgn::image_usage_flag_bits::depth_stencil_attachment)
+                             .create();
+        if (not depth_img) return akr::throw_runtime("Failed to create depth image.");
+
+        auto depth_view = hard.device()
+                              .get_image_view_creator()
+                              .image(*depth_img)
+                              .aspect_mask(hgn::image_aspect_flag_bits::depth)
+                              .format(depth_fmt)
+                              .create();
+        if (not depth_view) return akr::throw_runtime("Failed to create depth image view.");
+
+        return display{
+            std::move(*swapchain),
+            std::move(*depth_img),
+            std::move(*depth_view),
+            depth_fmt,
+            std::move(*images),
             std::move(views)
         };
     }
