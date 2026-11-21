@@ -36,7 +36,9 @@ class window_creator final {
         auto* raw = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, nullptr);
         if (raw == nullptr) return akr::throw_runtime("Failed to create Window.");
 
-        return window{*raw};
+        return window{
+            *raw, static_cast<std::uint32_t>(width_), static_cast<std::uint32_t>(height_)
+        };
     }
 
   private:
