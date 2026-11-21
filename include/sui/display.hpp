@@ -1,7 +1,6 @@
 #pragma once
 
 #include <expected>
-#include <memory>
 #include <ranges>
 #include <utility>
 #include <vector>
