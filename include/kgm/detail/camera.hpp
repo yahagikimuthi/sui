@@ -1,41 +1,38 @@
 #pragma once
 
+#include <cmath>
+
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
-#include "sui/vec.hpp"
-
-namespace sui::detail {
+namespace sui {
 class camera final {
   public:
     camera() noexcept = default;
 
-    auto eye(const vec3& v) noexcept -> camera& {
-        eye_ = v;
-        return *this;
-    }
+    [[nodiscard]] auto eye() noexcept -> glm::vec3& { return eye_; }
+    [[nodiscard]] auto eye() const noexcept -> const glm::vec3& { return eye_; }
 
-    auto target(const vec3& v) noexcept -> camera& {
-        target_ = v;
-        return *this;
-    }
+    [[nodiscard]] auto target() const noexcept -> const glm::vec3& { return target_; }
+    [[nodiscard]] auto target() noexcept -> glm::vec3& { return target_; }
 
-    auto up(const vec3& v) noexcept -> camera& {
-        up_ = v;
-        return *this;
+    [[nodiscard]] auto front() const noexcept -> glm::vec3 {
+        auto f = glm::vec3{};
+        f[0]   = std::cos(yaw_);
+        f[1]   = 0.f;
+        f[2]   = std::sin(yaw_);
+        return glm::normalize(f);
     }
 
     [[nodiscard]] auto calc_view() const noexcept -> glm::mat4 {
         return glm::lookAt(
-            static_cast<glm::vec3>(eye_),
-            static_cast<glm::vec3>(target_),
-            static_cast<glm::vec3>(up_)
+            static_cast<glm::vec3>(eye_), static_cast<glm::vec3>(target_), glm::vec3{0.f, 1.f, 0.f}
         );
     }
 
   private:
-    vec3 eye_{};
-    vec3 target_{};
-    vec3 up_{};
+    glm::vec3 eye_{0.f, 0.f, 5.f};
+    glm::vec3 target_{};
+    float     yaw_{glm::radians(-90.f)};
 };
-}  // namespace sui::detail
+}  // namespace sui
