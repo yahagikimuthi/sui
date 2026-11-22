@@ -3,6 +3,8 @@
 #include <array>
 #include <cstddef>
 
+#include <glm/glm.hpp>
+
 #include "kgm/enums.hpp"
 
 namespace kgm::detail {
@@ -50,5 +52,6 @@ struct input final {
 
     button_input<key::last>          keys;
     button_input<mouse_button::last> mouse_buttons;
+    glm::vec2                        cursor_{};
 };
 }  // namespace kgm::detail
