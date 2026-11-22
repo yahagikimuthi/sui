@@ -57,6 +57,8 @@ class window final {
         glfwGetCursorPos(&get(), &cursor_x, &cursor_y);
         input_.cursor_ = {cursor_x, cursor_y};
 
+        glfwSetInputMode(&get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
         static constinit auto flag = true;
         assert(flag);
         flag = false;
