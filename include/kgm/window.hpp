@@ -6,6 +6,7 @@
 #include <memory>
 #include <utility>
 
+#include <glm/glm.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/instance.hpp>
 #include <hgn/raw/raw.hpp>
@@ -27,6 +28,7 @@ class window final {
     ) noexcept
         : raw_{&win, glfwDestroyWindow}, width_{width}, height_{height} {
         glfwSetWindowUserPointer(&get(), this);
+
         glfwSetKeyCallback(
             &get(),
             [](raw::window*         ptr,
@@ -38,11 +40,22 @@ class window final {
                 self.input_.keys.set(static_cast<key>(button), act);
             }
         );
+
         glfwSetWindowSizeCallback(&get(), [](raw::window* ptr, int w, int h) noexcept -> void {
             auto& self   = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
             self.width_  = static_cast<std::uint32_t>(w);
             self.height_ = static_cast<std::uint32_t>(h);
         });
+
+        glfwSetCursorPosCallback(&get(), [](raw::window* ptr, double x, double y) noexcept -> void {
+            auto& self          = *static_cast<window*>(glfwGetWindowUserPointer(ptr));
+            self.input_.cursor_ = {x, y};
+        });
+
+        auto cursor_x = 0.0;
+        auto cursor_y = 0.0;
+        glfwGetCursorPos(&get(), &cursor_x, &cursor_y);
+        input_.cursor_ = {cursor_x, cursor_y};
 
         static constinit auto flag = true;
         assert(flag);
@@ -103,6 +116,8 @@ class window final {
     [[nodiscard]] auto width() const noexcept -> std::uint32_t { return width_; }
 
     [[nodiscard]] auto height() const noexcept -> std::uint32_t { return height_; }
+
+    [[nodiscard]] auto cursor() const noexcept -> glm::vec2 { return input_.cursor_; }
 
     [[nodiscard]] auto get() noexcept -> raw::window& { return *raw_; }
 
