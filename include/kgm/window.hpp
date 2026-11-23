@@ -57,8 +57,6 @@ class window final {
         glfwGetCursorPos(&get(), &cursor_x, &cursor_y);
         input_.cursor_ = {cursor_x, cursor_y};
 
-        glfwSetInputMode(&get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
         static constinit auto flag = true;
         assert(flag);
         flag = false;
@@ -120,6 +118,14 @@ class window final {
     [[nodiscard]] auto height() const noexcept -> std::uint32_t { return height_; }
 
     [[nodiscard]] auto cursor() const noexcept -> glm::vec2 { return input_.cursor_; }
+
+    [[nodiscard]] auto cursor_input_mode() noexcept -> enum cursor {
+        auto mode = glfwGetInputMode(&get(), GLFW_CURSOR); return static_cast<enum cursor>(mode);
+    };
+
+    void cursor_input_mode(const enum cursor mode) noexcept {
+        glfwSetInputMode(&get(), GLFW_CURSOR, static_cast<int>(mode));
+    }
 
     [[nodiscard]] auto get() noexcept -> raw::window& { return *raw_; }
 
