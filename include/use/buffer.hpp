@@ -19,7 +19,7 @@
     assert(vertex and "Failed to create vertex buffer.");
 
     auto index = allocator.get_buffer_creator()
-                     .size(100000)
+                     .size(10000)
                      .usage(hgn::buffer_usage_flag_bits::index)
                      .create();
     assert(index and "Failed to create index buffer.");
