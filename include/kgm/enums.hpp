@@ -145,4 +145,10 @@ enum class key : std::int16_t {
     menu          = GLFW_KEY_MENU,
     last          = GLFW_KEY_LAST
 };
+
+enum class cursor : std::uint32_t {
+    normal   = GLFW_CURSOR_NORMAL,
+    hidden   = GLFW_CURSOR_HIDDEN,
+    disabled = GLFW_CURSOR_DISABLED,
+};
 }  // namespace kgm
