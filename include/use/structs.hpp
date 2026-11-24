@@ -55,6 +55,10 @@ template <typename T>
     return *std::forward<T>(t);
 }
 
+struct push_constants final {
+    glm::mat4 model{1.f};
+};
+
 using sui::uv_vertex;                      // NOLINT
 using sui::vertex;                         // NOLINT
 using sui::detail::uniform_buffer_object;  // NOLINT

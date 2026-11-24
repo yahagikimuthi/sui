@@ -20,7 +20,14 @@
     auto pool = dev.create_descriptor_pool({hgn::descriptor_type::uniform_buffer});
     assert(pool and "Failed to create descriptor pool");
 
-    auto layout = dev.create_pipeline_layout(shader->layout);
+    auto layout = dev.get_pipeline_layout_creator()
+                      .add_layout(shader->layout)
+                      .get_push_constant_adder()
+                      .offset(0)
+                      .stage_flags(hgn::shader_stage_flag_bits::vertex)
+                      .size(sizeof(glm::mat4))
+                      .push()
+                      .create();
     assert(layout and "Failed to create pipeline layout.");
 
     auto pipe = dev.get_graphics_pipeline_creator()
@@ -61,7 +68,7 @@
     );
     assert(pool and "Failed to create descriptor pool");
 
-    auto layout = dev.create_pipeline_layout(shader->layout);
+    auto layout = dev.get_pipeline_layout_creator().add_layout(shader->layout).create();
     assert(layout and "Failed to create pipeline layout.");
 
     auto pipe = dev.get_graphics_pipeline_creator()
