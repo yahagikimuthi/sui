@@ -8,6 +8,7 @@ namespace sui {
 struct vertex final {
     vec3 position{};
     rgba color{};
+    vec3 normal{};
 };
 
 struct uv_vertex final {
