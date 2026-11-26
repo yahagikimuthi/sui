@@ -28,14 +28,14 @@ void main() {
     // 法線ベクトルに書けるべきmodel行列が、push.modelの逆行列の転置である
     // 数学的事実に基づいている。しかし、計算量もあるため、実装は留保
     // mat3 normalMat = transpose(inverse(mat3(push.model)));
-    // v_normalWS     = normalize(normalMat * a_normal);
+    // v_normalWS     = normalMat * a_normal;
 
     // model行列には次の役割がある
     // 左上の3x3部分は拡大縮小
     // 右側の列は平行移動
     // 下側は射影や同時座標系(通常0,0,0,1)
     // ベクトルであることが重要なため、右側の場所情報は不要なため、mat3にキャストする
-    v_normalWS = normalize(mat3(push.model) * a_normal);
+    v_normalWS = mat3(push.model) * a_normal;
 
     v_color = a_color;
 }
