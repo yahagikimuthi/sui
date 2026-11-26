@@ -56,7 +56,7 @@ template <typename T>
 }
 
 struct push_constants final {
-    glm::mat4 model{1.f};
+    alignas(16) glm::mat4 model{1.f};
 };
 
 using sui::uv_vertex;                      // NOLINT

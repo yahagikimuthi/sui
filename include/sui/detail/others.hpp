@@ -56,7 +56,7 @@ class debugger final {
 }
 
 struct uniform_buffer_object final {
-    glm::mat4 view{1.f};
-    glm::mat4 proj{1.f};
+    alignas(16) glm::mat4 view{1.f};
+    alignas(16) glm::mat4 proj{1.f};
 };
 }  // namespace sui::detail
