@@ -120,7 +120,7 @@ class window final {
     [[nodiscard]] auto cursor() const noexcept -> glm::vec2 { return input_.cursor_; }
 
     [[nodiscard]] auto cursor_input_mode() noexcept -> enum cursor {
-        auto mode = glfwGetInputMode(&get(), GLFW_CURSOR); return static_cast<enum cursor>(mode);
+        return static_cast<enum cursor>(glfwGetInputMode(&get(), GLFW_CURSOR));
     };
 
     void cursor_input_mode(const enum cursor mode) noexcept {
