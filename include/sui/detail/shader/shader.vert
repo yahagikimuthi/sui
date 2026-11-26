@@ -25,8 +25,9 @@ void main() {
     gl_Position = cam.proj * cam.view * posWS;
 
     // 以下の式は法線ベクトルと接線ベクトルの内積に基づいて計算した結果、
-    // 法線ベクトルに書けるべきmodel行列が、push.modelの逆行列の転置である
-    // 数学的事実に基づいている。しかし、計算量もあるため、実装は留保
+    // 法線ベクトルに書けるべきmodel行列が、push.modelの逆行列の転置である数学的事実に基づく。
+    // 拡大縮小、特に横方向だけ2倍などすると、法線ベクトルも横方向に引っ張られるので斜めに傾く。
+    // しかし、それを行わないのであればpush.modelをそのまま使えば良い。
     // mat3 normalMat = transpose(inverse(mat3(push.model)));
     // v_normalWS     = normalMat * a_normal;
 
