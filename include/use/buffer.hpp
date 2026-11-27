@@ -12,25 +12,22 @@
 #include "use/structs.hpp"
 
 [[nodiscard]] inline auto create_buffers(hgn::allocator& allocator) noexcept -> buffers {
-    auto vertex = allocator.get_buffer_creator()
-                      .size(10000)
-                      .usage(hgn::buffer_usage_flag_bits::vertex)
-                      .create();
-    assert(vertex and "Failed to create vertex buffer.");
-
-    auto index = allocator.get_buffer_creator()
-                     .size(10000)
-                     .usage(hgn::buffer_usage_flag_bits::index)
-                     .create();
-    assert(index and "Failed to create index buffer.");
-
-    auto uniform = allocator.get_buffer_creator()
+    auto vertex = *allocator.get_buffer_creator()
                        .size(10000)
-                       .usage(hgn::buffer_usage_flag_bits::uniform)
+                       .usage(hgn::buffer_usage_flag_bits::vertex)
                        .create();
-    assert(uniform and "Failed to create uniform buffer.");
+
+    auto index = *allocator.get_buffer_creator()
+                      .size(10000)
+                      .usage(hgn::buffer_usage_flag_bits::index)
+                      .create();
+
+    auto uniform = *allocator.get_buffer_creator()
+                        .size(10000)
+                        .usage(hgn::buffer_usage_flag_bits::uniform)
+                        .create();
 
     return buffers{
-        .vertex = std::move(*vertex), .index = std::move(*index), .uniform = std::move(*uniform)
+        .vertex = std::move(vertex), .index = std::move(index), .uniform = std::move(uniform)
     };
 }

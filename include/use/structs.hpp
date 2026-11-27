@@ -43,6 +43,12 @@ struct texture final {
     hgn::descriptor_set set;
 };
 
+struct shadow final {
+    hgn::image      depth_img;
+    hgn::image_view depth_view;
+    hgn::sampler    sampler;
+};
+
 struct context final {
     hgn::device&         dev;
     hgn::command_buffer& cmd;

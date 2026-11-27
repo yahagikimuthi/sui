@@ -39,7 +39,7 @@
     buffer.cpy(pixel.data(), pixel.width() * pixel.height() * 4);
 
     auto cmd = *cmd_pool.create_buffer();
-    assert(cmd.begin());
+    *cmd.begin();
 
     cmd.get_image_memory_barrier_executor()
         .image(img)
@@ -57,7 +57,7 @@
         .aspect_mask(hgn::image_aspect_flag_bits::color)
         .barrier();
 
-    assert(cmd.end());
+    *cmd.end();
     auto view = *dev.get_image_view_creator()
                      .image(img)
                      .aspect_mask(hgn::image_aspect_flag_bits::color)
@@ -81,8 +81,8 @@
         .push()
         .write();
 
-    assert(graphics_queue.get_submitter().command_buffer(cmd).submit());
-    assert(graphics_queue.wait_idle());
+    *graphics_queue.get_submitter().command_buffer(cmd).submit();
+    *graphics_queue.wait_idle();
 
     return {
         .pixel   = std::move(pixel),
