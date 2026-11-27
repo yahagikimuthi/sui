@@ -28,10 +28,7 @@ class rendering_system final {
         auto hard = hardware::create(win);
         if (not hard) return hard.error().rethrow_runtime("Failed to create hardware object.");
 
-        auto frame = frame::create(*hard);
-        if (not frame) return frame.error().rethrow_runtime("Failed to create frame.");
-
-        auto display = display::create(*hard, *frame);
+        auto display = display::create(*hard, hard->);
         if (not display) return display.error().rethrow_runtime("Failed to create display object.");
 
         auto cmd = command::create(*hard, *frame);
