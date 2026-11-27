@@ -13,12 +13,12 @@
 #include <hgn/hgn.hpp>
 #include <kgm/window.hpp>
 
-#include "sui/command.hpp"
-#include "sui/display.hpp"
-#include "sui/hardware.hpp"
-#include "sui/sync.hpp"
+#include "wk/detail/command.hpp"
+#include "wk/detail/display.hpp"
+#include "wk/detail/hardware.hpp"
+#include "wk/detail/sync.hpp"
 
-namespace sui {
+namespace wk {
 using namespace std::string_literals;
 
 class rendering_system final {
@@ -28,10 +28,13 @@ class rendering_system final {
         auto hard = hardware::create(win);
         if (not hard) return hard.error().rethrow_runtime("Failed to create hardware object.");
 
-        auto display = display::create(*hard, hard->);
+        auto display = display::create(*hard);
         if (not display) return display.error().rethrow_runtime("Failed to create display object.");
 
-        auto cmd = command::create(*hard, *frame);
+        auto sync = sync::create(hard->device());
+        if (not sync) return sync.error().rethrow_runtime("Failed to create sync object.");
+
+        auto cmd = command::create(*hard);
 
         if (not cmd) return cmd.error().rethrow_runtime("Failed to create command object.");
 
@@ -39,14 +42,8 @@ class rendering_system final {
             hgn::allocator_creator{}.instance(hard->instance()).device(hard->device()).create();
         if (not allocator) return akr::throw_runtime("Failed to create allocator.");
 
-        auto depth_buffers = depth_buffer_manager{};
-
         return rendering_system{
-            std::move(*hard),
-            std::move(*display),
-            std::move(*frame),
-            std::move(*cmd),
-            std::move(depth_buffers)
+            std::move(*hard), std::move(*display), std::move(*sync), std::move(*cmd)
         };
     }
 
@@ -56,7 +53,7 @@ class rendering_system final {
     rendering_system(rendering_system&& other) noexcept
         : hard_{std::move(other.hard_)},
           display_{std::move(other.display_)},
-          frame_{std::move(other.frame_)},
+          sync_{std::move(other.sync_)},
           cmd_{std::move(other.cmd_)},
           image_index_{other.image_index_},
           is_valid_{std::exchange(other.is_valid_, false)} {}
@@ -68,7 +65,7 @@ class rendering_system final {
 
         hard_        = std::move(other.hard_);
         display_     = std::move(other.display_);
-        frame_       = std::move(other.frame_);
+        sync_        = std::move(other.sync_);
         cmd_         = std::move(other.cmd_);
         image_index_ = other.image_index_;
         is_valid_    = std::exchange(other.is_valid_, false);
@@ -87,10 +84,10 @@ class rendering_system final {
     ) noexcept -> bool {
         if (width == 0 or height == 0) return true;
 
-        if (not frame_.wait()) return akr::fail("Failed to wait fence.");
+        if (not sync_.in_flight_fence().wait()) return akr::fail("Failed to wait fence.");
 
         const auto index =
-            display_.swapchain().acquire_next_image(frame_.image_available_semaphore());
+            display_.swapchain().acquire_next_image(sync_.image_available_semaphore());
         if (not index) {
             if (index.error() != hgn::result::error_out_of_date_khr and
                 index.error() != hgn::result::suboptimal_khr)
@@ -98,7 +95,13 @@ class rendering_system final {
 
             if (not hard_.device().wait_idle()) return akr::fail("Failed to wait device.");
 
-            auto display = display_.recreate(hard_, frame_, width, height);
+            auto sync = sync::create(hard_.device());
+            if (not sync)
+                return akr::fail("Failed to recreate sync because"s + sync.error().what());
+
+            sync_ = std::move(*sync);
+
+            auto display = display_.recreate(hard_, width, height);
             if (not display)
                 return akr::fail(
                     "Failed to recreate display class because"s + display.error().what()
@@ -147,11 +150,24 @@ class rendering_system final {
 
         if (not cmd_.buffer().end()) return akr::fail("Failed to end command buffer.");
 
-        if (not frame_.reset()) return akr::fail("Failed to reset fence.");
+        if (not sync_.in_flight_fence().reset()) return akr::fail("Failed to reset fence.");
 
-        if (not frame_.submit(cmd_.buffer())) return akr::fail("Failed to submit.");
+        if (not hard_.graphics_queue()
+                    .queue()
+                    .get_submitter()
+                    .command_buffer(cmd_.buffer())
+                    .wait_semaphore(sync_.image_available_semaphore())
+                    .signal_semaphore(sync_.render_finished_semaphore())
+                    .submit(sync_.in_flight_fence()))
+            return akr::fail("Failed to submit.");
 
-        const auto res = frame_.present(image_index_, display_.swapchain());
+        const auto res = hard_.present_queue()
+                             .queue()
+                             .get_present_executor()
+                             .image_index(image_index_)
+                             .semaphore(sync_.render_finished_semaphore())
+                             .swapchain(display_.swapchain())
+                             .present();
         if (res) return true;
 
         const auto code = res.error();
@@ -160,7 +176,7 @@ class rendering_system final {
 
         if (not hard_.device().wait_idle()) return akr::fail("Failed to wait device");
 
-        auto display = display_.recreate(hard_, frame_, width, height);
+        auto display = display_.recreate(hard_, width, height);
         if (not display)
             return akr::fail("Failed to recreate display because"s + display.error().what());
 
@@ -183,30 +199,26 @@ class rendering_system final {
     [[nodiscard]] auto command_pool() noexcept -> hgn::command_pool& { return cmd_.pool(); }
 
     [[nodiscard]] auto graphics_queue() noexcept -> hgn::queue& {
-        return frame_.graphics_queue().queue();
+        return hard_.graphics_queue().queue();
     }
 
   private:
-    rendering_system(
-        hardware hard, display display, frame frame, command cmd, depth_buffer_manager depth_buffers
-    ) noexcept
+    rendering_system(hardware hard, display display, sync sync, command cmd) noexcept
         : hard_{std::move(hard)},
           display_{std::move(display)},
-          frame_{std::move(frame)},
-          cmd_{std::move(cmd)},
-          depth_buffers_{std::move(depth_buffers)} {}
+          sync_{std::move(sync)},
+          cmd_{std::move(cmd)} {}
 
     void destroy() noexcept {
         if (not is_valid_) return;
         if (not hard_.device().wait_idle()) std::terminate();
     }
 
-    hardware             hard_;
-    display              display_;
-    frame                frame_;
-    command              cmd_;
-    depth_buffer_manager depth_buffers_;
-    std::uint32_t        image_index_{};
-    bool                 is_valid_{true};
+    hardware      hard_;
+    display       display_;
+    sync          sync_;
+    command       cmd_;
+    std::uint32_t image_index_{};
+    bool          is_valid_{true};
 };
-}  // namespace sui
+}  // namespace wk

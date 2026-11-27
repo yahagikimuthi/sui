@@ -17,9 +17,9 @@
 #include <kgm/kgm.hpp>
 #include <kgm/window.hpp>
 
-#include "sui/queue.hpp"
+#include "wk/detail/queue.hpp"
 
-namespace sui {
+namespace wk {
 struct queue_families final {
     hgn::queue_family graphics;
     hgn::queue_family present;
@@ -90,6 +90,8 @@ class hardware final {
             std::move(*surface),
             physical,
             std::move(*device),
+            graphics,
+            present,
             std::move(*allocator)
         };
     }
@@ -98,6 +100,8 @@ class hardware final {
     [[nodiscard]] auto surface() noexcept -> hgn::surface_khr& { return surface_; }
     [[nodiscard]] auto physical() noexcept -> hgn::physical_device& { return physical_; }
     [[nodiscard]] auto device() noexcept -> hgn::device& { return dev_; }
+    [[nodiscard]] auto graphics_queue() noexcept -> queue_container& { return graphics_; }
+    [[nodiscard]] auto present_queue() noexcept -> queue_container& { return present_; }
     [[nodiscard]] auto allocator() noexcept -> hgn::allocator& { return allocator_; }
 
   private:
@@ -106,18 +110,24 @@ class hardware final {
         hgn::surface_khr     surface,
         hgn::physical_device physical,
         hgn::device          dev,
+        queue_container      graphics,
+        queue_container      present,
         hgn::allocator       allocator
     ) noexcept
         : instance_{std::move(instance)},
           surface_{std::move(surface)},
           physical_{physical},
           dev_{std::move(dev)},
+          graphics_{graphics},
+          present_{present},
           allocator_{std::move(allocator)} {}
 
     hgn::instance        instance_;
     hgn::surface_khr     surface_;
     hgn::physical_device physical_;
     hgn::device          dev_;
+    queue_container      graphics_;
+    queue_container      present_;
     hgn::allocator       allocator_;
 };
-}  // namespace sui
+}  // namespace wk
