@@ -74,8 +74,14 @@ class rendering_system final {
 
     ~rendering_system() noexcept { destroy(); }
 
-    [[nodiscard]] auto begin(const std::uint32_t width, const std::uint32_t height) noexcept
-        -> bool {
+    [[nodiscard]] auto begin(
+        const std::uint32_t width,
+        const std::uint32_t height,
+        const std::uint8_t  r = 0,
+        const std::uint8_t  g = 0,
+        const std::uint8_t  b = 0,
+        const std::uint8_t  a = 255
+    ) noexcept -> bool {
         if (width == 0 or height == 0) return true;
 
         if (not sync_.in_flight_fence().wait()) return akr::fail("Failed to wait fence.");
@@ -116,7 +122,12 @@ class rendering_system final {
             .get_begin_rendering_executor()
             .color_image_view(display_.get_view(image_index_))
             .depth_image_view(display_.depth_img_view())
-            .clear_color(0, 0, 0, 1)
+            .clear_color(
+                static_cast<float>(r) / 255.f,
+                static_cast<float>(g) / 255.f,
+                static_cast<float>(b) / 255.f,
+                static_cast<float>(a) / 255.f
+            )
             .extent(display_.swapchain().width(), display_.swapchain().height())
             .begin();
 
