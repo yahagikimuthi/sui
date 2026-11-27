@@ -2,12 +2,14 @@
 
 #include <glm/glm.hpp>
 
-namespace sui {
+namespace wk {
+template <typename T>
+    requires std::is_arithmetic_v<T>
 struct extent final {
-    float width;
-    float height;
+    T width;
+    T height;
 
-    [[nodiscard]] constexpr auto square() const noexcept -> float { return width * height; }
+    [[nodiscard]] constexpr auto square() const noexcept -> T { return width * height; }
 
     [[nodiscard]] constexpr auto operator==(const extent&) const noexcept -> bool = default;
 
@@ -29,13 +31,13 @@ struct extent final {
         return *this;
     }
 
-    constexpr auto operator*=(const float other) noexcept -> extent& {
+    constexpr auto operator*=(const T other) noexcept -> extent& {
         width *= other;
         height *= other;
         return *this;
     }
 
-    constexpr auto operator/=(const float other) noexcept -> extent& {
+    constexpr auto operator/=(const T other) noexcept -> extent& {
         width /= other;
         height /= other;
         return *this;
@@ -49,15 +51,15 @@ struct extent final {
         return a -= b;
     }
 
-    [[nodiscard]] friend constexpr auto operator*(extent a, const float b) noexcept -> extent {
+    [[nodiscard]] friend constexpr auto operator*(extent a, const T b) noexcept -> extent {
         return a *= b;
     }
 
-    [[nodiscard]] friend constexpr auto operator*(const float a, extent b) noexcept -> extent {
+    [[nodiscard]] friend constexpr auto operator*(const T a, extent b) noexcept -> extent {
         return b * a;
     }
 
-    [[nodiscard]] friend constexpr auto operator/(extent a, const float b) noexcept -> extent {
+    [[nodiscard]] friend constexpr auto operator/(extent a, const T b) noexcept -> extent {
         return a /= b;
     }
 
@@ -65,4 +67,7 @@ struct extent final {
         return glm::vec2{width, height};
     }
 };
-}  // namespace sui
+
+using extentf32 = extent<float>;
+using extentu32 = extent<std::uint32_t>;
+}  // namespace wk
