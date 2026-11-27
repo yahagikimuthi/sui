@@ -12,11 +12,6 @@
 #include "wk/extent.hpp"
 
 namespace wk::detail {
-class resource_manager final {
-  public:
-  private:
-};
-
 class depth_buffer_manager final {
   public:
     depth_buffer_manager() noexcept = default;
