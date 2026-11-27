@@ -6,9 +6,9 @@
 #include <akr/akr.hpp>
 #include <hgn/command.hpp>
 
-#include "sui/hardware.hpp"
+#include "wk/detail/hardware.hpp"
 
-namespace sui {
+namespace wk {
 class command final {
   public:
     [[nodiscard]] static auto create(hardware& hard
@@ -34,4 +34,4 @@ class command final {
     hgn::command_pool   pool_;
     hgn::command_buffer buffer_;
 };
-}  // namespace sui
+}  // namespace wk
