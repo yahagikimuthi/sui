@@ -13,13 +13,14 @@
 #include <hgn/surface.hpp>
 #include <hgn/swapchain.hpp>
 
+#include "wk/detail/frame.hpp"
 #include "wk/detail/hardware.hpp"
 
 namespace wk::detail {
 class display final {
   public:
-    [[nodiscard]] static auto create(hardware& hard
-    ) noexcept -> std::expected<display, akr::error> {
+    [[nodiscard]] static auto create(hardware& hard, frame& frame) noexcept
+        -> std::expected<display, akr::error> {
         auto& dev     = hard.device();
         auto& surface = hard.surface();
 
@@ -28,7 +29,7 @@ class display final {
                 .extent(800, 600)
                 .present_mode(hgn::present_mode_khr::mailbox)
                 .surface_format(hgn::format::b8g8r8a8_srgb, hgn::color_space_khr::srgb_nonlinear)
-                .queue_families(hard.graphics_queue().family(), hard.present_queue().family())
+                .queue_families(frame.graphics_queue().family(), frame.present_queue().family())
                 .create();
         if (not swapchain) return akr::throw_runtime("Failed to create swapchain.");
 
@@ -86,7 +87,7 @@ class display final {
     }
 
     [[nodiscard]] auto recreate(
-        hardware& hard, const std::uint32_t width, const std::uint32_t height
+        hardware& hard, frame& frame, const std::uint32_t width, const std::uint32_t height
     ) noexcept -> std::expected<display, akr::error> {
         auto swapchain =
             hard.device()
@@ -94,7 +95,7 @@ class display final {
                 .extent(width, height)
                 .present_mode(hgn::present_mode_khr::mailbox)
                 .surface_format(hgn::format::b8g8r8a8_srgb, hgn::color_space_khr::srgb_nonlinear)
-                .queue_families(hard.graphics_queue().family(), hard.present_queue().family())
+                .queue_families(frame.graphics_queue().family(), frame.present_queue().family())
                 .old_swapchain(swapchain_)
                 .create();
         if (not swapchain) return akr::throw_runtime("Failed to recreate swapchain.");

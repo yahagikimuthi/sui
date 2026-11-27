@@ -6,15 +6,16 @@
 #include <akr/akr.hpp>
 #include <hgn/command.hpp>
 
+#include "wk/detail/frame.hpp"
 #include "wk/detail/hardware.hpp"
 
 namespace wk::detail {
 class command final {
   public:
-    [[nodiscard]] static auto create(hardware& hard
-    ) noexcept -> std::expected<command, akr::error> {
+    [[nodiscard]] static auto create(hardware& hard, frame& frame) noexcept
+        -> std::expected<command, akr::error> {
         auto& dev  = hard.device();
-        auto  pool = dev.create_command_pool(hard.graphics_queue().family());
+        auto  pool = dev.create_command_pool(frame.graphics_queue().family());
         if (not pool) return akr::throw_runtime("Failed to create command pool.");
 
         auto buffer = pool->create_buffer();
