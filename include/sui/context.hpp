@@ -13,13 +13,12 @@
 #include <hgn/hgn.hpp>
 #include <kgm/window.hpp>
 
-#include "wk/detail/command.hpp"
-#include "wk/detail/depth.hpp"
-#include "wk/detail/display.hpp"
-#include "wk/detail/frame.hpp"
-#include "wk/detail/hardware.hpp"
+#include "sui/command.hpp"
+#include "sui/display.hpp"
+#include "sui/hardware.hpp"
+#include "sui/sync.hpp"
 
-namespace wk::detail {
+namespace sui {
 using namespace std::string_literals;
 
 class rendering_system final {
@@ -213,4 +212,4 @@ class rendering_system final {
     std::uint32_t        image_index_{};
     bool                 is_valid_{true};
 };
-}  // namespace wk::detail
+}  // namespace sui

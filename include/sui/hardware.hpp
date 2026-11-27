@@ -17,9 +17,9 @@
 #include <kgm/kgm.hpp>
 #include <kgm/window.hpp>
 
-#include "wk/detail/queue.hpp"
+#include "sui/queue.hpp"
 
-namespace wk::detail {
+namespace sui {
 struct queue_families final {
     hgn::queue_family graphics;
     hgn::queue_family present;
@@ -120,4 +120,4 @@ class hardware final {
     hgn::device          dev_;
     hgn::allocator       allocator_;
 };
-}  // namespace wk::detail
+}  // namespace sui

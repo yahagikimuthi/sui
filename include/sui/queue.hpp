@@ -3,7 +3,7 @@
 #include <hgn/device.hpp>
 #include <hgn/queue.hpp>
 
-namespace wk::detail {
+namespace sui {
 class queue_container final {
   public:
     queue_container(hgn::device& dev, hgn::queue_family family) noexcept
@@ -16,4 +16,4 @@ class queue_container final {
     hgn::queue_family family_;
     hgn::queue        queue_;
 };
-}  // namespace wk::detail
+}  // namespace sui
