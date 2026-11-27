@@ -30,5 +30,5 @@ vec4 calcLinedColor(vec4 baseColor, vec3 posWS) {
 
 void main() {
     vec4 lightedColor = calcLightedColor(v_color, normalize(v_normalWS));
-    outColor          = calcLinedColor(lightedColor, v_posWS);
+    outColor = abs(v_posWS.y) < 0.0001 ? calcLinedColor(lightedColor, v_posWS) : lightedColor;
 }
