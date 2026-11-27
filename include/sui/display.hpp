@@ -13,9 +13,9 @@
 #include <hgn/surface.hpp>
 #include <hgn/swapchain.hpp>
 
-#include "wk/detail/hardware.hpp"
+#include "sui/hardware.hpp"
 
-namespace wk {
+namespace sui {
 class display final {
   public:
     [[nodiscard]] static auto create(hardware& hard
@@ -80,6 +80,7 @@ class display final {
             std::move(*swapchain),
             std::move(*depth_img),
             std::move(*depth_view),
+            depth_fmt,
             *images,
             std::move(views)
         };
@@ -127,7 +128,7 @@ class display final {
         if (aligned_depth_formats.empty())
             return akr::throw_runtime("Failed to find aligned depth format.");
 
-        const auto depth_fmt = aligned_depth_formats.front();
+        auto depth_fmt = aligned_depth_formats.front();
 
         auto depth_img = hard.allocator()
                              .get_image_creator()
@@ -149,6 +150,7 @@ class display final {
             std::move(*swapchain),
             std::move(*depth_img),
             std::move(*depth_view),
+            depth_fmt,
             std::move(*images),
             std::move(views)
         };
@@ -156,7 +158,7 @@ class display final {
 
     [[nodiscard]] auto swapchain() noexcept -> hgn::swapchain_khr& { return swapchain_; }
 
-    [[nodiscard]] auto depth_fmt() const noexcept -> hgn::format { return depth_view_.format(); }
+    [[nodiscard]] auto depth_fmt() const noexcept -> hgn::format { return depth_fmt_; }
 
     [[nodiscard]] auto depth_img() noexcept -> hgn::image& { return depth_img_; }
 
@@ -178,8 +180,8 @@ class display final {
             .barrier();
 
         auto aspect = hgn::image_aspect_flag_bits::depth;
-        if (depth_fmt() == hgn::format::d32_sfloat_s8_uint or
-            depth_fmt() == hgn::format::d24_unorm_s8_uint)
+        if (depth_fmt_ == hgn::format::d32_sfloat_s8_uint or
+            depth_fmt_ == hgn::format::d24_unorm_s8_uint)
             aspect |= hgn::image_aspect_flag_bits::stencil;
 
         cmd.get_image_memory_barrier_executor()
@@ -202,19 +204,22 @@ class display final {
         hgn::swapchain_khr               swapchain,
         hgn::image                       depth_img,
         hgn::image_view                  depth_view,
+        const hgn::format                depth_fmt,
         std::vector<hgn::borrowed_image> images,
         std::vector<hgn::image_view>     views
     ) noexcept
         : swapchain_{std::move(swapchain)},
           depth_img_{std::move(depth_img)},
           depth_view_{std::move(depth_view)},
+          depth_fmt_{depth_fmt},
           images_{std::move(images)},
           views_{std::move(views)} {}
 
     hgn::swapchain_khr               swapchain_;
     hgn::image                       depth_img_;
     hgn::image_view                  depth_view_;
+    hgn::format                      depth_fmt_;
     std::vector<hgn::borrowed_image> images_;
     std::vector<hgn::image_view>     views_;
 };
-}  // namespace wk
+}  // namespace sui
