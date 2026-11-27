@@ -18,7 +18,7 @@
 #include "wk/detail/hardware.hpp"
 #include "wk/detail/sync.hpp"
 
-namespace wk {
+namespace wk::detail {
 using namespace std::string_literals;
 
 class rendering_system final {
@@ -221,4 +221,4 @@ class rendering_system final {
     std::uint32_t image_index_{};
     bool          is_valid_{true};
 };
-}  // namespace wk
+}  // namespace wk::detail

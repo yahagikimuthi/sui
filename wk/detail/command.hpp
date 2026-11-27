@@ -8,7 +8,7 @@
 
 #include "wk/detail/hardware.hpp"
 
-namespace wk {
+namespace wk::detail {
 class command final {
   public:
     [[nodiscard]] static auto create(hardware& hard
@@ -34,4 +34,4 @@ class command final {
     hgn::command_pool   pool_;
     hgn::command_buffer buffer_;
 };
-}  // namespace wk
+}  // namespace wk::detail

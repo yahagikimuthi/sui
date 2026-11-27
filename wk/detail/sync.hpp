@@ -7,7 +7,7 @@
 #include <hgn/device.hpp>
 #include <hgn/sync.hpp>
 
-namespace wk {
+namespace wk::detail {
 class sync final {
   public:
     [[nodiscard]] static auto create(hgn::device& dev) noexcept -> std::expected<sync, akr::error> {
@@ -43,4 +43,4 @@ class sync final {
     hgn::semaphore render_finished_;
     hgn::fence     in_flight_fence_;
 };
-}  // namespace wk
+}  // namespace wk::detail

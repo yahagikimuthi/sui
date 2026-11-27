@@ -15,7 +15,7 @@
 
 #include "wk/detail/hardware.hpp"
 
-namespace wk {
+namespace wk::detail {
 class display final {
   public:
     [[nodiscard]] static auto create(hardware& hard
@@ -217,4 +217,4 @@ class display final {
     std::vector<hgn::borrowed_image> images_;
     std::vector<hgn::image_view>     views_;
 };
-}  // namespace wk
+}  // namespace wk::detail

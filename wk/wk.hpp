@@ -20,17 +20,17 @@ class engine final {
         auto win = kgm::window_creator{}.extent(width, height).title(title).create();
         if (not win) return win.error().rethrow_runtime("Failed to create window.");
 
-        auto rs = rendering_system::create(*win);
+        auto rs = detail::rendering_system::create(*win);
         if (not rs) return rs.error().rethrow_runtime("Failed to build rendering system.");
 
         return engine{std::move(*win), std::move(*rs)};
     }
 
   private:
-    engine(kgm::window win, rendering_system rs) noexcept
+    engine(kgm::window win, detail::rendering_system rs) noexcept
         : win_{std::move(win)}, rs_{std::move(rs)} {}
 
-    kgm::window      win_;
-    rendering_system rs_;
+    kgm::window              win_;
+    detail::rendering_system rs_;
 };
 }  // namespace wk
