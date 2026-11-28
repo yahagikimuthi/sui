@@ -106,7 +106,7 @@ class rendering_system final {
 
             display_ = std::move(*display);
 
-            return begin(width, height);
+            return begin(width, height, r, g, b, a);
         }
 
         image_index_ = *index;
