@@ -17,6 +17,7 @@
 #include "sui/display.hpp"
 #include "sui/frame.hpp"
 #include "sui/hardware.hpp"
+#include "sui/resource.hpp"
 
 namespace sui {
 using namespace std::string_literals;
@@ -31,7 +32,9 @@ class rendering_system final {
         auto frame = frame::create(*hard);
         if (not frame) return frame.error().rethrow_runtime("Failed to create frame object.");
 
-        auto display = display::create(*hard, *frame);
+        auto resource = resource_manager{};
+
+        auto display = display::create(*hard, *frame, resource);
         if (not display) return display.error().rethrow_runtime("Failed to create display object.");
 
         auto cmd = command::create(*hard, *frame);
@@ -43,7 +46,11 @@ class rendering_system final {
         if (not allocator) return akr::throw_runtime("Failed to create allocator.");
 
         return rendering_system{
-            std::move(*hard), std::move(*display), std::move(*frame), std::move(*cmd)
+            std::move(*hard),
+            std::move(*display),
+            std::move(*frame),
+            std::move(*cmd),
+            std::move(resource)
         };
     }
 
@@ -55,6 +62,7 @@ class rendering_system final {
           display_{std::move(other.display_)},
           frame_{std::move(other.frame_)},
           cmd_{std::move(other.cmd_)},
+          resource_{std::move(other.resource_)},
           image_index_{other.image_index_},
           is_valid_{std::exchange(other.is_valid_, false)} {}
 
@@ -67,6 +75,7 @@ class rendering_system final {
         display_     = std::move(other.display_);
         frame_       = std::move(other.frame_);
         cmd_         = std::move(other.cmd_);
+        resource_    = std::move(other.resource_);
         image_index_ = other.image_index_;
         is_valid_    = std::exchange(other.is_valid_, false);
         return *this;
@@ -98,7 +107,7 @@ class rendering_system final {
             if (not frame_.recreate_sync(hard_.device()))
                 return akr::fail("therefore, failed to recreate sync objects");
 
-            auto display = display_.recreate(hard_, frame_, width, height);
+            auto display = display_.recreate(hard_, frame_, resource_, width, height);
             if (not display)
                 return akr::fail(
                     "Failed to recreate display class because"s + display.error().what()
@@ -113,12 +122,12 @@ class rendering_system final {
 
         if (not cmd_.buffer().begin()) return akr::fail("Failed to begin command buffer.");
 
-        display_.begin_barrier(cmd_.buffer(), image_index_);
+        display_.begin_barrier(cmd_.buffer(), image_index_, resource_);
 
         cmd_.buffer()
             .get_begin_rendering_executor()
-            .color_image_view(display_.get_view(image_index_))
-            .depth_image_view(display_.depth_img_view())
+            .color_image_view(display_.get_view(resource_, image_index_))
+            .depth_image_view(display_.depth_img_view(resource_))
             .clear_color(
                 static_cast<float>(r) / 255.f,
                 static_cast<float>(g) / 255.f,
@@ -163,7 +172,7 @@ class rendering_system final {
         if (not frame_.recreate_sync(hard_.device()))
             return akr::fail("therefore, failed to recreate sync objects.");
 
-        auto display = display_.recreate(hard_, frame_, width, height);
+        auto display = display_.recreate(hard_, frame_, resource_, width, height);
         if (not display)
             return akr::fail("Failed to recreate display because"s + display.error().what());
 
@@ -179,7 +188,7 @@ class rendering_system final {
         return display_.swapchain().image_format();
     }
 
-    [[nodiscard]] auto depth_fmt() const noexcept -> hgn::format { return display_.depth_fmt(); }
+    [[nodiscard]] auto depth_fmt() noexcept -> hgn::format { return display_.depth_fmt(resource_); }
 
     [[nodiscard]] auto command_buffer() noexcept -> hgn::command_buffer& { return cmd_.buffer(); }
 
@@ -190,22 +199,26 @@ class rendering_system final {
     }
 
   private:
-    rendering_system(hardware hard, display display, frame frame, command cmd) noexcept
+    rendering_system(
+        hardware hard, display display, frame frame, command cmd, resource_manager resource
+    ) noexcept
         : hard_{std::move(hard)},
           display_{std::move(display)},
           frame_{std::move(frame)},
-          cmd_{std::move(cmd)} {}
+          cmd_{std::move(cmd)},
+          resource_{std::move(resource)} {}
 
     void destroy() noexcept {
         if (not is_valid_) return;
         if (not hard_.device().wait_idle()) std::terminate();
     }
 
-    hardware      hard_;
-    display       display_;
-    frame         frame_;
-    command       cmd_;
-    std::uint32_t image_index_{};
-    bool          is_valid_{true};
+    hardware         hard_;
+    display          display_;
+    frame            frame_;
+    command          cmd_;
+    resource_manager resource_;
+    std::uint32_t    image_index_{};
+    bool             is_valid_{true};
 };
 }  // namespace sui

@@ -15,12 +15,14 @@
 
 #include "sui/frame.hpp"
 #include "sui/hardware.hpp"
+#include "sui/resource.hpp"
 
 namespace sui {
 class display final {
   public:
-    [[nodiscard]] static auto create(hardware& hard, frame& frame) noexcept
-        -> std::expected<display, akr::error> {
+    [[nodiscard]] static auto create(
+        hardware& hard, frame& frame, resource_manager& resource
+    ) noexcept -> std::expected<display, akr::error> {
         auto& dev     = hard.device();
         auto& surface = hard.surface();
 
@@ -36,7 +38,7 @@ class display final {
         auto images = swapchain->get_images();
         if (not images) return akr::throw_runtime("Failed to get images from swapchain.");
 
-        auto views = std::vector<hgn::image_view>{};
+        auto views = std::vector<image_view>{};
         for (auto& image : *images) {
             auto view = dev.get_image_view_creator()
                             .aspect_mask(hgn::image_aspect_flag_bits::color)
@@ -45,7 +47,7 @@ class display final {
                             .create();
             if (not view) return akr::throw_runtime("Failed to create image view.");
 
-            views.emplace_back(std::move(*view));
+            views.emplace_back(resource.push_image_view(std::move(*view)));
         }
 
         auto aligned_depth_formats =
@@ -79,16 +81,19 @@ class display final {
 
         return display{
             std::move(*swapchain),
-            std::move(*depth_img),
-            std::move(*depth_view),
-            depth_fmt,
+            resource.push_image(std::move(*depth_img)),
+            resource.push_image_view(std::move(*depth_view)),
             *images,
             std::move(views)
         };
     }
 
     [[nodiscard]] auto recreate(
-        hardware& hard, frame& frame, const std::uint32_t width, const std::uint32_t height
+        hardware&           hard,
+        frame&              frame,
+        resource_manager&   resource,
+        const std::uint32_t width,
+        const std::uint32_t height
     ) noexcept -> std::expected<display, akr::error> {
         auto swapchain =
             hard.device()
@@ -104,7 +109,7 @@ class display final {
         auto images = swapchain->get_images();
         if (not images) return akr::throw_runtime("Failed to get images from swapchain.");
 
-        auto views = std::vector<hgn::image_view>{};
+        auto views = std::vector<image_view>{};
         views.reserve(images->size());
         for (auto& image : *images) {
             auto view = hard.device()
@@ -114,7 +119,7 @@ class display final {
                             .format(swapchain->image_format())
                             .create();
             if (not view) return akr::throw_runtime("Failed to recreate image view.");
-            views.emplace_back(std::move(*view));
+            views.emplace_back(resource.push_image_view(std::move(*view)));
         }
 
         auto aligned_depth_formats =
@@ -149,9 +154,8 @@ class display final {
 
         return display{
             std::move(*swapchain),
-            std::move(*depth_img),
-            std::move(*depth_view),
-            depth_fmt,
+            resource.push_image(std::move(*depth_img)),
+            resource.push_image_view(std::move(*depth_view)),
             std::move(*images),
             std::move(views)
         };
@@ -159,35 +163,46 @@ class display final {
 
     [[nodiscard]] auto swapchain() noexcept -> hgn::swapchain_khr& { return swapchain_; }
 
-    [[nodiscard]] auto depth_fmt() const noexcept -> hgn::format { return depth_fmt_; }
+    [[nodiscard]] auto depth_fmt(resource_manager& resource) const noexcept -> hgn::format {
+        return resource.get_image_view(depth_view_).format();
+    }
 
-    [[nodiscard]] auto depth_img() noexcept -> hgn::image& { return depth_img_; }
+    [[nodiscard]] auto depth_img(resource_manager& resource) noexcept -> hgn::image& {
+        return resource.get_image(depth_img_);
+    }
 
-    [[nodiscard]] auto depth_img_view() noexcept -> hgn::image_view& { return depth_view_; }
+    [[nodiscard]] auto depth_img_view(resource_manager& resource) noexcept -> hgn::image_view& {
+        return resource.get_image_view(depth_view_);
+    }
 
     [[nodiscard]] auto get_image(const std::uint32_t i) noexcept -> hgn::borrowed_image& {
         return images_[i];
     }
 
-    [[nodiscard]] auto get_view(const std::uint32_t i) noexcept -> hgn::image_view& {
-        return views_[i];
+    [[nodiscard]] auto get_view(resource_manager& resource, const std::uint32_t i) noexcept
+        -> hgn::image_view& {
+        return resource.get_image_view(views_[i]);
     }
 
-    void begin_barrier(hgn::command_buffer& cmd, const std::uint32_t image_index) noexcept {
+    void begin_barrier(
+        hgn::command_buffer& cmd, const std::uint32_t image_index, resource_manager& resource
+    ) noexcept {
         cmd.get_image_memory_barrier_executor()
             .aspect_mask(hgn::image_aspect_flag_bits::color)
             .image(images_[image_index])
             .layout(hgn::image_layout::undefined, hgn::image_layout::color_attachment_optimal)
             .barrier();
 
-        auto aspect = hgn::image_aspect_flag_bits::depth;
-        if (depth_fmt_ == hgn::format::d32_sfloat_s8_uint or
-            depth_fmt_ == hgn::format::d24_unorm_s8_uint)
+        auto       aspect    = hgn::image_aspect_flag_bits::depth;
+        const auto depth_fmt = resource.get_image_view(depth_view_).format();
+
+        if (depth_fmt == hgn::format::d32_sfloat_s8_uint or
+            depth_fmt == hgn::format::d24_unorm_s8_uint)
             aspect |= hgn::image_aspect_flag_bits::stencil;
 
         cmd.get_image_memory_barrier_executor()
             .aspect_mask(aspect)
-            .image(depth_img_)
+            .image(resource.get_image(depth_img_))
             .layout(hgn::image_layout::undefined, hgn::image_layout::depth_attachment_optimal)
             .barrier();
     }
@@ -203,24 +218,21 @@ class display final {
   private:
     display(
         hgn::swapchain_khr               swapchain,
-        hgn::image                       depth_img,
-        hgn::image_view                  depth_view,
-        const hgn::format                depth_fmt,
+        image                            depth_img,
+        image_view                       depth_view,
         std::vector<hgn::borrowed_image> images,
-        std::vector<hgn::image_view>     views
+        std::vector<image_view>          views
     ) noexcept
         : swapchain_{std::move(swapchain)},
-          depth_img_{std::move(depth_img)},
-          depth_view_{std::move(depth_view)},
-          depth_fmt_{depth_fmt},
+          depth_img_{depth_img},
+          depth_view_{depth_view},
           images_{std::move(images)},
           views_{std::move(views)} {}
 
     hgn::swapchain_khr               swapchain_;
-    hgn::image                       depth_img_;
-    hgn::image_view                  depth_view_;
-    hgn::format                      depth_fmt_;
+    image                            depth_img_;
+    image_view                       depth_view_;
     std::vector<hgn::borrowed_image> images_;
-    std::vector<hgn::image_view>     views_;
+    std::vector<image_view>          views_;
 };
 }  // namespace sui
