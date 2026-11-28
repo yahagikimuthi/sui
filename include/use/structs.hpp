@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cassert>
-#include <exception>
-#include <utility>
 
 #include <hgn/allocator.hpp>
 #include <hgn/buffer.hpp>
@@ -49,18 +47,6 @@ struct shadow final {
     hgn::image_view depth_view;
     hgn::sampler    sampler;
 };
-
-struct context final {
-    hgn::device&         dev;
-    hgn::command_buffer& cmd;
-    hgn::allocator&      allocator;
-};
-
-template <typename T>
-[[nodiscard]] inline auto unwrap(T&& t) noexcept -> auto {
-    if (not t) std::terminate();
-    return *std::forward<T>(t);
-}
 
 struct push_constants final {
     alignas(16) glm::mat4 model{1.f};
