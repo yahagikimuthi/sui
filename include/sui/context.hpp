@@ -145,6 +145,10 @@ class rendering_system final {
 
     [[nodiscard]] auto hard() noexcept -> hardware& { return hard_; }
 
+    [[nodiscard]] auto display() noexcept -> display& { return display_; }
+
+    [[nodiscard]] auto command() noexcept -> command& { return cmd_; }
+
     [[nodiscard]] auto device() noexcept -> hgn::device& { return hard_.device(); }
 
     [[nodiscard]] auto allocator() noexcept -> hgn::allocator& { return hard_.allocator(); }
@@ -164,16 +168,16 @@ class rendering_system final {
     }
 
   private:
-    rendering_system(hardware hard, display display, frame frame, command cmd) noexcept
+    rendering_system(hardware hard, class display display, frame frame, class command cmd) noexcept
         : hard_{std::move(hard)},
           display_{std::move(display)},
           frame_{std::move(frame)},
           cmd_{std::move(cmd)} {}
 
     hardware      hard_;
-    display       display_;
+    class display display_;
     frame         frame_;
-    command       cmd_;
+    class command cmd_;
     std::uint32_t image_index_{};
 };
 }  // namespace sui
