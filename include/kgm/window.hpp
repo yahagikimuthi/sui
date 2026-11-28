@@ -98,7 +98,7 @@ class window final {
         input_.update();
     }
 
-    [[nodiscard]] auto key_action(const key button) noexcept -> action {
+    [[nodiscard]] auto key_action(const key button) const noexcept -> action {
         return input_.keys.get_action(button);
     }
 
