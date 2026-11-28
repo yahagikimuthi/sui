@@ -22,7 +22,7 @@ class button_input final {
         current_  = next_;
     }
 
-    [[nodiscard]] auto get_action(const E e_idx) noexcept -> action {
+    [[nodiscard]] auto get_action(const E e_idx) const noexcept -> action {
         const auto idx = static_cast<std::size_t>(e_idx);
         if (current_[idx] and previous_[idx]) return action::repeat;
         if (current_[idx] and not previous_[idx]) return action::press;
