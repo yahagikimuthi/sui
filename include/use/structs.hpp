@@ -17,9 +17,10 @@
 #include "sui/vertex.hpp"
 
 struct buffers final {
-    hgn::buffer vertex;
-    hgn::buffer index;
-    hgn::buffer uniform;
+    hgn::buffer         vertex;
+    hgn::buffer         index;
+    hgn::buffer         uniform;
+    hgn::descriptor_set set;
 };
 
 struct shader final {
