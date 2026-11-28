@@ -53,15 +53,6 @@ class rendering_system final {
         };
     }
 
-    rendering_system(const rendering_system&) noexcept                    = delete;
-    auto operator=(const rendering_system&) noexcept -> rendering_system& = delete;
-    rendering_system(rendering_system&& other) noexcept                   = default;
-
-    auto operator=(rendering_system&& other) noexcept -> rendering_system& = default;
-
-    // FIXME don't ignore result
-    ~rendering_system() noexcept { (void)hard_.device().wait_idle(); }
-
     [[nodiscard]] auto begin(
         const std::uint32_t width,
         const std::uint32_t height,
