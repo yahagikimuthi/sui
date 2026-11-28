@@ -26,6 +26,8 @@ class engine final {
         return engine{std::move(*win), std::move(*rs)};
     }
 
+    [[nodiscard]] auto get_descriptor_set_writer() noexcept;
+
   private:
     engine(kgm::window win, rendering_system rs) noexcept
         : win_{std::move(win)}, rs_{std::move(rs)} {}
