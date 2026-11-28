@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <exception>
 #include <expected>
 #include <utility>
 
@@ -56,32 +55,12 @@ class rendering_system final {
 
     rendering_system(const rendering_system&) noexcept                    = delete;
     auto operator=(const rendering_system&) noexcept -> rendering_system& = delete;
+    rendering_system(rendering_system&& other) noexcept                   = default;
 
-    rendering_system(rendering_system&& other) noexcept
-        : hard_{std::move(other.hard_)},
-          display_{std::move(other.display_)},
-          frame_{std::move(other.frame_)},
-          cmd_{std::move(other.cmd_)},
-          resource_{std::move(other.resource_)},
-          image_index_{other.image_index_},
-          is_valid_{std::exchange(other.is_valid_, false)} {}
+    auto operator=(rendering_system&& other) noexcept -> rendering_system& = default;
 
-    auto operator=(rendering_system&& other) noexcept -> rendering_system& {
-        if (this == &other) return *this;
-
-        destroy();
-
-        hard_        = std::move(other.hard_);
-        display_     = std::move(other.display_);
-        frame_       = std::move(other.frame_);
-        cmd_         = std::move(other.cmd_);
-        resource_    = std::move(other.resource_);
-        image_index_ = other.image_index_;
-        is_valid_    = std::exchange(other.is_valid_, false);
-        return *this;
-    }
-
-    ~rendering_system() noexcept { destroy(); }
+    // FIXME don't ignore result
+    ~rendering_system() noexcept { (void)hard_.device().wait_idle(); }
 
     [[nodiscard]] auto begin(
         const std::uint32_t width,
@@ -208,17 +187,11 @@ class rendering_system final {
           cmd_{std::move(cmd)},
           resource_{std::move(resource)} {}
 
-    void destroy() noexcept {
-        if (not is_valid_) return;
-        if (not hard_.device().wait_idle()) std::terminate();
-    }
-
     hardware         hard_;
     display          display_;
     frame            frame_;
     command          cmd_;
     resource_manager resource_;
     std::uint32_t    image_index_{};
-    bool             is_valid_{true};
 };
 }  // namespace sui
