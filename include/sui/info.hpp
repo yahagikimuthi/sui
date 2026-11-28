@@ -16,12 +16,11 @@ struct vertex_attribute_info final {
 };
 
 struct graphics_pipeline_create_info final {
-    std::uint32_t                              vertex_struct_size;
-    std::vector<vertex_attribute_info>         vertex_attributes;
-    hgn::format                                format;
-    hgn::pipeline_layout                       layout;
-    std::reference_wrapper<hgn::shader_module> vertex_shader;
-    std::reference_wrapper<hgn::shader_module> fragment_shader;
+    std::uint32_t                        vertex_struct_size;
+    std::vector<vertex_attribute_info>   vertex_attributes;
+    std::optional<hgn::pipeline_layout&> layout;
+    std::optional<hgn::shader_module&>   vertex_shader;
+    std::optional<hgn::shader_module&>   fragment_shader;
 };
 
 struct push_constant_info final {
