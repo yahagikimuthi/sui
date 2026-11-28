@@ -12,6 +12,7 @@
 #include <hgn/descriptor_pool.hpp>
 #include <hgn/enums.hpp>
 #include <hgn/rendering.hpp>
+#include <kgm/enums.hpp>
 #include <kgm/kgm.hpp>
 #include <kgm/window.hpp>
 
@@ -32,6 +33,26 @@ class engine final {
 
         return engine{std::move(*win), std::move(*rs)};
     }
+
+    [[nodiscard]] auto is_open() noexcept -> bool { return win_.is_open(); }
+
+    void poll_events() noexcept { win_.poll_events(); }
+
+    [[nodiscard]] auto key_action(const kgm::key key) const noexcept -> kgm::action {
+        return win_.key_action(key);
+    }
+
+    [[nodiscard]] auto cursor_input_mode() noexcept -> kgm::cursor {
+        return win_.cursor_input_mode();
+    }
+
+    void cursor_input_mode(const kgm::cursor mode) noexcept { win_.cursor_input_mode(mode); }
+
+    [[nodiscard]] auto cursor() const noexcept -> glm::vec2 { return win_.cursor(); }
+
+    [[nodiscard]] auto width() const noexcept -> std::uint32_t { return win_.width(); }
+
+    [[nodiscard]] auto height() const noexcept -> std::uint32_t { return win_.height(); }
 
     [[nodiscard]] auto create_buffer(
         const std::uint64_t size, const hgn::buffer_usage_flag_bits usage
@@ -67,8 +88,8 @@ class engine final {
 
         return creator.color_attachment(rs_.display().swapchain().image_format())
             .depth_attachment(rs_.display().depth_img_view().format())
-            .layout(info.layout)
-            .shaders(info.vertex_shader, info.fragment_shader)
+            .layout(*info.layout)
+            .shaders(*info.vertex_shader, *info.fragment_shader)
             .create();
     }
 
@@ -141,6 +162,10 @@ class engine final {
     }
 
     [[nodiscard]] auto end() noexcept -> bool { return rs_.end(win_.width(), win_.height()); }
+
+    [[nodiscard]] auto free() noexcept -> std::expected<void, hgn::result> {
+        return rs_.hard().device().wait_idle();
+    }
 
   private:
     engine(kgm::window win, rendering_system rs) noexcept
